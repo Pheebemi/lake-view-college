@@ -1,0 +1,416 @@
+{% extends 'layout/home_layout.html' %} 
+{% load static %} 
+
+{% block layout %}
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
+    <div class="flex flex-col items-center">
+        <div class="relative">
+            <div class="animate-spin rounded-full h-20 w-20 border-t-4 border-b-4 border-blue-600">
+                <img src="{% static 'assets/images/logos/lakeview.jpg' %}" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12" alt="LakeView College Logo">
+            </div>
+        </div>
+        <p class="mt-4 text-gray-600">Loading LakeView College...</p>
+    </div>
+</div>
+
+<!-- Hero Section -->
+<section id="home" class="relative min-h-screen pt-20">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 -z-10 bg-[radial-gradient(45%_45%_at_50%_50%,#3b82f630_0%,rgba(255,255,255,0)_100%)]"></div>
+
+    <!-- Hero Content -->
+    <div class="container mx-auto px-4 py-12">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <!-- Text Content -->
+            <div class="space-y-8" data-aos="fade-right">
+                <h1 class="text-5xl lg:text-6xl font-bold leading-normal">
+                    Shape Your Future at
+                    <span class="text-blue-600 block">LakeView College <br>
+                        <span class="text-red-600 text-2xl lg:text-3xl">
+                            Affiliate to Federal University Wukari
+                        </span>
+                    </span>
+                </h1>
+                <p class="text-lg text-gray-600 max-w-lg">
+                    Join a community of innovators, leaders, and changemakers. Experience world-class education that prepares you for success.
+                </p>
+                <div class="flex gap-4">
+                    <a href="#" class="btn-primary">
+                        Start Your Journey
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                    <a href="#" class="btn-secondary">
+                        Virtual Tour
+                        <i class="fas fa-play ml-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Image Grid -->
+            <div class="grid grid-cols-2 gap-4" data-aos="fade-left">
+                <div class="space-y-4">
+                    <div class="rounded-2xl overflow-hidden shadow-lg transform hover:scale-105 transition-transform duration-300">
+                        <img src="{% static 'assets/images/third.jpg' %}" alt="Campus Life" class="w-full h-48 object-cover">
+                    </div>
+                    <div class="rounded-2xl overflow-hidden shadow-lg transform hover:scale-105 transition-transform duration-300">
+                        <img src="{% static 'assets/images/fourth.jpg' %}" alt="Library" class="w-full h-64 object-cover">
+                    </div>
+                </div>
+                <div class="space-y-4 pt-8">
+                    <div class="rounded-2xl overflow-hidden shadow-lg transform hover:scale-105 transition-transform duration-300">
+                        <img src="{% static 'assets/images/second.jpg' %}" alt="Students" class="w-full h-64 object-cover">
+                        </div>
+                    <div class="rounded-2xl overflow-hidden shadow-lg transform hover:scale-105 transition-transform duration-300">
+                        <img src="{% static 'assets/images/first.jpg' %}" alt="Laboratory" class="w-full h-48 object-cover">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Stats Cards -->
+        <div class="grid md:grid-cols-4 gap-6 mt-16">
+            <div class="bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg" data-aos="fade-up" data-aos-delay="100">
+                <div class="text-4xl font-bold text-blue-600 mb-2">100+</div>
+                <div class="text-gray-600">Students Enrolled</div>
+            </div>
+            <!-- Add more stat cards... -->
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose LakeView Section -->
+<section class="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Why Choose LakeView?</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                Experience excellence in education with our world-class facilities, dedicated faculty, and commitment to your success. 
+                Discover what makes LakeView College the perfect choice for your academic journey.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <!-- Quality Education -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2" data-aos="fade-up">
+                <div class="bg-gradient-to-br from-blue-100 to-blue-200 w-20 h-20 rounded-2xl flex items-center justify-center mb-6">
+                    <i class="fas fa-graduation-cap text-3xl text-blue-600"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">World-Class Education</h3>
+                <p class="text-gray-600 leading-relaxed mb-4">
+                    Benefit from our experienced faculty and modern teaching methodologies designed to prepare you for real-world success.
+                </p>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-blue-500 mr-2"></i>
+                        Expert faculty members
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-blue-500 mr-2"></i>
+                        Modern curriculum
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-blue-500 mr-2"></i>
+                        Industry partnerships
+                    </li>
+                </ul>
+            </div>
+
+            <!-- State-of-the-Art Facilities -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2" data-aos="fade-up" data-aos-delay="100">
+                <div class="bg-gradient-to-br from-green-100 to-green-200 w-20 h-20 rounded-2xl flex items-center justify-center mb-6">
+                    <i class="fas fa-flask text-3xl text-green-600"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Modern Facilities</h3>
+                <p class="text-gray-600 leading-relaxed mb-4">
+                    Access state-of-the-art laboratories, research centers, and technology-enabled learning environments.
+                </p>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Advanced laboratories
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Digital classrooms
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Research centers
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Vibrant Community -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2" data-aos="fade-up" data-aos-delay="200">
+                <div class="bg-gradient-to-br from-purple-100 to-purple-200 w-20 h-20 rounded-2xl flex items-center justify-center mb-6">
+                    <i class="fas fa-users text-3xl text-purple-600"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Diverse Community</h3>
+                <p class="text-gray-600 leading-relaxed mb-4">
+                    Join a vibrant, inclusive community of learners from diverse backgrounds and cultures.
+                </p>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-purple-500 mr-2"></i>
+                        Cultural diversity
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-purple-500 mr-2"></i>
+                        Student organizations
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-purple-500 mr-2"></i>
+                        Networking opportunities
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Career Support -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2" data-aos="fade-up" data-aos-delay="300">
+                <div class="bg-gradient-to-br from-orange-100 to-orange-200 w-20 h-20 rounded-2xl flex items-center justify-center mb-6">
+                    <i class="fas fa-briefcase text-3xl text-orange-600"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Career Success</h3>
+                <p class="text-gray-600 leading-relaxed mb-4">
+                    Comprehensive career support services to help you achieve your professional goals.
+                </p>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-orange-500 mr-2"></i>
+                        Career counseling
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-orange-500 mr-2"></i>
+                        Internship programs
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-orange-500 mr-2"></i>
+                        Job placement support
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Innovation & Technology -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2" data-aos="fade-up" data-aos-delay="400">
+                <div class="bg-gradient-to-br from-indigo-100 to-indigo-200 w-20 h-20 rounded-2xl flex items-center justify-center mb-6">
+                    <i class="fas fa-laptop-code text-3xl text-indigo-600"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Innovation Focus</h3>
+                <p class="text-gray-600 leading-relaxed mb-4">
+                    Embrace cutting-edge technology and innovative learning approaches for the digital age.
+                </p>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-indigo-500 mr-2"></i>
+                        Digital learning tools
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-indigo-500 mr-2"></i>
+                        Innovation labs
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-indigo-500 mr-2"></i>
+                        Tech integration
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Global Recognition -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2" data-aos="fade-up" data-aos-delay="500">
+                <div class="bg-gradient-to-br from-red-100 to-red-200 w-20 h-20 rounded-2xl flex items-center justify-center mb-6">
+                    <i class="fas fa-globe text-3xl text-red-600"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Global Perspective</h3>
+                <p class="text-gray-600 leading-relaxed mb-4">
+                    Gain international exposure and develop a global mindset for success in today's interconnected world.
+                </p>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-red-500 mr-2"></i>
+                        International programs
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-red-500 mr-2"></i>
+                        Cultural exchange
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check-circle text-red-500 mr-2"></i>
+                        Global partnerships
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="text-center" data-aos="fade-up" data-aos-delay="600">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 md:p-12 max-w-4xl mx-auto">
+                <h3 class="text-3xl font-bold text-white mb-4">Ready to Start Your Journey?</h3>
+                <p class="text-xl text-blue-100 mb-8">
+                    Join thousands of successful graduates who chose LakeView College for their education.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="{% url 'core:apply_page' %}" class="btn-white">
+                        <i class="fas fa-rocket mr-2"></i>
+                        Apply Now
+                    </a>
+                    <a href="{% url 'core:contact_page' %}" class="btn-outline-white">
+                        <i class="fas fa-envelope mr-2"></i>
+                        Get in Touch
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Programs Section -->
+<section class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">Our Programs</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Discover your path with our diverse range of academic programs.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for faculty in faculties %}
+            <!-- Faculty of Science -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-all" data-aos="fade-up">
+                <div class="aspect-w-16 aspect-h-9">
+                    <img src="{{faculty.faculty_img}}" alt="Faculty of Science" class="object-cover h-48 w-full">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">{{faculty.name}}</h3>
+                    <p class="text-gray-600 mb-4">{{faculty.description|truncatechars:100}}.</p>
+                    <a href="#" class="text-blue-600 hover:text-blue-700 font-medium">Learn more →</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-20 bg-blue-600 text-white">
+    <div class="container mx-auto px-4">
+      <div class="grid md:grid-cols-4 gap-8 text-center">
+        <div data-aos="fade-up">
+          <div class="text-4xl font-bold mb-2 count" data-target="30">0</div>
+          <div class="text-blue-100">Years of Excellence</div>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="100">
+          <div class="text-4xl font-bold mb-2 count" data-target="200">0</div>
+          <div class="text-blue-100">Expert Faculty</div>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="200">
+          <div class="text-4xl font-bold mb-2 count" data-target="50">0</div>
+          <div class="text-blue-100">Programs</div>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="300">
+          <div class="text-4xl font-bold mb-2 count" data-target="95">0</div>
+          <div class="text-blue-100">Graduate Employment</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+
+<!-- Call to Action -->
+<section class="py-20 bg-white">
+    <div class="container mx-auto px-4 text-center">
+        <div class="max-w-3xl mx-auto" data-aos="fade-up">
+            <h2 class="text-4xl font-bold text-gray-900 mb-8">Ready to Begin Your Journey?</h2>
+            <p class="text-lg text-gray-600 mb-8">
+                Take the first step towards your future. Apply now to join our upcoming session.
+            </p>
+            <a href="{% url 'core:apply_page' %}" class="inline-block px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transform hover:scale-105 transition-all">
+                Apply Now
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Add AOS Animation Library -->
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 1000,
+        once: true,
+    });
+    document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll(".count");
+        const options = {
+          threshold: 0.5,
+        };
+      
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const counter = entry.target;
+              const target = +counter.getAttribute("data-target");
+              const speed = 50; // Speed adjustment
+      
+              const updateCount = () => {
+                const current = +counter.innerText;
+                const increment = Math.ceil(target / speed);
+      
+                if (current < target) {
+                  counter.innerText = current + increment;
+                  setTimeout(updateCount, 20); // Smooth animation
+                } else {
+                  counter.innerText = target;
+                }
+              };
+      
+              updateCount();
+              observer.unobserve(counter); // Stop observing after animation
+            }
+          });
+        }, options);
+      
+        counters.forEach((counter) => observer.observe(counter));
+      });
+      
+    document.addEventListener('DOMContentLoaded', function() {
+        // Hide loading overlay when page is fully loaded
+        window.addEventListener('load', function() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.style.opacity = '0';
+            loadingOverlay.style.transition = 'opacity 0.5s ease-out';
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 500);
+        });
+    });
+</script>
+
+<style>
+    /* Custom Animations */
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    /* Smooth Scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    #loading-overlay {
+        transition: opacity 0.5s ease-out;
+    }
+
+    /* Optimize image loading */
+    img {
+        loading: lazy;
+    }
+</style>
+{% endblock %}

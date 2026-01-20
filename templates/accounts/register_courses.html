@@ -1,0 +1,47 @@
+{% extends 'layout/student_dash_layout.html' %}
+{% load static %}
+
+{% block title %}Register Courses{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden">
+    <c-navbar.navbar />
+
+    <main class="h-full overflow-y-auto w-full md:w-[90%] px-3 mx-auto py-4 bg-gradient-to-br rounded-md from-gray-200 to-gray-100">
+        <div class="mb-6">
+            <h1 class="font-semibold text-xl"><span class="text-slate-400">Courses /</span> Course Registration</h1>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="grid gap-6">
+                    {% for course in courses %}
+                    <div class="flex items-center space-x-4">
+                        <input type="checkbox" name="courses" value="{{ course.id }}"
+                               {% if course in registered_courses %}checked{% endif %}
+                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">{{ course.code }} - {{ course.title }}</h3>
+                            <p class="text-sm text-gray-500">{{ course.credits }} Credits | {{ course.get_semester_display }}</p>
+                            <p class="text-sm text-gray-600">{{ course.description }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500">No courses available for registration at this time.</p>
+                    {% endfor %}
+                </div>
+
+                {% if courses %}
+                <div class="flex justify-end">
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Register Selected Courses
+                    </button>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %} 

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html   lang="en" >
+{% load static %}
+{% load django_browser_reload %}
+<head>
+	<!-- Required meta tags -->
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script src="https://cdn.tailwindcss.com"></script>
+ <!-- noti message link -->
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.css">
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
+<!-- end of noty cdn link -->
+<!-- Favicon icon-->
+<link rel="shortcut icon" type="image/png" href="{% static 'assets/images/logos/lakeview.jpg' %}" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+  rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<!-- Core Css -->
+<link rel="stylesheet" href="{% static 'assets/css/theme.css' %}" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="preload" href="{% static 'assets/images/logos/lakeview.jpg' %}" as="image">
+<link rel="preload" href="{% static 'assets/css/theme.css' %}" as="style">
+	<title>{% block title %} {% endblock %}</title>
+</head>
+
+<body class=" bg-white">
+
+	{% if user.is_authenticated and request.resolver_match.url_name != 'student_login' and request.resolver_match.url_name != 'staff_login' and request.resolver_match.url_name != 'applicant_login' %}
+		{% include 'cotton/navbar/navbar.html' %}
+	{% endif %}
+
+	{% block content %}
+
+    {% endblock %}
+    
+    {% django_browser_reload_script %}
+    <script>
+        var msg_levels = { 20: 'info', 25: 'success', 30: 'warning', 40: 'error' };
+        
+          {% if messages %}
+            {% for msg in messages %}
+              new Noty({
+                  type: msg_levels['{{msg.level}}'],
+                  text: '{{msg}}',
+                  timeout: 5000,
+                  theme: 'metroui'
+              }).show();
+            {% endfor %}
+          {% endif %}
+    
+    </script>
+	
+<script src="{% static 'assets/libs/jquery/dist/jquery.min.js' %}"></script>
+<script src="{% static 'assets/libs/simplebar/dist/simplebar.min.js' %}"></script>
+<script src="{% static 'assets/libs/iconify-icon/dist/iconify-icon.min.js' %}"></script>
+<script src="{% static 'assets/libs/@preline/dropdown/index.js' %}"></script>
+<script src="{% static 'assets/libs/@preline/overlay/index.js' %}"></script>
+<script src="{% static 'assets/js/sidebarmenu.js' %}"></script>
+
+	<script src="{% static 'assets/libs/apexcharts/dist/apexcharts.min.js' %}"></script>
+    <script src="{% static 'assets/js/dashboard.js' %}"></script>
+</body>
+
+</html>

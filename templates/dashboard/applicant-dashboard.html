@@ -1,0 +1,714 @@
+{% extends 'layout/applicant.html' %}
+
+{% load static %}
+
+{% block late %}
+    <!-- Messages Block -->
+    {% if messages %}
+        <div class="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
+            {% for message in messages %}
+                <div class="px-4 py-3 rounded-lg shadow-lg text-white font-medium text-sm
+                            {% if message.tags == 'success' %}bg-green-500{% endif %}
+                            {% if message.tags == 'error' %}bg-red-500{% endif %}
+                            {% if message.tags == 'warning' %}bg-yellow-500{% endif %}
+                            {% if message.tags == 'info' %}bg-blue-500{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Application Status Card -->
+    <div class="py-6 px-4 sm:px-6 lg:px-8 mt-16 lg:mt-0">
+        <div class="max-w-7xl mx-auto">
+            <!-- Welcome Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Welcome, {{ user.get_full_name }}!</h1>
+                <p class="text-gray-600">Track your application progress and manage your information</p>
+            </div>
+
+            <!-- Application Status Card -->
+            <div class="bg-white overflow-hidden shadow-lg rounded-xl mb-6">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-clipboard-check text-blue-600"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Application Status</h3>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-500 mb-1">Program Applied</p>
+                                <p class="text-lg font-semibold text-gray-900">{{ applicant.programs.name }}</p>
+                            </div>
+                            <div class="mt-3 sm:mt-0 sm:ml-4">
+                                {% if has_submitted_form %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold text-yellow-800 bg-yellow-100 border border-yellow-200">
+                                        <i class="fas fa-clock mr-2"></i>
+                                        Pending Review
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold text-red-800 bg-red-100 border border-red-200">
+                                        <i class="fas fa-exclamation-circle mr-2"></i>
+                                        Not Applied
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="mt-4">
+                            <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+                                <span>Application Progress</span>
+                                <span>{% if has_submitted_form %}100%{% else %}0%{% endif %}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" 
+                                     style="width: {% if has_submitted_form %}100%{% else %}0%{% endif %}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application Details -->
+            <div class="bg-white shadow-lg overflow-hidden rounded-xl">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <div class="flex items-center">
+                        <div class="bg-green-100 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-user text-green-600"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Application Details</h3>
+                    </div>
+                </div>
+                
+                <div class="divide-y divide-gray-200">
+                    <div class="bg-gray-50 px-4 py-4 sm:px-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <dt class="text-sm font-medium text-gray-500">Full Name</dt>
+                            <dd class="text-sm text-gray-900 sm:col-span-2 font-medium">
+                                {{ user.get_full_name }}
+                            </dd>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white px-4 py-4 sm:px-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <dt class="text-sm font-medium text-gray-500">Mode of Entry</dt>
+                            <dd class="text-sm text-gray-900 sm:col-span-2 font-medium">
+                                {{ applicant.mode }}
+                            </dd>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 px-4 py-4 sm:px-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <dt class="text-sm font-medium text-gray-500">State of Origin</dt>
+                            <dd class="text-sm text-gray-900 sm:col-span-2 font-medium">
+                                {{ applicant.state }}
+                            </dd>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Action Buttons -->
+            <div class="mt-8 text-center">
+                {% if not has_submitted_form %}
+                    <!-- Check if applicant has paid for screening form -->
+                    {% if has_paid_screening_fee %}
+                        <a href="{% url 'core:screening_form' %}" 
+                           class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg">
+                            <i class="fas fa-file-alt mr-2"></i>
+                            Complete Screening Form
+                        </a>
+                    {% else %}
+                        <!-- Payment Required -->
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto mb-6">
+                            <div class="flex items-center">
+                                <i class="fas fa-lock text-yellow-600 mr-3 text-xl"></i>
+                                <div>
+                                    <p class="text-yellow-800 font-medium">Payment Required</p>
+                                    <p class="text-yellow-600 text-sm">You need to pay ₦{{ screening_fee|floatformat:0 }} ({{ applicant.programs.get_program_type_display }}) to access the screening form.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <a href="{% url 'core:screening_payment_wall' %}" 
+                           class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg">
+                            <i class="fas fa-credit-card mr-2"></i>
+                            Pay ₦{{ screening_fee|floatformat:0 }} & Access Form
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto mb-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-blue-600 mr-3 text-xl"></i>
+                            <div>
+                                <p class="text-blue-800 font-medium">Form Submitted!</p>
+                                <p class="text-blue-600 text-sm">Your screening form has been submitted and is under review.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Print Form Button -->
+                    <button onclick="printScreeningForm()" 
+                            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg">
+                        <i class="fas fa-print mr-2"></i>
+                        Print Screening Form
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Automatically dismiss messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            let messages = document.querySelectorAll('.fixed.top-4.right-4.z-50 > div');
+            messages.forEach(function(message) {
+                setTimeout(function() {
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateX(100%)';
+                    setTimeout(function() {
+                        message.remove();
+                    }, 300);
+                }, 5000); // 5 seconds
+            });
+        });
+
+        // Function to print screening form
+        function printScreeningForm() {
+            // Show loading state
+            const printButton = event.target;
+            const originalText = printButton.innerHTML;
+            printButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+            printButton.disabled = true;
+            
+            // Fetch screening form data
+            fetch('{% url "core:get_screening_form_data" %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+                    
+                    // Create a new window for printing
+                    const printWindow = window.open('', '_blank', 'width=900,height=700');
+                    
+                    // Create the comprehensive printable HTML content
+                    const printContent = `
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Screening Form - ${data.applicant_info.name}</title>
+                            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+                            <style>
+                                @media print {
+                                    body { margin: 0; }
+                                    .no-print { display: none !important; }
+                                    .page-break { page-break-before: always; }
+                                }
+                                
+                                body {
+                                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                    line-height: 1.6;
+                                    color: #333;
+                                    max-width: 900px;
+                                    margin: 0 auto;
+                                    padding: 20px;
+                                    background: white;
+                                }
+                                
+                                .header {
+                                    text-align: center;
+                                    border-bottom: 3px solid #2563eb;
+                                    padding-bottom: 20px;
+                                    margin-bottom: 30px;
+                                }
+                                
+                                .logo {
+                                    width: 80px;
+                                    height: 80px;
+                                    margin: 0 auto 15px;
+                                    display: block;
+                                }
+                                
+                                .school-name {
+                                    font-size: 24px;
+                                    font-weight: bold;
+                                    color: #1e40af;
+                                    margin-bottom: 5px;
+                                }
+                                
+                                .form-title {
+                                    font-size: 28px;
+                                    font-weight: bold;
+                                    color: #1e3a8a;
+                                    margin-bottom: 10px;
+                                }
+                                
+                                .section {
+                                    margin-bottom: 30px;
+                                    page-break-inside: avoid;
+                                }
+                                
+                                .section-title {
+                                    font-size: 20px;
+                                    font-weight: bold;
+                                    color: #1e40af;
+                                    border-bottom: 2px solid #3b82f6;
+                                    padding-bottom: 10px;
+                                    margin-bottom: 20px;
+                                    background: #f8fafc;
+                                    padding: 15px;
+                                    border-radius: 8px;
+                                }
+                                
+                                .info-grid {
+                                    display: grid;
+                                    grid-template-columns: 1fr 1fr;
+                                    gap: 20px;
+                                }
+                                
+                                .info-item {
+                                    display: flex;
+                                    flex-direction: column;
+                                }
+                                
+                                .info-label {
+                                    font-weight: bold;
+                                    color: #475569;
+                                    margin-bottom: 5px;
+                                    font-size: 14px;
+                                }
+                                
+                                .info-value {
+                                    font-size: 16px;
+                                    color: #1e293b;
+                                    padding: 10px 15px;
+                                    background: #f8fafc;
+                                    border: 1px solid #e2e8f0;
+                                    border-radius: 6px;
+                                    min-height: 20px;
+                                }
+                                
+                                .subjects-table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    margin-top: 15px;
+                                }
+                                
+                                .subjects-table th,
+                                .subjects-table td {
+                                    border: 1px solid #e2e8f0;
+                                    padding: 12px;
+                                    text-align: left;
+                                }
+                                
+                                .subjects-table th {
+                                    background: #f1f5f9;
+                                    font-weight: bold;
+                                    color: #475569;
+                                }
+                                
+                                .subjects-table tr:nth-child(even) {
+                                    background: #f8fafc;
+                                }
+                                
+                                .status-badge {
+                                    display: inline-block;
+                                    padding: 8px 16px;
+                                    background: #fbbf24;
+                                    color: #92400e;
+                                    border-radius: 20px;
+                                    font-weight: bold;
+                                    font-size: 14px;
+                                }
+                                
+                                .print-button {
+                                    position: fixed;
+                                    top: 20px;
+                                    right: 20px;
+                                    padding: 12px 24px;
+                                    background: #059669;
+                                    color: white;
+                                    border: none;
+                                    border-radius: 8px;
+                                    font-weight: bold;
+                                    cursor: pointer;
+                                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                                    z-index: 1000;
+                                }
+                                
+                                .print-button:hover {
+                                    background: #047857;
+                                }
+                                
+                                .footer {
+                                    text-align: center;
+                                    margin-top: 40px;
+                                    padding-top: 20px;
+                                    border-top: 1px solid #e2e8f0;
+                                    color: #64748b;
+                                }
+                                
+                                .highlight-box {
+                                    background: #fef3c7;
+                                    border: 1px solid #f59e0b;
+                                    border-radius: 8px;
+                                    padding: 20px;
+                                    margin: 20px 0;
+                                }
+                                
+                                .highlight-box h4 {
+                                    color: #92400e;
+                                    margin-top: 0;
+                                }
+                                
+                                .highlight-box ul {
+                                    margin: 0;
+                                    padding-left: 20px;
+                                    color: #92400e;
+                                }
+                                
+                                @media print {
+                                    .print-button { display: none; }
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <button class="print-button no-print" onclick="window.print()">
+                                🖨️ Print Form
+                            </button>
+                            
+                            <div class="header">
+                                <img src="{% static 'assets/images/logos/lakeview.jpg' %}" alt="LakeView Logo" class="logo">
+                                <div class="school-name">LakeView College of Education</div>
+                                <div class="form-title">Screening Form</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #dc2626; margin: 10px 0; padding: 8px 16px; background: #fef2f2; border: 2px solid #dc2626; border-radius: 20px; display: inline-block;">
+                                    ${(() => {
+                                        // Debug: log the data to see what's available
+                                        console.log('Full data:', data);
+                                        console.log('Applicant info:', data.applicant_info);
+                                        console.log('Program choices:', data.program_choices);
+                                        console.log('Form data:', data.form_data);
+                                        
+                                        // Try to get program type from multiple possible sources
+                                        let programType = 'Unknown';
+                                        
+                                        // Check if we can get it from the applicant's program
+                                        if (data.applicant_info?.program_type) {
+                                            programType = data.applicant_info.program_type;
+                                        } else if (data.program_type) {
+                                            programType = data.program_type;
+                                        } else if (data.form_data?.program_type) {
+                                            programType = data.form_data.program_type;
+                                        } else if (data.applicant_info?.program) {
+                                            programType = data.applicant_info.program;
+                                        } else if (data.applicant_info?.program_name) {
+                                            programType = data.applicant_info.program_name;
+                                        } else if (data.applicant_info?.course) {
+                                            programType = data.applicant_info.course;
+                                        }
+                                        
+                                        console.log('Final program type found:', programType);
+                                        
+                                        // Check for program type keywords in the program name/type
+                                        const programTypeLower = programType.toLowerCase();
+                                        
+                                        if (programTypeLower.includes('degree') || programTypeLower.includes('b.ed') || programTypeLower.includes('bachelor')) {
+                                            return 'DEGREE PROGRAMME';
+                                        } else if (programTypeLower.includes('nce') || programTypeLower.includes('national certificate')) {
+                                            return 'NCE PROGRAMME';
+                                        } else if (programTypeLower.includes('diploma') || programTypeLower.includes('dip')) {
+                                            return 'DIPLOMA PROGRAMME';
+                                        } else if (programType !== 'Unknown') {
+                                            return programType.toUpperCase() + ' PROGRAMME';
+                                        } else {
+                                            return 'PROGRAMME';
+                                        }
+                                    })()}
+                                </div>
+                                <div style="font-size: 16px; color: #64748b;">Academic Year: 2024/2025</div>
+                            </div>
+                            
+                            <!-- Personal Information -->
+                            <div class="section">
+                                <div class="section-title">
+                                    <i class="fas fa-user mr-2"></i>Personal Information
+                                </div>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <div class="info-label">First Name</div>
+                                        <div class="info-value">${data.personal_info.first_name || 'N/A'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Middle Name</div>
+                                        <div class="info-value">${data.personal_info.middle_name || 'N/A'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Surname</div>
+                                        <div class="info-value">${data.personal_info.surname || 'N/A'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Date of Birth</div>
+                                        <div class="info-value">${data.personal_info.date_of_birth}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Sex</div>
+                                        <div class="info-value">${data.personal_info.sex}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">State of Origin</div>
+                                        <div class="info-value">${data.personal_info.state_of_origin}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Local Government</div>
+                                        <div class="info-value">${data.personal_info.local_government}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Email</div>
+                                        <div class="info-value">${data.personal_info.email}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Phone Number</div>
+                                        <div class="info-value">${data.personal_info.phone_number}</div>
+                                    </div>
+                                    <div class="info-item" style="grid-column: 1 / -1;">
+                                        <div class="info-label">Contact Address</div>
+                                        <div class="info-value">${data.personal_info.contact_address}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- JAMB Details -->
+                            <div class="section">
+                                <div class="section-title">
+                                    <i class="fas fa-graduation-cap mr-2"></i>JAMB Details
+                                </div>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <div class="info-label">JAMB Registration Number</div>
+                                        <div class="info-value">${data.jamb_details.jamb_reg_no || 'N/A'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">JAMB Score</div>
+                                        <div class="info-value">${data.jamb_details.jamb_score || 'N/A'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Academic Information -->
+                            <div class="section">
+                                <div class="section-title">
+                                    <i class="fas fa-school mr-2"></i>Academic Information
+                                </div>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <div class="info-label">Primary School</div>
+                                        <div class="info-value">${data.academic_info.primary_school || 'N/A'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Primary School Dates</div>
+                                        <div class="info-value">${data.academic_info.primary_school_dates || 'N/A'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Secondary School</div>
+                                        <div class="info-value">${data.academic_info.secondary_school || 'N/A'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Secondary School Dates</div>
+                                        <div class="info-value">${data.academic_info.secondary_school_dates || 'N/A'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Examination Details -->
+                            <div class="section">
+                                <div class="section-title">
+                                    <i class="fas fa-certificate mr-2"></i>Examination Details
+                                </div>
+                                
+                                <!-- First Sitting -->
+                                <div style="margin-bottom: 20px;">
+                                    <h4 style="color: #1e40af; margin-bottom: 15px;">
+                                        <i class="fas fa-star text-yellow-500 mr-2"></i>First Sitting (Required)
+                                    </h4>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <div class="info-label">Exam Type</div>
+                                            <div class="info-value">${data.examination_details.first_sitting.exam_type}</div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">Exam Number</div>
+                                            <div class="info-value">${data.examination_details.first_sitting.exam_number}</div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">Exam Year</div>
+                                            <div class="info-value">${data.examination_details.first_sitting.exam_year}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Second Sitting -->
+                                <div>
+                                    <h4 style="color: #64748b; margin-bottom: 15px;">
+                                        <i class="fas fa-star text-gray-400 mr-2"></i>Second Sitting (Optional)
+                                    </h4>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <div class="info-label">Exam Type</div>
+                                            <div class="info-value">${data.examination_details.second_sitting.exam_type}</div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">Exam Number</div>
+                                            <div class="info-value">${data.examination_details.second_sitting.exam_number}</div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">Exam Year</div>
+                                            <div class="info-value">${data.examination_details.second_sitting.exam_year}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Academic Subjects -->
+                            <div class="section">
+                                <div class="section-title">
+                                    <i class="fas fa-book mr-2"></i>Academic Subjects
+                                </div>
+                                
+                                <!-- First Sitting Subjects -->
+                                <div style="margin-bottom: 20px;">
+                                    <h4 style="color: #1e40af; margin-bottom: 15px;">First Sitting Subjects</h4>
+                                    <table class="subjects-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Subject</th>
+                                                <th>Grade</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${data.subjects.first_sitting.map(subject => 
+                                                `<tr><td>${subject.subject}</td><td>${subject.grade}</td></tr>`
+                                            ).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Second Sitting Subjects -->
+                                ${data.subjects.second_sitting.length > 0 ? `
+                                <div>
+                                    <h4 style="color: #64748b; margin-bottom: 15px;">Second Sitting Subjects</h4>
+                                    <table class="subjects-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Subject</th>
+                                                <th>Grade</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${data.subjects.second_sitting.map(subject => 
+                                                `<tr><td>${subject.subject}</td><td>${subject.grade}</td></tr>`
+                                            ).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                ` : ''}
+                            </div>
+                            
+                            <!-- Program Choices -->
+                            <div class="section">
+                                <div class="section-title">
+                                    <i class="fas fa-list-ol mr-2"></i>Program Choices
+                                </div>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <div class="info-label">First Choice</div>
+                                        <div class="info-value">${data.program_choices.first_choice}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Second Choice</div>
+                                        <div class="info-value">${data.program_choices.second_choice}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Third Choice</div>
+                                        <div class="info-value">${data.program_choices.third_choice}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Application Status -->
+                            <div class="section">
+                                <div class="section-title">
+                                    <i class="fas fa-clipboard-check mr-2"></i>Application Status
+                                </div>
+                                <div style="text-align: center; padding: 20px;">
+                                    <div class="status-badge">
+                                        <i class="fas fa-clock mr-2"></i> Pending Review
+                                    </div>
+                                    <p style="margin-top: 15px; color: #64748b;">
+                                        Your screening form has been successfully submitted and is currently under review by our admissions team.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Important Notes -->
+                            <div class="section">
+                                <div class="section-title">
+                                    <i class="fas fa-info-circle mr-2"></i>Important Notes
+                                </div>
+                                <div class="highlight-box">
+                                    <h4>Please Note:</h4>
+                                    <ul>
+                                        <li>Please keep this form for your records</li>
+                                        <li>You will be notified via email about your application status</li>
+                                        <li>Ensure all uploaded documents are clear and legible</li>
+                                        <li>Contact the admissions office if you have any questions</li>
+                                        <li>This form is valid for the 2024/2025 academic session</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="footer">
+                                <p><strong>LakeView College of Education</strong></p>
+                                <p>Admissions Office | Phone: +234 XXX XXX XXXX | Email: admissions@lakeview.edu.ng</p>
+                                <p>Generated on: ${new Date().toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}</p>
+                            </div>
+                        </body>
+                        </html>
+                    `;
+                    
+                    // Write content to the new window
+                    printWindow.document.write(printContent);
+                    printWindow.document.close();
+                    
+                    // Wait for content to load then focus
+                    printWindow.onload = function() {
+                        printWindow.focus();
+                    };
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading form data. Please try again.');
+                })
+                .finally(() => {
+                    // Restore button state
+                    printButton.innerHTML = originalText;
+                    printButton.disabled = false;
+                });
+        }
+    </script>
+{% endblock %}

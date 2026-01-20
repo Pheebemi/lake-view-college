@@ -1,0 +1,499 @@
+{% extends 'layout/student_dash_layout.html' %}
+{% load static %}
+
+{% block title %}My Courses{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden">
+    <c-navbar.navbar />
+
+    <main class="h-full overflow-y-auto w-full md:w-[90%] px-3 mx-auto py-4 bg-gradient-to-br rounded-md from-gray-200 to-gray-100">
+        <div class="mb-6">
+            <h1 class="font-semibold text-xl"><span class="text-slate-400">Home /</span> Courses</h1>
+        </div>
+
+        <!-- Student Info Card -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Department</h3>
+                    <p class="text-lg font-semibold">{{ student.department.name }}</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Current Level</h3>
+                    <p class="text-lg font-semibold">{{ student.get_current_level_display }}</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Current Semester</h3>
+                    <p class="text-lg font-semibold">{{ student.get_current_semester_display }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- First Semester Courses -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+                <h2 class="text-lg font-semibold text-gray-800">First Semester Courses</h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for course in first_semester_courses %}
+                    <div class="border rounded-lg p-4 {% if current_semester == 'first' %}hover:border-blue-500{% endif %} transition-colors">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-semibold text-gray-800">{{ course.code }}</h3>
+                            {% if course.id in registered_courses %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Registered</span>
+                            {% endif %}
+                        </div>
+                        <h4 class="text-sm text-gray-600 mb-2">{{ course.title }}</h4>
+                        <div class="flex justify-between text-sm text-gray-500">
+                            <span>{{ course.credits }} Credits</span>
+                            <span>{{ course.get_level_display }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-span-full text-center py-4 text-gray-500">
+                        No courses available for first semester
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Semester Courses -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+                <h2 class="text-lg font-semibold text-gray-800">Second Semester Courses</h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for course in second_semester_courses %}
+                    <div class="border rounded-lg p-4 {% if current_semester == 'second' %}hover:border-blue-500{% endif %} transition-colors">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-semibold text-gray-800">{{ course.code }}</h3>
+                            {% if course.id in registered_courses %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Registered</span>
+                            {% endif %}
+                        </div>
+                        <h4 class="text-sm text-gray-600 mb-2">{{ course.title }}</h4>
+                        <div class="flex justify-between text-sm text-gray-500">
+                            <span>{{ course.credits }} Credits</span>
+                            <span>{{ course.get_level_display }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-span-full text-center py-4 text-gray-500">
+                        No courses available for second semester
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {% if current_semester == 'first' or current_semester == 'second' %}
+        <div class="mt-6 flex justify-end space-x-4">
+            <a href="{% url 'accounts:register_courses' %}" 
+               class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Register Courses
+            </a>
+            
+            <!-- Print Course Form Button - Only show if courses are registered -->
+            {% if first_semester_courses or second_semester_courses %}
+                <button onclick="printCourseForm()" 
+                        class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    <i class="fas fa-print mr-2"></i>Print Course Form
+                </button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </main>
+</div>
+
+<script>
+    // Function to print course form
+    function printCourseForm() {
+        // Show loading state
+        const printButton = event.target;
+        const originalText = printButton.innerHTML;
+        printButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+        printButton.disabled = true;
+        
+        // Fetch student course data
+        fetch('{% url "core:get_student_course_data" %}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                // Create a new window for printing
+                const printWindow = window.open('', '_blank', 'width=900,height=700');
+                
+                // Create the comprehensive printable HTML content
+                const printContent = `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Course Form - ${data.student_info.name}</title>
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+                        <style>
+                            @media print {
+                                body { margin: 0; }
+                                .no-print { display: none !important; }
+                                .page-break { page-break-before: always; }
+                            }
+                            
+                            body {
+                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                                max-width: 900px;
+                                margin: 0 auto;
+                                padding: 20px;
+                                background: white;
+                            }
+                            
+                            .header {
+                                text-align: center;
+                                border-bottom: 3px solid #2563eb;
+                                padding-bottom: 20px;
+                                margin-bottom: 30px;
+                            }
+                            
+                            .logo {
+                                width: 80px;
+                                height: 80px;
+                                margin: 0 auto 15px;
+                                display: block;
+                            }
+                            
+                            .school-name {
+                                font-size: 24px;
+                                font-weight: bold;
+                                color: #1e40af;
+                                margin-bottom: 5px;
+                            }
+                            
+                            .form-title {
+                                font-size: 28px;
+                                font-weight: bold;
+                                color: #1e3a8a;
+                                margin-bottom: 10px;
+                            }
+                            
+                            .student-info {
+                                background: #f8fafc;
+                                border: 2px solid #e2e8f0;
+                                border-radius: 10px;
+                                padding: 20px;
+                                margin-bottom: 30px;
+                            }
+                            
+                            .info-grid {
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 20px;
+                            }
+                            
+                            .info-item {
+                                display: flex;
+                                flex-direction: column;
+                            }
+                            
+                            .info-label {
+                                font-weight: bold;
+                                color: #475569;
+                                margin-bottom: 5px;
+                                font-size: 14px;
+                            }
+                            
+                            .info-value {
+                                font-size: 16px;
+                                color: #1e293b;
+                                padding: 8px 12px;
+                                background: white;
+                                border: 1px solid #cbd5e1;
+                                border-radius: 6px;
+                            }
+                            
+                            .semester-section {
+                                margin-bottom: 30px;
+                                page-break-inside: avoid;
+                            }
+                            
+                            .semester-title {
+                                font-size: 20px;
+                                font-weight: bold;
+                                color: #1e40af;
+                                border-bottom: 2px solid #3b82f6;
+                                padding-bottom: 10px;
+                                margin-bottom: 20px;
+                                background: #f8fafc;
+                                padding: 15px;
+                                border-radius: 8px;
+                            }
+                            
+                            .course-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin-top: 15px;
+                                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                            }
+                            
+                            .course-table th,
+                            .course-table td {
+                                border: 1px solid #e2e8f0;
+                                padding: 12px;
+                                text-align: left;
+                            }
+                            
+                            .course-table th {
+                                background: #1e40af;
+                                color: white;
+                                font-weight: bold;
+                                font-size: 14px;
+                            }
+                            
+                            .course-table tr:nth-child(even) {
+                                background: #f8fafc;
+                            }
+                            
+                            .course-table tr:hover {
+                                background: #e2e8f0;
+                            }
+                            
+                            .credits-summary {
+                                background: #f0f9ff;
+                                border: 1px solid #0ea5e9;
+                                border-radius: 8px;
+                                padding: 15px;
+                                margin-top: 15px;
+                                text-align: center;
+                            }
+                            
+                            .credits-summary h4 {
+                                color: #0c4a6e;
+                                margin: 0 0 10px 0;
+                                font-size: 16px;
+                            }
+                            
+                            .credits-summary p {
+                                color: #0369a1;
+                                font-weight: bold;
+                                font-size: 18px;
+                                margin: 0;
+                            }
+                            
+                            .print-button {
+                                position: fixed;
+                                top: 20px;
+                                right: 20px;
+                                padding: 12px 24px;
+                                background: #059669;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: bold;
+                                cursor: pointer;
+                                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                                z-index: 1000;
+                            }
+                            
+                            .print-button:hover {
+                                background: #047857;
+                            }
+                            
+                            .footer {
+                                text-align: center;
+                                margin-top: 40px;
+                                padding-top: 20px;
+                                border-top: 1px solid #e2e8f0;
+                                color: #64748b;
+                            }
+                            
+                            .no-courses {
+                                text-align: center;
+                                padding: 40px;
+                                color: #64748b;
+                                font-style: italic;
+                                background: #f8fafc;
+                                border: 1px dashed #cbd5e1;
+                                border-radius: 8px;
+                            }
+                            
+                            @media print {
+                                .print-button { display: none; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <button class="print-button no-print" onclick="window.print()">
+                            🖨️ Print Course Form
+                        </button>
+                        
+                        <div class="header">
+                            <img src="{% static 'assets/images/logos/lakeview.jpg' %}" alt="LakeView Logo" class="logo">
+                            <div class="school-name">LakeView College of Education</div>
+                            <div class="form-title">Course Registration Form</div>
+                            <div style="font-size: 16px; color: #64748b;">Academic Year: 2024/2025</div>
+                        </div>
+                        
+                        <!-- Student Information -->
+                        <div class="student-info">
+                            <h3 style="font-size: 18px; font-weight: bold; color: #1e40af; margin-bottom: 15px; text-align: center;">
+                                <i class="fas fa-user-graduate mr-2"></i>Student Information
+                            </h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Full Name</div>
+                                    <div class="info-value">${data.student_info.name}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Matriculation Number</div>
+                                    <div class="info-value">${data.student_info.matriculation_number}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Faculty</div>
+                                    <div class="info-value">${data.student_info.faculty}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Department</div>
+                                    <div class="info-value">${data.student_info.department}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Level</div>
+                                    <div class="info-value">${data.student_info.level} Level</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Current Semester</div>
+                                    <div class="info-value">${data.student_info.semester}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- First Semester Courses -->
+                        <div class="semester-section">
+                            <div class="semester-title">
+                                <i class="fas fa-calendar-alt mr-2"></i>First Semester Courses
+                            </div>
+                            
+                            ${data.courses.first_semester.length > 0 ? `
+                                <table class="course-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Course Code</th>
+                                            <th>Course Title</th>
+                                            <th>Credit Units</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.courses.first_semester.map(course => 
+                                            `<tr>
+                                                <td><strong>${course.code}</strong></td>
+                                                <td>${course.title}</td>
+                                                <td style="text-align: center;">${course.credits}</td>
+                                            </tr>`
+                                        ).join('')}
+                                    </tbody>
+                                </table>
+                                
+                                <div class="credits-summary">
+                                    <h4>First Semester Total Credits</h4>
+                                    <p>${data.total_credits.first_semester} Credit Units</p>
+                                </div>
+                            ` : `
+                                <div class="no-courses">
+                                    <i class="fas fa-info-circle text-2xl mb-2"></i>
+                                    <p>No courses registered for First Semester</p>
+                                </div>
+                            `}
+                        </div>
+                        
+                        <!-- Second Semester Courses -->
+                        <div class="semester-section">
+                            <div class="semester-title">
+                                <i class="fas fa-calendar-alt mr-2"></i>Second Semester Courses
+                            </div>
+                            
+                            ${data.courses.second_semester.length > 0 ? `
+                                <table class="course-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Course Code</th>
+                                            <th>Course Title</th>
+                                            <th>Credit Units</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.courses.second_semester.map(course => 
+                                            `<tr>
+                                                <td><strong>${course.code}</strong></td>
+                                                <td>${course.title}</td>
+                                                <td style="text-align: center;">${course.credits}</td>
+                                            </tr>`
+                                        ).join('')}
+                                    </tbody>
+                                </table>
+                                
+                                <div class="credits-summary">
+                                    <h4>Second Semester Total Credits</h4>
+                                    <p>${data.total_credits.second_semester} Credit Units</p>
+                                </div>
+                            ` : `
+                                <div class="no-courses">
+                                    <i class="fas fa-info-circle text-2xl mb-2"></i>
+                                    <p>No courses registered for Second Semester</p>
+                                </div>
+                            `}
+                        </div>
+                        
+                        <!-- Total Credits Summary -->
+                        <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 10px; padding: 20px; margin: 30px 0; text-align: center;">
+                            <h3 style="color: #92400e; margin: 0 0 15px 0; font-size: 20px;">
+                                <i class="fas fa-calculator mr-2"></i>Total Academic Load
+                            </h3>
+                            <p style="color: #92400e; font-size: 24px; font-weight: bold; margin: 0;">
+                                ${data.total_credits.total} Credit Units
+                            </p>
+                        </div>
+                        
+                        <div class="footer">
+                            <p><strong>LakeView College of Education</strong></p>
+                            <p>Academic Affairs Office | Phone: +234 XXX XXX XXXX | Email: academic@lakeview.edu.ng</p>
+                            <p>Generated on: ${new Date().toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}</p>
+                        </div>
+                    </body>
+                    </html>
+                `;
+                
+                // Write content to the new window
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                
+                // Wait for content to load then focus
+                printWindow.onload = function() {
+                    printWindow.focus();
+                };
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error loading course data. Please try again.');
+            })
+            .finally(() => {
+                // Restore button state
+                printButton.innerHTML = originalText;
+                printButton.disabled = false;
+            });
+    }
+</script>
+
+{% endblock %} 

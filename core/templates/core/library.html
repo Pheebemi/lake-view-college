@@ -1,0 +1,281 @@
+{% extends 'layout/home_layout.html' %}
+{% load static %}
+
+{% block title %}E-Library - LakeView College{% endblock %}
+
+{% block layout %}
+<!-- Hero Section -->
+<section class="relative py-20" style="background-image: url('{% static 'assets/images/lib2.jpg' %}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
+                Welcome to Our
+                <span class="text-blue-300 block">E-Library</span>
+            </h1>
+            <p class="text-xl text-gray-200 max-w-3xl mx-auto mb-8">
+                Discover a world of knowledge with our extensive collection of books, digital resources, and study spaces designed to support your academic journey.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#services" class="btn-primary">
+                    <i class="fas fa-search mr-2"></i>
+                    Explore Services
+                </a>
+                <a href="#hours" class="btn-secondary">
+                    <i class="fas fa-clock mr-2"></i>
+                    View Hours
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- E-Library Image Section -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center">
+                <h3 class="text-3xl font-bold text-gray-900 mb-6">Our E-Library</h3>
+                <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Experience our modern e-library facilities designed to provide the perfect environment for learning, research, and academic excellence.
+                </p>
+                <div class="rounded-2xl overflow-hidden shadow-2xl">
+                    <img src="{% static 'assets/images/lib.jpg' %}" 
+                         alt="LakeView College E-Library" 
+                         class="w-full h-auto object-cover"
+                         style="max-height: 500px;">
+                </div>
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600 text-sm">
+                        A welcoming space for students to study, research, and discover knowledge
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section id="services" class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">E-Library Services</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                We offer comprehensive e-library services to support your academic success and research needs.
+            </p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Book Collection -->
+            <div class="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-books text-2xl text-blue-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Extensive Book Collection</h3>
+                <p class="text-gray-600 mb-4">
+                    Access thousands of books across all academic disciplines including textbooks, reference materials, and research publications.
+                </p>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li>• Academic textbooks</li>
+                    <li>• Reference materials</li>
+                    <li>• Research journals</li>
+                    <li>• Fiction & literature</li>
+                </ul>
+            </div>
+
+            <!-- Digital Resources -->
+            <div class="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-laptop text-2xl text-green-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Digital Resources</h3>
+                <p class="text-gray-600 mb-4">
+                    Explore our digital library with e-books, online databases, academic journals, and multimedia resources.
+                </p>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li>• E-books & e-journals</li>
+                    <li>• Online databases</li>
+                    <li>• Research tools</li>
+                    <li>• Multimedia content</li>
+                </ul>
+            </div>
+
+            <!-- Study Spaces -->
+            <div class="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-users text-2xl text-purple-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Study Spaces</h3>
+                <p class="text-gray-600 mb-4">
+                    Enjoy comfortable and quiet study environments with individual study carrels, group study rooms, and computer workstations.
+                </p>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li>• Individual study carrels</li>
+                    <li>• Group study rooms</li>
+                    <li>• Computer workstations</li>
+                    <li>• Quiet reading areas</li>
+                </ul>
+            </div>
+
+            <!-- Research Support -->
+            <div class="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div class="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-search text-2xl text-orange-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Research Support</h3>
+                <p class="text-gray-600 mb-4">
+                    Get expert assistance with research projects, citation management, and finding relevant academic sources.
+                </p>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li>• Research consultations</li>
+                    <li>• Citation assistance</li>
+                    <li>• Database training</li>
+                    <li>• Literature reviews</li>
+                </ul>
+            </div>
+
+            <!-- Interlibrary Loan -->
+            <div class="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div class="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-exchange-alt text-2xl text-red-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Interlibrary Loan</h3>
+                <p class="text-gray-600 mb-4">
+                    Access materials from other libraries through our interlibrary loan service for comprehensive research support.
+                </p>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li>• Book borrowing</li>
+                    <li>• Article requests</li>
+                    <li>• National network access</li>
+                    <li>• Fast delivery service</li>
+                </ul>
+            </div>
+
+            <!-- Technology Access -->
+            <div class="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-tablet-alt text-2xl text-indigo-600"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Technology Access</h3>
+                <p class="text-gray-600 mb-4">
+                    Utilize modern technology including computers, printers, scanners, and specialized software for academic work.
+                </p>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li>• Computer workstations</li>
+                    <li>• Printing & scanning</li>
+                    <li>• Specialized software</li>
+                    <li>• Wi-Fi access</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- E-Library Hours Section -->
+<section id="hours" class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">E-Library Hours</h2>
+                <p class="text-lg text-gray-600">
+                    Plan your visit with our current operating hours and special schedules.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Regular Hours -->
+                <div class="bg-gray-50 rounded-xl p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Regular Hours</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                            <span class="font-medium text-gray-700">Monday - Friday</span>
+                            <span class="text-gray-600">8:00 AM - 10:00 PM</span>
+                        </div>
+                        <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                            <span class="font-medium text-gray-700">Saturday</span>
+                            <span class="text-gray-600">9:00 AM - 6:00 PM</span>
+                        </div>
+                        <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                            <span class="font-medium text-gray-700">Sunday</span>
+                            <span class="text-gray-600">1:00 PM - 8:00 PM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special Hours -->
+                <div class="bg-blue-50 rounded-xl p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Special Hours</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center py-3 border-b border-blue-200">
+                            <span class="font-medium text-gray-700">Exam Periods</span>
+                            <span class="text-gray-600">Extended Hours</span>
+                        </div>
+                        <div class="flex justify-between items-center py-3 border-b border-blue-200">
+                            <span class="font-medium text-gray-700">Holidays</span>
+                            <span class="text-gray-600">Check Schedule</span>
+                        </div>
+                        <div class="flex justify-between items-center py-3 border-b border-blue-200">
+                            <span class="font-medium text-gray-700">Summer Session</span>
+                            <span class="text-gray-600">Reduced Hours</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact & Support Section -->
+<section class="py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">Need Help?</h2>
+            <p class="text-lg text-gray-600 mb-8">
+                Our e-library staff is here to help you with research, finding resources, and using our services effectively.
+            </p>
+            
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <i class="fas fa-phone text-3xl text-blue-600 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Phone Support</h3>
+                    <p class="text-gray-600">Call us for immediate assistance</p>
+                    <p class="text-blue-600 font-semibold mt-2">+234 XXX XXX XXXX</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <i class="fas fa-envelope text-3xl text-green-600 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Email Support</h3>
+                    <p class="text-gray-600">Send us your questions</p>
+                    <p class="text-green-600 font-semibold mt-2">elibrary@lakeview.edu.ng</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <i class="fas fa-comments text-3xl text-purple-600 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Live Chat</h3>
+                    <p class="text-gray-600">Chat with our staff online</p>
+                    <p class="text-purple-600 font-semibold mt-2">Available 24/7</p>
+                </div>
+            </div>
+            
+            <div class="bg-blue-600 rounded-xl p-8 text-white">
+                <h3 class="text-2xl font-bold mb-4">Visit Our E-Library Today</h3>
+                <p class="text-blue-100 mb-6">
+                    Experience the perfect environment for learning, research, and academic growth.
+                </p>
+                <a href="{% url 'core:contact_page' %}" class="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200">
+                    Get Directions
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .btn-primary {
+        @apply inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-200;
+    }
+    .btn-secondary {
+        @apply inline-block bg-white text-blue-600 border-2 border-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transform hover:scale-105 transition-all duration-200;
+    }
+</style>
+{% endblock %}

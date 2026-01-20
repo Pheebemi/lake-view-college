@@ -1,0 +1,152 @@
+{% extends 'layout/student_dash_layout.html' %}
+{% load static %}
+
+{% block title %}School Fees Payment{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden">
+    <main class="h-full overflow-y-auto w-full md:w-[90%] px-3 mx-auto py-4 bg-gradient-to-br rounded-md from-gray-200 to-gray-100">
+        <div class="mb-6">
+            <h1 class="font-semibold text-xl"><span class="text-slate-400">Payments /</span> School Fees</h1>
+        </div>
+
+        <!-- Payment Status Card -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Current Session</h3>
+                    <p class="text-lg font-semibold">{{ current_session }}</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Current Level</h3>
+                    <p class="text-lg font-semibold">{{ student.current_level }}</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Payment Status</h3>
+                    {% if has_paid %}
+                    <span class="px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">Paid</span>
+                    {% else %}
+                    <span class="px-3 py-1 text-sm font-semibold rounded-full bg-red-100 text-red-800">Not Paid</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Section -->
+        {% if not has_paid %}
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4">Make Payment</h2>
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 mb-2">Amount Due</h3>
+                    <p class="text-2xl font-bold text-blue-600">₦{{ current_fees|floatformat:2 }}</p>
+                </div>
+                <div class="flex items-end">
+                    <button onclick="initializePayment()" 
+                            class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Pay Now with Paystack
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Payment History -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b">
+                <h2 class="text-lg font-semibold">Payment History</h2>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Session</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for payment in payments %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ payment.reference }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ₦{{ payment.amount|floatformat:2 }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ payment.session }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                                    {% if payment.status == 'success' %}bg-green-100 text-green-800
+                                    {% elif payment.status == 'failed' %}bg-red-100 text-red-800
+                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                    {{ payment.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ payment.payment_date|date:"M d, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                {% if payment.status == 'success' %}
+                                <a href="{% url 'accounts:payment_receipt' payment.id %}" 
+                                   class="text-blue-600 hover:text-blue-900">
+                                    Print Receipt
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                No payment records found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+function initializePayment() {
+    // Get CSRF token
+    const csrftoken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+    console.log('Initializing payment...');
+
+    // Make API call to initialize payment
+    fetch("{% url 'accounts:initiate_payment' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            amount: '{{ current_fees }}'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Payment response:', data);
+        if (data.status) {
+            // Redirect to Paystack payment page
+            window.location.href = data.data.authorization_url;
+        } else {
+            alert('Payment initialization failed: ' + (data.error || 'Please try again.'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while initializing payment. Please try again.');
+    });
+}
+</script>
+{% endblock %} 

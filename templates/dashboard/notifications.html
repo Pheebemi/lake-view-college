@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-4">Notifications</h2>
+    <ul>
+        {% for notification in notifications %}
+            <li>
+                {% if notification.support_request %}
+                    <a href="{% url 'dashboard:support_request_detail' notification.support_request.id %}">
+                        {{ notification.message }}
+                    </a>
+                {% else %}
+                    {{ notification.message }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

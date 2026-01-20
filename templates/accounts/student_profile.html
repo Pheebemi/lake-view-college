@@ -1,0 +1,523 @@
+{% extends 'layout/student_dash_layout.html' %}
+{% load static %}
+
+{% block title %}Student Profile{% endblock %}
+
+{% block layout %}
+<div class="w-full page-wrapper overflow-hidden">
+    <c-navbar.navbar />
+
+    <!-- Main Content -->
+    <main class="h-full overflow-y-auto w-full md:w-[90%] px-3 mx-auto py-4 bg-gradient-to-br rounded-md from-gray-200 to-gray-100">
+        <div class="mb-6">
+            <h1 class="font-semibold text-xl"><span class="text-slate-400">Home /</span> Profile</h1>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Profile Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex flex-col items-center">
+                        <div class="relative">
+                            {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="Profile Picture" 
+                                 class="w-32 h-32 rounded-full object-cover border-4 border-blue-500">
+                            {% else %}
+                            <div class="w-32 h-32 rounded-full bg-blue-100 flex items-center justify-center border-4 border-blue-500">
+                                <span class="text-4xl text-blue-500">{{ user.first_name|first|upper }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <h2 class="mt-4 text-xl font-semibold">{{ user.get_full_name }}</h2>
+                        <p class="text-gray-600">{{ user.matriculation_number }}</p>
+                        <p class="text-sm text-gray-500">{{ profile.department.name }}</p>
+                    </div>
+
+                    <div class="mt-6 border-t pt-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-gray-600">Level</span>
+                            <span class="font-semibold">{{ profile.current_level }}</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-gray-600">CGPA</span>
+                            <span class="font-semibold">{{ profile.cgpa }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Program</span>
+                            <span class="font-semibold">{{ profile.program }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Details -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold">Personal Information</h3>
+                        <a href="{% url 'accounts:edit_student_profile' %}" 
+                           class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Edit Profile
+                        </a>
+                        <button onclick="printStudentProfile()" 
+                                class="ml-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                            <i class="fas fa-print mr-2"></i>Print Profile
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-600 text-sm font-medium mb-2">Full Name</label>
+                            <p class="text-gray-800">{{ user.get_full_name }}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-600 text-sm font-medium mb-2">Email</label>
+                            <p class="text-gray-800">{{ user.email }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 text-sm font-medium mb-2">Phone Number</label>
+                            <p class="text-gray-800">{{ user.phone_number|default:"Not provided" }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 text-sm font-medium mb-2">Date of Birth</label>
+                            <p class="text-gray-800">{{ profile.date_of_birth|date:"F d, Y"|default:"Not provided" }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 text-sm font-medium mb-2">Gender</label>
+                            <p class="text-gray-800">{{ profile.get_gender_display }}</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 text-sm font-medium mb-2">State of Origin</label>
+                            <p class="text-gray-800">{{ profile.state_of_origin }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <h3 class="text-xl font-semibold mb-4">Academic Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-gray-600 text-sm font-medium mb-2">Faculty</label>
+                                <p class="text-gray-800">{{ profile.faculty.name }}</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-600 text-sm font-medium mb-2">Department</label>
+                                <p class="text-gray-800">{{ profile.department.name }}</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-600 text-sm font-medium mb-2">Admission Year</label>
+                                <p class="text-gray-800">{{ profile.admission_year }}</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-600 text-sm font-medium mb-2">Current Level</label>
+                                <p class="text-gray-800">{{ profile.current_level }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Function to print student profile
+    function printStudentProfile() {
+        // Show loading state
+        const printButton = event.target;
+        const originalText = printButton.innerHTML;
+        printButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+        printButton.disabled = true;
+        
+        // Fetch student profile data
+        fetch('{% url "core:get_student_profile_data" %}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                // Create a new window for printing
+                const printWindow = window.open('', '_blank', 'width=900,height=700');
+                
+                // Create the comprehensive printable HTML content
+                const printContent = `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Student Profile - ${data.personal_info.full_name}</title>
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+                        <style>
+                            @media print {
+                                body { margin: 0; }
+                                .no-print { display: none !important; }
+                                .page-break { page-break-before: always; }
+                            }
+                            
+                            body {
+                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                                max-width: 900px;
+                                margin: 0 auto;
+                                padding: 20px;
+                                background: white;
+                            }
+                            
+                            .header {
+                                text-align: center;
+                                border-bottom: 3px solid #2563eb;
+                                padding-bottom: 20px;
+                                margin-bottom: 30px;
+                            }
+                            
+                            .logo {
+                                width: 80px;
+                                height: 80px;
+                                margin: 0 auto 15px;
+                                display: block;
+                            }
+                            
+                            .school-name {
+                                font-size: 24px;
+                                font-weight: bold;
+                                color: #1e40af;
+                                margin-bottom: 5px;
+                            }
+                            
+                            .form-title {
+                                font-size: 28px;
+                                font-weight: bold;
+                                color: #1e3a8a;
+                                margin-bottom: 10px;
+                            }
+                            
+                            .profile-section {
+                                display: flex;
+                                align-items: flex-start;
+                                gap: 30px;
+                                margin-bottom: 30px;
+                                page-break-inside: avoid;
+                            }
+                            
+                            .profile-picture {
+                                flex-shrink: 0;
+                                width: 200px;
+                                text-align: center;
+                            }
+                            
+                            .profile-picture img {
+                                width: 180px;
+                                height: 180px;
+                                border-radius: 50%;
+                                border: 4px solid #2563eb;
+                                object-fit: cover;
+                            }
+                            
+                            .profile-picture .placeholder {
+                                width: 180px;
+                                height: 180px;
+                                border-radius: 50%;
+                                border: 4px solid #2563eb;
+                                background: #dbeafe;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 48px;
+                                color: #2563eb;
+                                font-weight: bold;
+                            }
+                            
+                            .profile-info {
+                                flex: 1;
+                            }
+                            
+                            .section {
+                                margin-bottom: 30px;
+                                page-break-inside: avoid;
+                            }
+                            
+                            .section-title {
+                                font-size: 20px;
+                                font-weight: bold;
+                                color: #1e40af;
+                                border-bottom: 2px solid #3b82f6;
+                                padding-bottom: 10px;
+                                margin-bottom: 20px;
+                                background: #f8fafc;
+                                padding: 15px;
+                                border-radius: 8px;
+                            }
+                            
+                            .info-grid {
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 20px;
+                            }
+                            
+                            .info-item {
+                                display: flex;
+                                flex-direction: column;
+                            }
+                            
+                            .info-label {
+                                font-weight: bold;
+                                color: #475569;
+                                margin-bottom: 5px;
+                                font-size: 14px;
+                            }
+                            
+                            .info-value {
+                                font-size: 16px;
+                                color: #1e293b;
+                                padding: 10px 15px;
+                                background: #f8fafc;
+                                border: 1px solid #e2e8f0;
+                                border-radius: 6px;
+                                min-height: 20px;
+                            }
+                            
+                            .academic-badge {
+                                display: inline-block;
+                                padding: 8px 16px;
+                                background: #10b981;
+                                color: white;
+                                border-radius: 20px;
+                                font-weight: bold;
+                                font-size: 14px;
+                                margin: 5px;
+                            }
+                            
+                            .print-button {
+                                position: fixed;
+                                top: 20px;
+                                right: 20px;
+                                padding: 12px 24px;
+                                background: #059669;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: bold;
+                                cursor: pointer;
+                                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                                z-index: 1000;
+                            }
+                            
+                            .print-button:hover {
+                                background: #047857;
+                            }
+                            
+                            .footer {
+                                text-align: center;
+                                margin-top: 40px;
+                                padding-top: 20px;
+                                border-top: 1px solid #e2e8f0;
+                                color: #64748b;
+                            }
+                            
+                            .highlight-box {
+                                background: #fef3c7;
+                                border: 1px solid #f59e0b;
+                                border-radius: 8px;
+                                padding: 20px;
+                                margin: 20px 0;
+                            }
+                            
+                            .highlight-box h4 {
+                                color: #92400e;
+                                margin-top: 0;
+                            }
+                            
+                            .highlight-box ul {
+                                margin: 0;
+                                padding-left: 20px;
+                                color: #92400e;
+                            }
+                            
+                            @media print {
+                                .print-button { display: none; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <button class="print-button no-print" onclick="window.print()">
+                            🖨️ Print Profile
+                        </button>
+                        
+                        <div class="header">
+                            <img src="{% static 'assets/images/logos/lakeview.jpg' %}" alt="LakeView Logo" class="logo">
+                            <div class="school-name">LakeView College of Education</div>
+                            <div class="form-title">Student Profile</div>
+                            <div style="font-size: 16px; color: #64748b;">Academic Year: 2024/2025</div>
+                        </div>
+                        
+                        <!-- Profile Picture and Basic Info -->
+                        <div class="profile-section">
+                            <div class="profile-picture">
+                                ${data.profile_picture ? 
+                                    `<img src="${data.profile_picture}" alt="Profile Picture">` : 
+                                    `<div class="placeholder">${data.personal_info.full_name.split(' ').map(n => n[0]).join('')}</div>`
+                                }
+                                <p style="margin-top: 15px; font-weight: bold; color: #1e40af;">Student ID</p>
+                                <p style="color: #64748b; font-size: 14px;">${data.personal_info.matriculation_number}</p>
+                            </div>
+                            
+                            <div class="profile-info">
+                                <div class="section-title">
+                                    <i class="fas fa-user mr-2"></i>Personal Information
+                                </div>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <div class="info-label">Full Name</div>
+                                        <div class="info-value">${data.personal_info.full_name}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Email Address</div>
+                                        <div class="info-value">${data.personal_info.email}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Phone Number</div>
+                                        <div class="info-value">${data.personal_info.phone_number}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Date of Birth</div>
+                                        <div class="info-value">${data.personal_info.date_of_birth}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Gender</div>
+                                        <div class="info-value">${data.personal_info.gender}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">State of Origin</div>
+                                        <div class="info-value">${data.personal_info.state_of_origin}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Local Government</div>
+                                        <div class="info-value">${data.personal_info.local_government}</div>
+                                    </div>
+                                    <div class="info-item" style="grid-column: 1 / -1;">
+                                        <div class="info-label">Permanent Address</div>
+                                        <div class="info-value">${data.personal_info.permanent_address}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Academic Information -->
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="fas fa-graduation-cap mr-2"></i>Academic Information
+                            </div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Faculty</div>
+                                    <div class="info-value">${data.academic_info.faculty}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Department</div>
+                                    <div class="info-value">${data.academic_info.department}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Program</div>
+                                    <div class="info-value">${data.academic_info.program}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Admission Year</div>
+                                    <div class="info-value">${data.academic_info.admission_year}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Current Level</div>
+                                    <div class="info-value">${data.academic_info.current_level} Level</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Current Semester</div>
+                                    <div class="info-value">${data.academic_info.current_semester}</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Academic Performance -->
+                            <div style="margin-top: 20px; text-align: center;">
+                                <div class="academic-badge">
+                                    <i class="fas fa-star mr-2"></i>CGPA: ${data.academic_info.cgpa}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Academic Status -->
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="fas fa-clipboard-check mr-2"></i>Academic Status
+                            </div>
+                            <div style="text-align: center; padding: 20px;">
+                                <div class="academic-badge" style="background: #10b981;">
+                                    <i class="fas fa-check-circle mr-2"></i>Active Student
+                                </div>
+                                <p style="margin-top: 15px; color: #64748b;">
+                                    This student is currently enrolled and actively pursuing their academic program at LakeView College of Education.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Important Notes -->
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="fas fa-info-circle mr-2"></i>Important Notes
+                            </div>
+                            <div class="highlight-box">
+                                <h4>Please Note:</h4>
+                                <ul>
+                                    <li>This profile is valid for the current academic session</li>
+                                    <li>Keep this document for your records and official purposes</li>
+                                    <li>Contact the student affairs office for any updates or corrections</li>
+                                    <li>This profile is generated from the official student database</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="footer">
+                            <p><strong>LakeView College of Education</strong></p>
+                            <p>Student Affairs Office | Phone: +234 XXX XXX XXXX | Email: studentaffairs@lakeview.edu.ng</p>
+                            <p>Generated on: ${new Date().toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}</p>
+                        </div>
+                    </body>
+                    </html>
+                `;
+                
+                // Write content to the new window
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                
+                // Wait for content to load then focus
+                printWindow.onload = function() {
+                    printWindow.focus();
+                };
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error loading profile data. Please try again.');
+            })
+            .finally(() => {
+                // Restore button state
+                printButton.innerHTML = originalText;
+                printButton.disabled = false;
+            });
+    }
+</script>
+
+{% endblock %} 
