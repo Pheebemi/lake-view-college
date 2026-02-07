@@ -638,7 +638,7 @@ def get_student_profile_data(request):
                 'department': student_profile.department.name,
                 'program': student_profile.get_program_display(),
                 'admission_year': student_profile.admission_year,
-                'current_level': student_profile.current_level,
+                'current_level': student_profile.current_level.display_name,
                 'current_semester': student_profile.get_current_semester_display(),
                 'cgpa': float(student_profile.cgpa),
             },
