@@ -14,7 +14,7 @@
             <form method="POST" class="space-y-6">
                 {% csrf_token %}
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Course Code</label>
                         <input type="text" name="code" required
@@ -36,10 +36,9 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Level</label>
                         <select name="level" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="100">100 Level</option>
-                            <option value="200">200 Level</option>
-                            <option value="300">300 Level</option>
-                            <option value="400">400 Level</option>
+                            {% for level in levels %}
+                            <option value="{{ level.name }}">{{ level.display_name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
 
@@ -51,7 +50,18 @@
                         </select>
                     </div>
 
-                    <div class="md:col-span-2">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Academic Session</label>
+                        <select name="academic_session" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            {% for session in academic_sessions %}
+                            <option value="{{ session.id }}" {% if session.is_active %}selected{% endif %}>
+                                {{ session.name }} {% if session.is_active %}(Active){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="lg:col-span-3">
                         <label class="block text-sm font-medium text-gray-700">Course Description</label>
                         <textarea name="description" rows="3" 
                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
-from .models import User, StaffProfile, StudentProfile, AcademicRecord, PaymentTransaction, Faculty, Department, Course, CourseRegistration, Enrollment, Verification
+from .models import User, StaffProfile, StudentProfile, AcademicRecord, PaymentTransaction, Faculty, Department, Course, CourseRegistration, Enrollment, Verification, AcademicSession, Level
 
 # Customizing the User Admin
 @admin.register(User)
@@ -40,11 +40,11 @@ class UserAdmin(DefaultUserAdmin):
 # Customizing StudentProfile Admin
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'faculty', 'cgpa','department', 'current_level']
-    search_fields = ['user__username']
-    list_filter = ('faculty', 'department', 'current_level', 'state_of_origin')  # Add filters for easy navigation
-    ordering = ('user',)  # Default ordering
-    list_editable = ('faculty', 'department', 'current_level', 'cgpa')  # Make specific fields editable in the list view
+    list_display = ['user', 'faculty', 'department', 'current_level', 'current_semester', 'current_session', 'cgpa']
+    search_fields = ['user__username', 'user__matriculation_number', 'user__email']
+    list_filter = ('faculty', 'department', 'current_level', 'current_semester', 'current_session', 'state_of_origin')
+    ordering = ('user__username',)
+    list_editable = ('current_level', 'current_semester', 'current_session', 'cgpa')
 
 # Customizing StaffProfile Admin
 @admin.register(StaffProfile)
@@ -69,9 +69,10 @@ class DepartmentAdmin(admin.ModelAdmin):
 # Course Admin
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('code', 'title', 'credits', 'semester', 'created_at')
-    search_fields = ('code', 'title')
-    list_filter = ('semester',)
+    list_display = ('code', 'title', 'level', 'academic_session', 'department', 'semester', 'credits', 'is_active', 'created_at')
+    search_fields = ('code', 'title', 'department__name')
+    list_filter = ('level', 'academic_session', 'department', 'semester', 'is_active')
+    list_editable = ('is_active',)
 
 @admin.register(CourseRegistration)
 class CourseRegistrationAdmin(admin.ModelAdmin):
@@ -103,6 +104,25 @@ class VerificationAdmin(admin.ModelAdmin):
 @admin.register(PaymentTransaction)
 class PaymentTransactionAdmin(admin.ModelAdmin):
     list_display = ['student', 'payment_type', 'amount', 'reference', 'status', 'session']
-    search_fields = ('student', 'session', 'semester')
-    list_filter = ('status', 'session')
-    list_editable = ('session', 'payment_type')
+    search_fields = ('student__user__username', 'student__user__matriculation_number', 'session', 'semester')
+    list_filter = ('status', 'session', 'semester', 'payment_type')
+    list_editable = ('status',)
+
+# Academic Session Admin
+@admin.register(AcademicSession)
+class AcademicSessionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'start_year', 'end_year', 'session_type', 'is_active', 'start_date', 'end_date')
+    list_filter = ('session_type', 'is_active', 'start_year')
+    search_fields = ('name',)
+    ordering = ('-start_year', '-end_year')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).order_by('-start_year', '-end_year')
+
+# Level Admin
+@admin.register(Level)
+class LevelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'display_name', 'order', 'is_active')
+    list_filter = ('is_active',)
+    search_fields = ('name', 'display_name')
+    ordering = ('order',)

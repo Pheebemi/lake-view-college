@@ -60,12 +60,13 @@ class StaffProfileSerializer(serializers.ModelSerializer):
 class CourseSerializer(serializers.ModelSerializer):
     department = DepartmentSerializer(read_only=True)
     created_by = UserSerializer(read_only=True)
+    academic_session = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Course
         fields = [
             'id', 'code', 'title', 'description', 'credits', 'department',
-            'semester', 'level', 'created_by', 'created_at', 'updated_at', 'is_active'
+            'semester', 'level', 'academic_session', 'created_by', 'created_at', 'updated_at', 'is_active'
         ]
 
 

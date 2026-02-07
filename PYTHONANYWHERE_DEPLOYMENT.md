@@ -73,8 +73,8 @@ Your `requirements.txt` should already be up to date. Make sure it includes all 
 3. Clone your repository:
 
 ```bash
-git clone https://github.com/lakeview/lake-view-college-pro.git
-cd lake-view-college-pro
+git clone https://github.com/lakeview/lake-view-college.git
+cd lake-view-college
 ```
 
 #### Option B: Manual Upload
@@ -89,7 +89,7 @@ cd lake-view-college-pro
 2. Navigate to your project directory:
 
 ```bash
-cd lake-view-college-pro
+cd lake-view-college
 ```
 
 3. Activate your virtual environment:
@@ -119,17 +119,15 @@ import os
 import sys
 
 # Add your project directory to the sys.path
-path = '/home/lakeview/lake-view-college-pro'
+path = '/home/lakeview/lake-view-college'  # Note: removed "-pro" as per your note
 if path not in sys.path:
     sys.path.insert(0, path)
 
 # Set the Django settings module
 os.environ['DJANGO_SETTINGS_MODULE'] = 'lakeView_project.settings'
 
-# Activate your virtual environment
-activate_this = '/home/lakeview/.virtualenvs/lakeview_env/bin/activate_this.py'
-with open(activate_this) as file_:
-    exec(file_.read(), dict(__file__=activate_this))
+# The virtual environment is already activated by PythonAnywhere
+# No need to manually activate it here - just ensure the path is set correctly
 
 # Import Django
 import django
@@ -139,7 +137,7 @@ django.setup()
 from lakeView_project.wsgi import application
 ```
 
-**Important:** Replace `lakeview` and `lake-view-college-pro` with your actual PythonAnywhere username and repository name.
+**Important:** Replace `lakeview` and `lake-view-college` with your actual PythonAnywhere username and repository name.
 
 ### 3.2 Set Virtual Environment Path
 
@@ -151,11 +149,11 @@ In the **Web** tab, under **Virtualenv** section, make sure the path points to:
 1. In the **Web** tab, go to the **Static files** section
 2. Add a new static files entry:
    - URL: `/static/`
-   - Directory: `/home/lakeview/lake-view-college-pro/staticfiles`
+   - Directory: `/home/lakeview/lake-view-college/staticfiles`
 
 3. Add media files entry:
    - URL: `/media/`
-   - Directory: `/home/lakeview/lake-view-college-pro/media`
+   - Directory: `/home/lakeview/lake-view-college/media`
 
 ## Step 4: Database Setup
 
@@ -165,7 +163,7 @@ In the **Web** tab, under **Virtualenv** section, make sure the path points to:
 2. Navigate to your project and activate virtualenv:
 
 ```bash
-cd lake-view-college-pro
+cd lake-view-college
 source /home/lakeview/.virtualenvs/lakeview_env/bin/activate
 ```
 
@@ -262,7 +260,7 @@ PythonAnywhere provides free SSL certificates:
 3. On PythonAnywhere, pull the changes:
 
 ```bash
-cd lake-view-college-pro
+cd lake-view-college
 git pull origin main
 ```
 

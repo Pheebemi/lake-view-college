@@ -64,10 +64,62 @@ class Department(models.Model):
     name = models.CharField(max_length=100)
     faculty = models.ForeignKey(Faculty, related_name='departments', on_delete=models.CASCADE)
     # description = models.TextField(blank=True, null=True)
-    
+
     def __str__(self):
         return self.name
-    
+
+class AcademicSession(models.Model):
+    SESSION_TYPE_CHOICES = (
+        ('regular', 'Regular Session'),
+        ('special', 'Special Session'),
+    )
+
+    name = models.CharField(max_length=20, unique=True, help_text="e.g., '2023/2024'")
+    start_year = models.PositiveIntegerField(help_text="Starting year, e.g., 2023")
+    end_year = models.PositiveIntegerField(help_text="Ending year, e.g., 2024")
+    session_type = models.CharField(max_length=10, choices=SESSION_TYPE_CHOICES, default='regular')
+    is_active = models.BooleanField(default=False, help_text="Only one session can be active at a time")
+    start_date = models.DateField(help_text="Session start date")
+    end_date = models.DateField(help_text="Session end date")
+    registration_deadline = models.DateField(help_text="Last date for course registration")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_year', '-end_year']
+        verbose_name = 'Academic Session'
+        verbose_name_plural = 'Academic Sessions'
+
+    def __str__(self):
+        return f"{self.name} ({self.session_type})"
+
+    def save(self, *args, **kwargs):
+        # Ensure only one active session at a time
+        if self.is_active:
+            AcademicSession.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
+        super().save(*args, **kwargs)
+
+    @property
+    def is_current(self):
+        """Check if this session is currently active"""
+        from django.utils import timezone
+        today = timezone.now().date()
+        return self.start_date <= today <= self.end_date
+
+class Level(models.Model):
+    name = models.CharField(max_length=10, unique=True, help_text="e.g., '100', '200'")
+    display_name = models.CharField(max_length=20, help_text="e.g., '100 Level', '200 Level'")
+    order = models.PositiveIntegerField(unique=True, help_text="Order for progression (1 for 100, 2 for 200, etc.)")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = 'Academic Level'
+        verbose_name_plural = 'Academic Levels'
+
+    def __str__(self):
+        return self.display_name
+
 class Attendance(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'user_type': 'student'})
     date = models.DateField()
@@ -111,7 +163,7 @@ class StudentProfile(models.Model):
         ('second', 'Second Semester'),
     )
     NIGERIAN_STATES = [(state, state) for state in NIGERIA_STATES_AND_LGAS.keys()]
-    
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='studentprofile')
     date_of_birth = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
@@ -119,13 +171,9 @@ class StudentProfile(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='user_department', default=1)
     program = models.CharField(max_length=10, choices=PROGRAM_CHOICES)
     admission_year = models.CharField(max_length=10, choices=[(str(year), str(year)) for year in range(1900, 2101)])
-    current_level = models.CharField(max_length=6, choices=(
-        ('100', '100'),
-        ('200', '200'),
-        ('300', '300'),
-        ('400', '400'),
-    ))
+    current_level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='students')
     current_semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES, default='first')
+    current_session = models.ForeignKey(AcademicSession, on_delete=models.CASCADE, related_name='students', null=True, blank=True)
     permanent_address = models.CharField(max_length=100, blank=True, null=True)
     state_of_origin = models.CharField(max_length=100, choices=NIGERIAN_STATES, verbose_name="State of Origin")
     local_government = models.CharField(max_length=100, verbose_name="Local Government")
@@ -179,20 +227,15 @@ class Course(models.Model):
         ('first', 'First Semester'),
         ('second', 'Second Semester'),
     )
-    LEVEL_CHOICES = (
-        ('100', '100 Level'),
-        ('200', '200 Level'),
-        ('300', '300 Level'),
-        ('400', '400 Level'),
-    )
-    
+
     code = models.CharField(max_length=10, unique=True)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     credits = models.IntegerField()
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES)
-    level = models.CharField(max_length=5, choices=LEVEL_CHOICES)
+    level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='courses')
+    academic_session = models.ForeignKey(AcademicSession, on_delete=models.CASCADE, related_name='courses', null=True, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

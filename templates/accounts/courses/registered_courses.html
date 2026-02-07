@@ -19,82 +19,132 @@
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
             <!-- Summary Card -->
             <div class="p-6 bg-gray-50 border-b">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <h3 class="text-sm font-medium text-gray-500">Total Courses</h3>
                         <p class="text-2xl font-semibold">{{ registrations.count }}</p>
                     </div>
                     <div>
                         <h3 class="text-sm font-medium text-gray-500">Total Credits</h3>
-                        <p class="text-2xl font-semibold">
-                            {% with total_credits=0 %}
-                                {% for reg in registrations %}
-                                    {% with total_credits=total_credits|add:reg.course.credits %}{% endwith %}
-                                {% endfor %}
-                                {{ total_credits }}
-                            {% endwith %}
-                        </p>
+                        <p class="text-2xl font-semibold">{{ total_credits }}</p>
                     </div>
                     <div>
-                        <h3 class="text-sm font-medium text-gray-500">Current Semester</h3>
-                        <p class="text-2xl font-semibold">{{ request.user.studentprofile.get_current_semester_display }}</p>
+                        <h3 class="text-sm font-medium text-gray-500">Academic Session</h3>
+                        <p class="text-lg font-semibold">{{ academic_session.name }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Current Level</h3>
+                        <p class="text-lg font-semibold">{{ request.user.studentprofile.current_level.display_name }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Courses List -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Code</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Semester</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Date</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for reg in registrations %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ reg.course.code }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ reg.course.title }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ reg.course.credits }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ reg.course.get_semester_display }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                    {% if reg.status == 'registered' %}bg-green-100 text-green-800
-                                    {% elif reg.status == 'dropped' %}bg-red-100 text-red-800
-                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
-                                    {{ reg.get_status_display }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ reg.registration_date|date:"M d, Y" }}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
-                                <p class="mb-2">No registered courses found.</p>
-                                <a href="{% url 'accounts:register_courses' %}" class="text-blue-600 hover:underline">
-                                    Click here to register for courses
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <!-- First Semester Courses -->
+            {% if first_semester_regs %}
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-blue-900">First Semester Courses</h3>
+                    <span class="text-sm text-gray-600">{{ first_semester_regs.count }} courses • {{ first_semester_credits }} credits</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-blue-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Course Code</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Credits</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Registration Date</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for reg in first_semester_regs %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ reg.course.code }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ reg.course.title }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ reg.course.credits }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                        {% if reg.status == 'registered' %}bg-green-100 text-green-800
+                                        {% elif reg.status == 'dropped' %}bg-red-100 text-red-800
+                                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ reg.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ reg.registration_date|date:"M d, Y" }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
+            {% endif %}
+
+            <!-- Second Semester Courses -->
+            {% if second_semester_regs %}
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-green-900">Second Semester Courses</h3>
+                    <span class="text-sm text-gray-600">{{ second_semester_regs.count }} courses • {{ second_semester_credits }} credits</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-green-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Course Code</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Credits</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Registration Date</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for reg in second_semester_regs %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ reg.course.code }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ reg.course.title }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ reg.course.credits }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                        {% if reg.status == 'registered' %}bg-green-100 text-green-800
+                                        {% elif reg.status == 'dropped' %}bg-red-100 text-red-800
+                                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ reg.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ reg.registration_date|date:"M d, Y" }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if not registrations %}
+            <div class="px-6 py-8 text-center text-gray-500">
+                <p class="mb-2">No registered courses found.</p>
+                <a href="{% url 'accounts:register_courses' %}" class="text-blue-600 hover:underline">
+                    Click here to register for courses
+                </a>
+            </div>
+            {% endif %}
         </div>
     </main>
 </div>

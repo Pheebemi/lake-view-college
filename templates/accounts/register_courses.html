@@ -13,29 +13,82 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6">
-            <form method="POST" class="space-y-6">
-                {% csrf_token %}
-                
-                <div class="grid gap-6">
-                    {% for course in courses %}
-                    <div class="flex items-center space-x-4">
-                        <input type="checkbox" name="courses" value="{{ course.id }}"
-                               {% if course in registered_courses %}checked{% endif %}
-                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <div>
-                            <h3 class="text-lg font-medium text-gray-900">{{ course.code }} - {{ course.title }}</h3>
-                            <p class="text-sm text-gray-500">{{ course.credits }} Credits | {{ course.get_semester_display }}</p>
-                            <p class="text-sm text-gray-600">{{ course.description }}</p>
-                        </div>
+            <!-- Registration Summary -->
+            <div class="mb-6 bg-blue-50 rounded-lg p-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-medium text-blue-900">Current Registration</h3>
+                        <p class="text-blue-700">{{ total_registered }} courses registered ({{ total_credits }} credits)</p>
                     </div>
-                    {% empty %}
-                    <p class="text-gray-500">No courses available for registration at this time.</p>
-                    {% endfor %}
+                    <div class="text-right">
+                        <p class="text-sm text-blue-600">Academic Session</p>
+                        <p class="font-medium text-blue-900">{{ request.user.studentprofile.current_session.name }}</p>
+                    </div>
                 </div>
+            </div>
 
-                {% if courses %}
-                <div class="flex justify-end">
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <form method="POST" class="space-y-8">
+                {% csrf_token %}
+
+                <!-- First Semester Courses -->
+                {% if first_semester_courses %}
+                <div class="border-l-4 border-blue-500 pl-4">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">First Semester Courses</h3>
+                    <div class="grid gap-4">
+                        {% for course in first_semester_courses %}
+                        <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                            <input type="checkbox" name="courses" value="{{ course.id }}"
+                                   {% if course.id in registered_course_ids %}checked{% endif %}
+                                   class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <div class="flex-1">
+                                <h4 class="text-lg font-medium text-gray-900">{{ course.code }} - {{ course.title }}</h4>
+                                <p class="text-sm text-gray-500">{{ course.credits }} Credits</p>
+                                <p class="text-sm text-gray-600">{{ course.description }}</p>
+                            </div>
+                            {% if course.id in registered_course_ids %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                Registered
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Second Semester Courses -->
+                {% if second_semester_courses|length > 0 %}
+                <div class="border-l-4 border-green-500 pl-4">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Second Semester Courses</h3>
+                    <div class="grid gap-4">
+                        {% for course in second_semester_courses %}
+                        <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                            <input type="checkbox" name="courses" value="{{ course.id }}"
+                                   {% if course.id in registered_course_ids %}checked{% endif %}
+                                   class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500">
+                            <div class="flex-1">
+                                <h4 class="text-lg font-medium text-gray-900">{{ course.code }} - {{ course.title }}</h4>
+                                <p class="text-sm text-gray-500">{{ course.credits }} Credits</p>
+                                <p class="text-sm text-gray-600">{{ course.description }}</p>
+                            </div>
+                            {% if course.id in registered_course_ids %}
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                Registered
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if not first_semester_courses and not second_semester_courses %}
+                <div class="text-center py-8">
+                    <p class="text-gray-500">No courses available for registration at this time.</p>
+                </div>
+                {% else %}
+                <div class="flex justify-end pt-6 border-t">
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium">
                         Register Selected Courses
                     </button>
                 </div>
