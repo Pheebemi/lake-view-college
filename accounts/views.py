@@ -523,8 +523,8 @@ def school_fees(request):
             '300': 120000,  # ₦120,000 for 300 level
             '400': 120000,  # ₦120,000 for 400 level
         }
-        
-        current_fees = fees_structure.get(student.current_level, 0)
+        level_name = student.current_level.name if student.current_level else None
+        current_fees = fees_structure.get(level_name, 0)
         
         context = {
             'student': student,
