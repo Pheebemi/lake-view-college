@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from accounts.models import StudentProfile, AcademicRecord, Course
+from accounts.models import StudentProfile, AcademicRecord, Course, AcademicSession
 from .decorators import student_required, staff_required
 from datetime import datetime
 from django.contrib import messages
@@ -77,14 +77,55 @@ def timetable(request):
 
 @staff_required
 def staff_dashboard(request):
-    notifications = Notification.objects.filter(user=request.user, is_read=False)
-    department = request.user.staffprofile.department  # Assuming staff has a profile with a department field
+    staff_profile = request.user.staffprofile
+    department = staff_profile.department
+
+    # Calculate department statistics
     total_students = StudentProfile.objects.filter(department=department).count()
+    active_students = StudentProfile.objects.filter(
+        department=department,
+        current_session__is_active=True
+    ).count()
+
     total_courses = Course.objects.filter(department=department).count()
+    active_courses = Course.objects.filter(
+        department=department,
+        is_active=True
+    ).count()
+
+    # Get students by level
+    level_100_count = StudentProfile.objects.filter(department=department, current_level__name='100').count()
+    level_200_count = StudentProfile.objects.filter(department=department, current_level__name='200').count()
+    level_300_count = StudentProfile.objects.filter(department=department, current_level__name='300').count()
+    level_400_count = StudentProfile.objects.filter(department=department, current_level__name='400').count()
+
+    # Get recent courses created by this staff
+    recent_courses = Course.objects.filter(
+        department=department,
+        created_by=request.user
+    ).order_by('-created_at')[:3]
+
+    # Get notifications
+    notifications = Notification.objects.filter(user=request.user, is_read=False)[:5]
+
+    # Get current academic session
+    current_session = AcademicSession.objects.filter(is_active=True).first()
+    session_name = f"{current_session.start_year}/{current_session.end_year}" if current_session else "2023/2024"
+
     context = {
-        'notifications': notifications,
+        'staff_profile': staff_profile,
+        'department': department,
+        'session_name': session_name,
         'total_students': total_students,
+        'active_students': active_students,
         'total_courses': total_courses,
+        'active_courses': active_courses,
+        'level_100_count': level_100_count,
+        'level_200_count': level_200_count,
+        'level_300_count': level_300_count,
+        'level_400_count': level_400_count,
+        'recent_courses': recent_courses,
+        'notifications': notifications,
     }
     return render(request, 'dashboard/staff-dashboard.html', context)
 

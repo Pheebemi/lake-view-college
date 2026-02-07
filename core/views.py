@@ -710,7 +710,7 @@ def get_student_course_data(request):
                 'name': request.user.get_full_name(),
                 'matriculation_number': request.user.matriculation_number,
                 'department': student_profile.department.name,
-                'level': student_profile.current_level,
+                'level': student_profile.current_level.display_name,
                 'semester': student_profile.get_current_semester_display(),
                 'faculty': student_profile.faculty.name,
             },

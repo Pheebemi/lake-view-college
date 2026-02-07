@@ -169,6 +169,7 @@ def student_courses(request):
         department_courses = Course.objects.filter(
             department=student.department,
             level=student.current_level,
+            academic_session=student.current_session,
             is_active=True
         ).order_by('semester')
         
@@ -176,15 +177,28 @@ def student_courses(request):
         first_semester_courses = department_courses.filter(semester='first')
         second_semester_courses = department_courses.filter(semester='second')
         
-        # Get registered courses
-        registered_courses = CourseRegistration.objects.filter(
-            student=student
-        ).values_list('course_id', flat=True)
-        
+        # Get registered courses with course details
+        registered_courses_queryset = CourseRegistration.objects.filter(
+            student=student,
+            course__academic_session=student.current_session
+        ).select_related('course')
+
+        # Calculate total credits
+        total_credits = sum(reg.course.credits for reg in registered_courses_queryset)
+
+        # Get registered course IDs for template
+        registered_course_ids = list(registered_courses_queryset.values_list('course_id', flat=True))
+
         context = {
             'first_semester_courses': first_semester_courses,
             'second_semester_courses': second_semester_courses,
-            'registered_courses': registered_courses,
+            'registered_course_ids': registered_course_ids,
+            'registered_courses_queryset': registered_courses_queryset,
+            'total_registered': len(registered_course_ids),
+            'total_credits': total_credits,
+            'first_semester_count': first_semester_courses.count(),
+            'second_semester_count': second_semester_courses.count(),
+            'total_available': first_semester_courses.count() + second_semester_courses.count(),
             'current_semester': student.current_semester,
             'student': student
         }
