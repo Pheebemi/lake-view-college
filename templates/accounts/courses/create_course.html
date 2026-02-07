@@ -38,8 +38,13 @@
                         <select name="level" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             {% for level in levels %}
                             <option value="{{ level.name }}">{{ level.display_name }}</option>
+                            {% empty %}
+                            <option value="" disabled>No levels available</option>
                             {% endfor %}
                         </select>
+                        {% if not levels %}
+                        <p class="text-red-500 text-sm mt-1">Debug: No levels found in context</p>
+                        {% endif %}
                     </div>
 
                     <div>

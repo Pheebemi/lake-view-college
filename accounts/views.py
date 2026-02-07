@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from .models import User, StaffProfile, StudentProfile, Course, CourseRegistration, Department, PaymentTransaction, AcademicSession
+from .models import User, StaffProfile, StudentProfile, Course, CourseRegistration, Department, PaymentTransaction, AcademicSession, Level
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -255,6 +255,14 @@ def create_course(request):
             messages.error(request, 'No active academic session found. Please contact the administrator.')
             return redirect('accounts:create_course')
 
+        # Get the Level instance
+        level_name = request.POST.get('level')
+        try:
+            level = Level.objects.get(name=level_name)
+        except Level.DoesNotExist:
+            messages.error(request, f'Invalid level: {level_name}')
+            return redirect('accounts:create_course')
+
         course = Course.objects.create(
             code=request.POST.get('code'),
             title=request.POST.get('title'),
@@ -262,7 +270,7 @@ def create_course(request):
             credits=request.POST.get('credits'),
             department=department,
             semester=request.POST.get('semester'),
-            level=request.POST.get('level'),
+            level=level,  # Use Level instance instead of string
             academic_session=active_session,
             created_by=request.user
         )
@@ -274,9 +282,10 @@ def create_course(request):
 
     context = {
         'departments': Department.objects.all(),
-        'active_session': active_session
+        'active_session': active_session,
+        'levels': Level.objects.all().order_by('order')
     }
-    return render(request, 'accounts/create_course.html', context)
+    return render(request, 'accounts/courses/create_course.html', context)
 
 @login_required
 @user_passes_test(is_staff)

@@ -11,14 +11,40 @@ from django.contrib.auth.decorators import login_required
 @student_required
 def student_dashboard(request):
     profile = StudentProfile.objects.get(user=request.user)
-    record = AcademicRecord.objects.filter(student=profile)
-    current_year = datetime.now().year
-    notifications = Notification.objects.filter(user=request.user, is_read=False)
+
+    # Get current academic session
+    current_session = profile.current_session
+    session_name = f"{current_session.start_year}/{current_session.end_year}" if current_session else "2023/2024"
+
+    # Get registered courses for current session
+    from accounts.models import CourseRegistration
+    registered_courses = CourseRegistration.objects.filter(
+        student=profile,
+        course__academic_session=current_session
+    ).select_related('course')
+
+    # Calculate stats
+    total_registered = registered_courses.count()
+    total_credits = sum(reg.course.credits for reg in registered_courses)
+    completed_courses = registered_courses.filter(status='completed').count()
+    current_semester = profile.current_semester.title()
+
+    # Get recent notifications
+    notifications = Notification.objects.filter(user=request.user, is_read=False)[:5]
+
+    # Get upcoming deadlines (if any)
+    # This could be enhanced with actual deadline data
+
     context = {
         'profile': profile,
-        'record': record,
-        'current_year': current_year,
+        'session_name': session_name,
+        'total_registered': total_registered,
+        'total_credits': total_credits,
+        'completed_courses': completed_courses,
+        'current_semester': current_semester,
         'notifications': notifications,
+        'registered_courses': registered_courses[:3],  # Show recent 3 courses
+        'current_year': datetime.now().year,
     }
     return render(request, 'dashboard/student-dashboard.html', context)
 
