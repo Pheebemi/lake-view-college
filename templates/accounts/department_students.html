@@ -4,105 +4,129 @@
 {% block title %}Department Students{% endblock %}
 
 {% block layout %}
-<div class="w-full page-wrapper overflow-hidden">
-    <main class="h-full overflow-y-auto w-full md:w-[90%] px-3 mx-auto py-4 bg-gradient-to-br rounded-md from-gray-200 to-gray-100">
-        <div class="mb-6">
-            <h1 class="font-semibold text-xl"><span class="text-slate-400">Department /</span> Students</h1>
-        </div>
+<div class="flex-1 w-full min-w-0 page-wrapper overflow-hidden">
+    <main class="h-full overflow-y-auto max-w-full pt-4 pb-8 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="p-6 space-y-6">
 
-        <!-- Department Info Card -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500">Department</h3>
-                    <p class="text-lg font-semibold">{{ department.name }}</p>
-                </div>
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500">Faculty</h3>
-                    <p class="text-lg font-semibold">{{ department.faculty.name }}</p>
-                </div>
-                <div>
-                    <h3 class="text-sm font-medium text-gray-500">Total Students</h3>
-                    <p class="text-lg font-semibold">{{ total_students }}</p>
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold mb-1">Department Students</h1>
+                        <p class="text-white/90 text-lg">{{ department.name }} • {{ department.faculty.name }}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="bg-white/20 backdrop-blur rounded-xl px-4 py-2">
+                            <div class="text-xs text-white/80">Total Students</div>
+                            <div class="font-bold text-lg">{{ total_students }}</div>
+                        </div>
+                        <div class="bg-white/20 backdrop-blur rounded-xl px-4 py-2">
+                            <div class="text-xs text-white/80">Faculty</div>
+                            <div class="font-bold text-lg">{{ department.faculty.name }}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Students by Level -->
-        {% for level, students in students_by_level.items %}
-        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-            <div class="bg-gray-50 px-6 py-4 border-b">
-                <h2 class="text-lg font-semibold">Level {{ level }}</h2>
-                <p class="text-sm text-gray-500">{{ students|length }} students</p>
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {% for level, students in students_by_level.items %}
+                <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Level {{ level }}</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ students|length }}</p>
+                            <p class="text-sm text-gray-600">students</p>
+                        </div>
+                        <div class="p-2.5 bg-indigo-100 rounded-lg">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CGPA</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for student in students %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ student.user.matriculation_number }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    {% if student.user.profile_picture %}
-                                    <img class="h-8 w-8 rounded-full object-cover" 
-                                         src="{{ student.user.profile_picture.url }}" 
-                                         alt="{{ student.user.get_full_name }}">
-                                    {% else %}
-                                    <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <span class="text-sm text-blue-500">{{ student.user.first_name|first|upper }}</span>
-                                    </div>
-                                    {% endif %}
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">
-                                            {{ student.user.get_full_name }}
+            <!-- Students by Level -->
+            {% for level, students in students_by_level.items %}
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            Level {{ level }} Students
+                        </h2>
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-sm font-semibold rounded-full">
+                            {{ students|length }} students
+                        </span>
+                    </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CGPA</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for student in students %}
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        {% if student.user.profile_picture %}
+                                        <img class="h-10 w-10 rounded-full object-cover border-2 border-gray-200" src="{{ student.user.profile_picture.url }}" alt="{{ student.user.get_full_name }}">
+                                        {% else %}
+                                        <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center border-2 border-indigo-200">
+                                            <span class="text-sm font-semibold text-indigo-600">{{ student.user.first_name|first|upper }}{{ student.user.last_name|first|upper }}</span>
                                         </div>
-                                        <div class="text-sm text-gray-500">
-                                            {{ student.user.email }}
+                                        {% endif %}
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ student.user.get_full_name }}</div>
+                                            <div class="text-sm text-gray-500">{{ student.user.email }}</div>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ student.get_gender_display }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ student.cgpa }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                    {% if student.user.is_active %}bg-green-100 text-green-800
-                                    {% else %}bg-red-100 text-red-800{% endif %}">
-                                    {{ student.user.is_active|yesno:"Active,Inactive" }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{% url 'accounts:student_detail' student.id %}" class="text-blue-600 hover:text-blue-900 mr-3">View Details</a>
-                                <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                    {{ student.user.matriculation_number }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    {{ student.get_gender_display }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">
+                                    {{ student.cgpa|default:"—" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex px-2.5 py-1 text-xs font-semibold rounded-full {% if student.user.is_active %}bg-emerald-100 text-emerald-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                        {{ student.user.is_active|yesno:"Active,Inactive" }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <a href="{% url 'accounts:student_detail' student.id %}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
+            {% empty %}
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-12 text-center">
+                <div class="flex flex-col items-center text-gray-500">
+                    <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <p class="font-medium text-gray-700 mb-2">No students found</p>
+                    <p class="text-sm">There are currently no students in {{ department.name }}.</p>
+                </div>
+            </div>
+            {% endfor %}
+
         </div>
-        {% empty %}
-        <div class="text-center py-8 bg-white rounded-lg shadow-md">
-            <p class="text-gray-500">No students found in this department.</p>
-        </div>
-        {% endfor %}
     </main>
 </div>
-{% endblock %} 
+{% endblock %}

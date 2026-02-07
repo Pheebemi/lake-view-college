@@ -45,9 +45,13 @@ def create_course(request):
 @user_passes_test(is_staff)
 def manage_courses(request):
     department = request.user.staffprofile.department
-    courses = Course.objects.filter(department=department)
+    courses = Course.objects.filter(department=department).select_related('level', 'academic_session').order_by('level__order', 'semester', 'code')
     context = {
-        'courses': courses
+        'courses': courses,
+        'department': department,
+        'total_courses': courses.count(),
+        'active_courses': courses.filter(is_active=True).count(),
+        'total_credits': sum(c.credits for c in courses),
     }
     return render(request, 'accounts/courses/manage_courses.html', context)
 

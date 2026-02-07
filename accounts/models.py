@@ -120,6 +120,7 @@ class Level(models.Model):
     def __str__(self):
         return self.display_name
 
+
 class Attendance(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'user_type': 'student'})
     date = models.DateField()
@@ -136,7 +137,24 @@ class Department(models.Model):
     
     def __str__(self):
         return self.name
-    
+
+
+# Fee Structure Model
+class FeeStructure(models.Model):
+    academic_session = models.ForeignKey(AcademicSession, on_delete=models.CASCADE, related_name='fee_structures')
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='fee_structures')
+    level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='fee_structures')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Fee amount in Naira")
+
+    class Meta:
+        unique_together = ('academic_session', 'department', 'level')
+        ordering = ['academic_session', 'department', 'level']
+        verbose_name = 'Fee Structure'
+        verbose_name_plural = 'Fee Structures'
+
+    def __str__(self):
+        return f"{self.academic_session.name} - {self.department.name} - {self.level.display_name} - ₦{self.amount}"
+
 class StudentProfile(models.Model):
     GENDER_CHOICES = (
         ('M', 'Male'),
