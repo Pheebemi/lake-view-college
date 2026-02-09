@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html   lang="en" >
 {% load static %}
-{% load django_browser_reload %}
+{# {% load django_browser_reload %} #}
 <head>
 	<!-- Required meta tags -->
 <meta charset="UTF-8" />
@@ -35,8 +35,8 @@
 	{% block content %}
 
     {% endblock %}
-    
-    {% django_browser_reload_script %}
+
+    {# {% django_browser_reload_script %} #}
     <script>
         var msg_levels = { 20: 'info', 25: 'success', 30: 'warning', 40: 'error' };
         

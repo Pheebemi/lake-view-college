@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
-from .models import User, StaffProfile, StudentProfile, AcademicRecord, PaymentTransaction, Faculty, Department, Course, CourseRegistration, Enrollment, Verification, AcademicSession, Level
+from .models import User, StaffProfile, StudentProfile, AcademicRecord, PaymentTransaction, Faculty, Department, Course, CourseRegistration, Enrollment, Verification, AcademicSession, Level, FeeStructure
 
 # Customizing the User Admin
 @admin.register(User)
@@ -126,3 +126,12 @@ class LevelAdmin(admin.ModelAdmin):
     list_filter = ('is_active',)
     search_fields = ('name', 'display_name')
     ordering = ('order',)
+
+# Fee Structure Admin
+@admin.register(FeeStructure)
+class FeeStructureAdmin(admin.ModelAdmin):
+    list_display = ('academic_session', 'department', 'level', 'amount')
+    list_filter = ('academic_session', 'department', 'level')
+    search_fields = ('academic_session__name', 'department__name', 'level__display_name')
+    ordering = ('academic_session', 'department', 'level')
+    list_editable = ('amount',)

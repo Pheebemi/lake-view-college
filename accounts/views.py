@@ -493,6 +493,7 @@ def school_fees(request):
         return redirect('dashboard:staff_dashboard')
     
     try:
+        from .models import FeeStructure
         student = request.user.studentprofile
         current_session = AcademicSession.objects.filter(is_active=True).first()
         if not current_session:
@@ -501,34 +502,37 @@ def school_fees(request):
             if not current_session:
                 messages.error(request, "No active academic session found. Please contact the administrator.")
                 return redirect('dashboard:student_dashboard')
-        current_session = current_session.name
-        
+
         # Get payment history
         payments = PaymentTransaction.objects.filter(
             student=student
         ).order_by('-payment_date')
-        
+
         # Check if student has paid for current session and semester
         current_payment = PaymentTransaction.objects.filter(
             student=student,
-            session=student.current_session.name if student.current_session else current_session,
+            session=current_session.name,
             semester=student.current_semester,
             status='success'
         ).first()
-        
-        # Define fees structure (you might want to make this dynamic or store in database)
-        fees_structure = {
-            '100': 150000,  # ₦150,000 for 100 level
-            '200': 120000,  # ₦120,000 for 200 level
-            '300': 120000,  # ₦120,000 for 300 level
-            '400': 120000,  # ₦120,000 for 400 level
-        }
-        level_name = student.current_level.name if student.current_level else None
-        current_fees = fees_structure.get(level_name, 0)
+
+        # Get fee amount from FeeStructure
+        try:
+            fee_structure = FeeStructure.objects.get(
+                academic_session=current_session,
+                department=student.department,
+                level=student.current_level
+            )
+            current_fees = fee_structure.amount
+        except FeeStructure.DoesNotExist:
+            # If no fee is defined for this combination, show 0 or a message
+            current_fees = 0
+            messages.warning(request, f"No fee structure found for {student.current_level.display_name} in {current_session.name}. Please contact the administrator.")
         
         context = {
             'student': student,
-            'current_session': current_session,
+            'current_session': current_session.name,
+            'current_session_obj': current_session,
             'current_fees': current_fees,
             'has_paid': bool(current_payment),
             'payments': payments,
@@ -551,9 +555,15 @@ def initiate_payment(request):
         if not amount:
             return JsonResponse({'error': 'Amount is required'}, status=400)
         
+        # Get current active session
+        current_session = AcademicSession.objects.filter(is_active=True).first()
+        if not current_session:
+            current_session = AcademicSession.objects.filter(name="2023/2024").first()
+        session_name = current_session.name if current_session else "2023/2024"
+
         # Generate unique reference
         reference = f"SF-{student.user.matriculation_number}-{timezone.now().timestamp()}"
-        
+
         # Initialize payment with Paystack
         url = "https://api.paystack.co/transaction/initialize"
         headers = {
@@ -570,14 +580,14 @@ def initiate_payment(request):
                 "metadata": {
                     "student_id": student.id,
                     "payment_type": "school_fees",
-                    "session": student.current_session.name if student.current_session else "2023/2024",
+                    "session": session_name,
                     "semester": student.current_semester
                 }
         }
-        
+
         response = requests.post(url, headers=headers, json=data)
         response_data = response.json()
-        
+
         if response_data['status']:
             # Create payment transaction record
             PaymentTransaction.objects.create(
@@ -585,7 +595,7 @@ def initiate_payment(request):
                 payment_type='school_fees',
                 amount=amount,
                 reference=reference,
-                session=student.current_session.name if student.current_session else "2023/2024",
+                session=session_name,
                 semester=student.current_semester
             )
             return JsonResponse(response_data)

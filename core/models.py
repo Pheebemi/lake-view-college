@@ -1,5 +1,5 @@
 from django.db import models
-from accounts.models import User
+from accounts.models import User, FeeStructure, AcademicSession
 from accounts.state import NIGERIA_STATES_AND_LGAS
 from accounts.models import Faculty, Department
 from django.core.exceptions import ValidationError
@@ -21,24 +21,55 @@ class Program(models.Model):
         ('diploma', 'Diploma'),
         ('degree', 'Degree'),
     ]
-    
+
     name = models.CharField(max_length=100)
     program_type = models.CharField(max_length=20, choices=PROGRAM_TYPE_CHOICES, default='nce')
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return f"{self.name} ({self.get_program_type_display()})"
-    
+
     @property
     def screening_fee(self):
-        """Return the screening fee based on program type"""
-        fee_structure = {
-            'degree': 12000.00,
-            'diploma': 5000.00,
-            'nce': 5000.00,
-        }
-        return fee_structure.get(self.program_type, 5000.00)
+        """Return the screening fee based on program type using FeeStructure system"""
+        try:
+            # Get current active academic session
+            current_session = AcademicSession.objects.filter(is_active=True).first()
+            if not current_session:
+                # Fallback to hardcoded values if no active session
+                fee_structure = {
+                    'degree': 12000.00,
+                    'diploma': 5000.00,
+                    'nce': 5000.00,
+                }
+                return fee_structure.get(self.program_type, 5000.00)
+
+            # Try to find fee structure for this program type as "screening fee"
+            # We'll use a special level named after the program type
+            try:
+                screening_fee = FeeStructure.objects.get(
+                    academic_session=current_session,
+                    department__name__icontains='screening',  # Special department for screening
+                    level__name=self.program_type.upper()  # DEGREE, DIPLOMA, NCE
+                )
+                return screening_fee.amount
+            except FeeStructure.DoesNotExist:
+                # Fallback to hardcoded values
+                fee_structure = {
+                    'degree': 12000.00,
+                    'diploma': 5000.00,
+                    'nce': 5000.00,
+                }
+                return fee_structure.get(self.program_type, 5000.00)
+        except Exception:
+            # Ultimate fallback
+            fee_structure = {
+                'degree': 12000.00,
+                'diploma': 5000.00,
+                'nce': 5000.00,
+            }
+            return fee_structure.get(self.program_type, 5000.00)
 
 class ProgramChoice(models.Model):
     """Model to store program-specific course/department choices"""

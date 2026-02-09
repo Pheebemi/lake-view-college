@@ -46,10 +46,10 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
 
     # third party apps
-    'tailwind',
-     "django_browser_reload",
-    'django_cotton',
-    'theme',
+    # 'tailwind',
+     # "django_browser_reload",
+    # 'django_cotton',
+    # 'theme',
 
     # API apps
     'rest_framework',
@@ -66,7 +66,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    "django_browser_reload.middleware.BrowserReloadMiddleware",
+    # "django_browser_reload.middleware.BrowserReloadMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -89,9 +89,9 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'dashboard.context_processors.notifications_processor',
             ],
-            "builtins": [
-                "django_cotton.templatetags.cotton"
-            ],
+            # "builtins": [
+            #     "django_cotton.templatetags.cotton"
+            # ],
         },
     },
 ]
