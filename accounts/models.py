@@ -42,9 +42,22 @@ class User(AbstractUser):
         return f"{self.username} ({self.user_type})"
     
     
+PROGRAMME_TYPE_CHOICES = (
+    ('degree', 'Degree'),
+    ('nd', 'ND (Diploma)'),
+    ('nce', 'NCE'),
+)
+
+
 class Faculty(models.Model):
     name = models.CharField(max_length=100)
     short_name = models.CharField(max_length=30)
+    programme_type = models.CharField(
+        max_length=10,
+        choices=PROGRAMME_TYPE_CHOICES,
+        default='degree',
+        help_text='Degree, ND (Diploma), or NCE'
+    )
     image = models.ImageField(upload_to='faculty/', blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -106,9 +119,15 @@ class AcademicSession(models.Model):
         return self.start_date <= today <= self.end_date
 
 class Level(models.Model):
-    name = models.CharField(max_length=10, unique=True, help_text="e.g., '100', '200'")
-    display_name = models.CharField(max_length=20, help_text="e.g., '100 Level', '200 Level'")
+    name = models.CharField(max_length=10, unique=True, help_text="e.g., '100', '200', 'ND1', 'NCE1'")
+    display_name = models.CharField(max_length=20, help_text="e.g., '100 Level', 'ND 1', 'NCE 1'")
     order = models.PositiveIntegerField(unique=True, help_text="Order for progression (1 for 100, 2 for 200, etc.)")
+    programme_type = models.CharField(
+        max_length=10,
+        choices=PROGRAMME_TYPE_CHOICES,
+        default='degree',
+        help_text='Degree (100-400), ND (ND1-ND2), or NCE (NCE1-NCE2)'
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -183,6 +202,12 @@ class StudentProfile(models.Model):
     NIGERIAN_STATES = [(state, state) for state in NIGERIA_STATES_AND_LGAS.keys()]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='studentprofile')
+    programme_type = models.CharField(
+        max_length=10,
+        choices=PROGRAMME_TYPE_CHOICES,
+        default='degree',
+        help_text='Degree, ND (Diploma), or NCE - determines which faculties/levels apply'
+    )
     date_of_birth = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name='user_faculty', default=1)

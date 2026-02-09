@@ -46,10 +46,16 @@ def create_course(request):
 
         return redirect('accounts:manage_courses')
     
+    # Restrict departments and levels to staff's programme type (degree/ND/NCE)
+    staff_dept = request.user.staffprofile.department
+    staff_programme_type = getattr(staff_dept.faculty, 'programme_type', 'degree') or 'degree'
+    departments = Department.objects.filter(faculty__programme_type=staff_programme_type).select_related('faculty').order_by('name')
+    levels = Level.objects.filter(programme_type=staff_programme_type).order_by('order')
+    
     context = {
-        'departments': Department.objects.all(),
+        'departments': departments,
         'academic_sessions': AcademicSession.objects.all().order_by('-start_year'),
-        'levels': Level.objects.all().order_by('order')
+        'levels': levels
     }
     return render(request, 'accounts/courses/create_course.html', context)
 
@@ -113,9 +119,13 @@ def register_courses(request):
                 course__academic_session=student.current_session
             ).delete()
 
-        # Allow current level + carry-over (any level up to current)
+        # Allow current level + carry-over (any level up to current), same programme type only
+        student_programme_type = getattr(student, 'programme_type', 'degree') or 'degree'
         current_level_order = student.current_level.order
-        available_levels = Level.objects.filter(order__lte=current_level_order)
+        available_levels = Level.objects.filter(
+            programme_type=student_programme_type,
+            order__lte=current_level_order
+        )
 
         registered_count = 0
         for course_id in selected_course_ids:
@@ -141,9 +151,13 @@ def register_courses(request):
 
     student = request.user.studentprofile
 
-    # Get current level order – show courses from all levels up to current (for carry-over)
+    # Restrict to same programme type (degree/ND/NCE) so ND students only see ND1/ND2, etc.
+    student_programme_type = getattr(student, 'programme_type', 'degree') or 'degree'
     current_level_order = student.current_level.order
-    available_levels = Level.objects.filter(order__lte=current_level_order).order_by('order')
+    available_levels = Level.objects.filter(
+        programme_type=student_programme_type,
+        order__lte=current_level_order
+    ).order_by('order')
 
     course_offerings = CourseOffering.objects.filter(
         department=student.department,

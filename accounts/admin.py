@@ -40,11 +40,27 @@ class UserAdmin(DefaultUserAdmin):
 # Customizing StudentProfile Admin
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'faculty', 'department', 'current_level', 'current_semester', 'current_session', 'cgpa']
+    list_display = ['user', 'programme_type', 'faculty', 'department', 'current_level', 'current_semester', 'current_session', 'cgpa']
     search_fields = ['user__username', 'user__matriculation_number', 'user__email']
-    list_filter = ('faculty', 'department', 'current_level', 'current_semester', 'current_session', 'state_of_origin')
+    list_filter = ('programme_type', 'faculty', 'department', 'current_level', 'current_semester', 'current_session', 'state_of_origin')
     ordering = ('user__username',)
     list_editable = ('current_level', 'current_semester', 'current_session', 'cgpa')
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name in ('faculty', 'department', 'current_level'):
+            obj = getattr(request, '_student_profile_obj', None)
+            if obj and hasattr(obj, 'programme_type') and obj.programme_type:
+                if db_field.name == 'faculty':
+                    kwargs['queryset'] = Faculty.objects.filter(programme_type=obj.programme_type).order_by('name')
+                elif db_field.name == 'department':
+                    kwargs['queryset'] = Department.objects.filter(faculty__programme_type=obj.programme_type).select_related('faculty').order_by('name')
+                elif db_field.name == 'current_level':
+                    kwargs['queryset'] = Level.objects.filter(programme_type=obj.programme_type).order_by('order')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_form(self, request, obj=None, **kwargs):
+        request._student_profile_obj = obj
+        return super().get_form(request, obj, **kwargs)
 
 # Customizing StaffProfile Admin
 @admin.register(StaffProfile)
@@ -56,7 +72,8 @@ class StaffProfileAdmin(admin.ModelAdmin):
 # Faculty Admin
 @admin.register(Faculty)
 class FacultyAdmin(admin.ModelAdmin):
-    list_display = ('name', 'short_name', 'created_at')
+    list_display = ('name', 'short_name', 'programme_type', 'created_at')
+    list_filter = ('programme_type',)
     search_fields = ('name', 'short_name')
 
 # Department Admin
@@ -137,8 +154,8 @@ class AcademicSessionAdmin(admin.ModelAdmin):
 # Level Admin
 @admin.register(Level)
 class LevelAdmin(admin.ModelAdmin):
-    list_display = ('name', 'display_name', 'order', 'is_active')
-    list_filter = ('is_active',)
+    list_display = ('name', 'display_name', 'programme_type', 'order', 'is_active')
+    list_filter = ('programme_type', 'is_active',)
     search_fields = ('name', 'display_name')
     ordering = ('order',)
 
