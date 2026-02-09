@@ -659,54 +659,28 @@ def get_student_course_data(request):
     try:
         student_profile = get_object_or_404(StudentProfile, user=request.user)
         
-        # Get registered courses for both semesters
-        from accounts.models import CourseRegistration, Course
+        # Get registered courses from CourseRegistration (Course has no department/level - those are on CourseOffering)
+        from accounts.models import CourseRegistration, AcademicSession
         
-        # Get first semester courses
-        first_semester_courses = Course.objects.filter(
-            department=student_profile.department,
-            level=student_profile.current_level,
-            semester='first',
-            is_active=True
-        ).order_by('code')
+        reg_filter = {'student': student_profile, 'status': 'registered'}
+        if student_profile.current_session_id:
+            reg_filter['course__academic_session'] = student_profile.current_session
+        registrations = CourseRegistration.objects.filter(
+            **reg_filter
+        ).select_related('course').order_by('course__semester', 'course__code')
         
-        # Get second semester courses
-        second_semester_courses = Course.objects.filter(
-            department=student_profile.department,
-            level=student_profile.current_level,
-            semester='second',
-            is_active=True
-        ).order_by('code')
+        first_semester_registered = []
+        second_semester_registered = []
         
-        # Get registered course IDs
-        registered_course_ids = CourseRegistration.objects.filter(
-            student=student_profile,
-            status='registered'
-        ).values_list('course_id', flat=True)
-        
-        # Filter courses to only show registered ones
-        first_semester_registered = [
-            {
-                'code': course.code,
-                'title': course.title,
-                'credits': course.credits
-            }
-            for course in first_semester_courses
-            if course.id in registered_course_ids
-        ]
-        
-        second_semester_registered = [
-            {
-                'code': course.code,
-                'title': course.title,
-                'credits': course.credits
-            }
-            for course in second_semester_courses
-            if course.id in registered_course_ids
-        ]
+        for reg in registrations:
+            course = reg.course
+            item = {'code': course.code, 'title': course.title, 'credits': course.credits}
+            if course.semester == 'first':
+                first_semester_registered.append(item)
+            elif course.semester == 'second':
+                second_semester_registered.append(item)
         
         # Get current academic session
-        from accounts.models import AcademicSession
         current_session = AcademicSession.objects.filter(is_active=True).first()
         session_name = current_session.name if current_session else student_profile.current_session.name if student_profile.current_session else "2023/2024"
 
