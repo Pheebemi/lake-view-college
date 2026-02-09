@@ -195,12 +195,27 @@ def register_courses(request):
 @login_required
 def view_registered_courses(request):
     student = request.user.studentprofile
+    base_filter = {'student': student}
+    if student.current_session_id:
+        base_filter['course__academic_session'] = student.current_session
     registrations = CourseRegistration.objects.filter(
-        student=student
-    ).select_related('course')
-    
+        **base_filter
+    ).select_related('course').order_by('course__semester', 'course__code')
+
+    first_semester_regs = [r for r in registrations if r.course.semester == 'first']
+    second_semester_regs = [r for r in registrations if r.course.semester == 'second']
+    first_semester_credits = sum(r.course.credits for r in first_semester_regs)
+    second_semester_credits = sum(r.course.credits for r in second_semester_regs)
+    total_credits = first_semester_credits + second_semester_credits
+
     context = {
-        'registrations': registrations
+        'registrations': registrations,
+        'first_semester_regs': first_semester_regs,
+        'second_semester_regs': second_semester_regs,
+        'total_credits': total_credits,
+        'first_semester_credits': first_semester_credits,
+        'second_semester_credits': second_semester_credits,
+        'academic_session': student.current_session,
     }
     return render(request, 'accounts/courses/registered_courses.html', context)
 
