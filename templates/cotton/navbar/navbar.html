@@ -82,22 +82,27 @@
       </button>
 
       <!-- User Profile Dropdown -->
-      <div
-        class="hs-dropdown relative inline-flex [--placement:bottom-right] sm:[--trigger:hover]"
-      >
-        <a
-          class="relative hs-dropdown-toggle cursor-pointer align-middle rounded-full"
+      <div class="relative inline-flex" id="profileDropdownWrapper">
+        <button
+          type="button"
+          class="relative cursor-pointer align-middle rounded-full p-0 border-0 bg-transparent"
+          onclick="toggleProfileDropdown()"
+          aria-expanded="false"
+          aria-haspopup="true"
+          aria-controls="profileDropdown"
         >
          <img
     class="object-cover w-9 h-9 rounded-full"
-    src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/static/images/default-profile.png{% endif %}"
-    alt=""
+    src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/images/default-profile.png' %}{% endif %}"
+    alt="Profile"
     aria-hidden="true"
   />
-        </a>
+        </button>
           <div
-            class="card hs-dropdown-menu transition-[opacity,margin] border border-gray-400 rounded-[7px] duration hs-dropdown-open:opacity-100 opacity-0 mt-2 min-w-max w-[200px] hidden z-[9999] absolute right-0 top-full"
-            aria-labelledby="hs-dropdown-custom-icon-trigger"
+            id="profileDropdown"
+            class="card transition-[opacity,margin] border border-gray-400 rounded-[7px] duration mt-2 min-w-max w-[200px] z-[9999] absolute right-0 top-full hidden opacity-0"
+            role="menu"
+            aria-orientation="vertical"
           >
             <div class="card-body p-0 py-2">
               <a
@@ -196,7 +201,14 @@
     dropdown.classList.toggle('opacity-100');
   }
 
-  // Close modal when clicking outside
+  function toggleProfileDropdown() {
+    var dropdown = document.getElementById('profileDropdown');
+    dropdown.classList.toggle('hidden');
+    dropdown.classList.toggle('opacity-0');
+    dropdown.classList.toggle('opacity-100');
+  }
+
+  // Close dropdowns when clicking outside
   document.addEventListener('DOMContentLoaded', function() {
       const modal = document.getElementById('supportModal');
       modal.addEventListener('click', function(e) {
@@ -209,6 +221,16 @@
       document.addEventListener('keydown', function(e) {
           if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
               closeSupportModal();
+          }
+      });
+
+      // Close profile dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+          var wrapper = document.getElementById('profileDropdownWrapper');
+          var dropdown = document.getElementById('profileDropdown');
+          if (wrapper && dropdown && !wrapper.contains(e.target) && !dropdown.classList.contains('hidden')) {
+              dropdown.classList.add('hidden', 'opacity-0');
+              dropdown.classList.remove('opacity-100');
           }
       });
   });
