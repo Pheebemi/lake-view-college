@@ -113,6 +113,10 @@ def register_courses(request):
                 course__academic_session=student.current_session
             ).delete()
 
+        # Allow current level + carry-over (any level up to current)
+        current_level_order = student.current_level.order
+        available_levels = Level.objects.filter(order__lte=current_level_order)
+
         registered_count = 0
         for course_id in selected_course_ids:
             try:
@@ -120,7 +124,7 @@ def register_courses(request):
                 if CourseOffering.objects.filter(
                     course=course,
                     department=student.department,
-                    level=student.current_level,
+                    level__in=available_levels,
                     is_active=True
                 ).exists():
                     CourseRegistration.objects.create(
@@ -137,32 +141,54 @@ def register_courses(request):
 
     student = request.user.studentprofile
 
+    # Get current level order – show courses from all levels up to current (for carry-over)
+    current_level_order = student.current_level.order
+    available_levels = Level.objects.filter(order__lte=current_level_order).order_by('order')
+
     course_offerings = CourseOffering.objects.filter(
         department=student.department,
-        level=student.current_level,
+        level__in=available_levels,
         course__academic_session=student.current_session,
         course__is_active=True,
         is_active=True
-    ).select_related('course').order_by('course__semester', 'course__code')
+    ).select_related('course', 'level').order_by('level__order', 'course__semester', 'course__code')
 
-    first_semester_courses = [o.course for o in course_offerings if o.course.semester == 'first']
-    second_semester_courses = [o.course for o in course_offerings if o.course.semester == 'second']
+    current_level_courses = {'first': [], 'second': []}
+    carry_over_courses = {'first': [], 'second': []}
+
+    for offering in course_offerings:
+        course_data = {
+            'course': offering.course,
+            'level': offering.level,
+            'level_display': offering.level.display_name
+        }
+        if offering.level.order == student.current_level.order:
+            if offering.course.semester == 'first':
+                current_level_courses['first'].append(course_data)
+            elif offering.course.semester == 'second':
+                current_level_courses['second'].append(course_data)
+        else:
+            if offering.course.semester == 'first':
+                carry_over_courses['first'].append(course_data)
+            elif offering.course.semester == 'second':
+                carry_over_courses['second'].append(course_data)
 
     registered_courses = CourseRegistration.objects.filter(
         student=student,
         course__academic_session=student.current_session
     ).select_related('course')
 
-    # Get registered course IDs for easy checking in template
     registered_course_ids = set(reg.course.id for reg in registered_courses)
+    has_carry_over_courses = len(carry_over_courses['first']) > 0 or len(carry_over_courses['second']) > 0
 
     context = {
-        'first_semester_courses': first_semester_courses,
-        'second_semester_courses': second_semester_courses,
+        'current_level_courses': current_level_courses,
+        'carry_over_courses': carry_over_courses,
         'registered_course_ids': registered_course_ids,
         'registered_courses': registered_courses,
         'total_registered': registered_courses.count(),
-        'total_credits': sum(reg.course.credits for reg in registered_courses)
+        'total_credits': sum(reg.course.credits for reg in registered_courses),
+        'has_carry_over_courses': has_carry_over_courses
     }
     return render(request, 'accounts/courses/register_courses.html', context)
 
