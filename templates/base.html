@@ -1,18 +1,14 @@
 <!DOCTYPE html>
-<html   lang="en" >
+<html lang="en">
 {% load static %}
-{# {% load django_browser_reload %} #}
 <head>
 	<!-- Required meta tags -->
 <meta charset="UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <script src="https://cdn.tailwindcss.com"></script>
- <!-- noti message link -->
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.css">
  <script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
-<!-- end of noty cdn link -->
 <!-- Favicon icon-->
 <link rel="shortcut icon" type="image/png" href="{% static 'assets/images/logos/lakeview.jpg' %}" />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
@@ -36,7 +32,6 @@
 
     {% endblock %}
 
-    {# {% django_browser_reload_script %} #}
     <script>
         var msg_levels = { 20: 'info', 25: 'success', 30: 'warning', 40: 'error' };
         
@@ -53,17 +48,7 @@
     
     </script>
 	
-<!-- Temporarily using CDN for missing JS files -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Commented out missing local JS files:
-<script src="{% static 'assets/libs/simplebar/dist/simplebar.min.js' %}"></script>
-<script src="{% static 'assets/libs/iconify-icon/dist/iconify-icon.min.js' %}"></script>
-<script src="{% static 'assets/libs/@preline/dropdown/index.js' %}"></script>
-<script src="{% static 'assets/libs/@preline/overlay/index.js' %}"></script>
-<script src="{% static 'assets/js/sidebarmenu.js' %}"></script>
-<script src="{% static 'assets/libs/apexcharts/dist/apexcharts.min.js' %}"></script>
-<script src="{% static 'assets/js/dashboard.js' %}"></script>
--->
 </body>
 
 </html>

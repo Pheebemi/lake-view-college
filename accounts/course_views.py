@@ -23,12 +23,21 @@ def create_course(request):
         selected_departments = request.POST.getlist('departments')
         selected_levels = request.POST.getlist('levels')
 
+        # Restrict to staff's programme type only
+        staff_dept = request.user.staffprofile.department
+        staff_programme_type = getattr(staff_dept.faculty, 'programme_type', 'degree') or 'degree'
+        allowed_dept_ids = set(Department.objects.filter(faculty__programme_type=staff_programme_type).values_list('id', flat=True))
+        allowed_level_ids = set(Level.objects.filter(programme_type=staff_programme_type).values_list('id', flat=True))
+
         offerings_created = 0
         for dept_id in selected_departments:
             for level_id in selected_levels:
                 try:
-                    department = Department.objects.get(id=dept_id)
-                    level = Level.objects.get(id=level_id)
+                    did, lid = int(dept_id), int(level_id)
+                    if did not in allowed_dept_ids or lid not in allowed_level_ids:
+                        continue
+                    department = Department.objects.get(id=did)
+                    level = Level.objects.get(id=lid)
                     CourseOffering.objects.create(
                         course=course,
                         department=department,
@@ -46,7 +55,7 @@ def create_course(request):
 
         return redirect('accounts:manage_courses')
     
-    # Restrict departments and levels to staff's programme type (degree/ND/NCE)
+    # Staff can create courses for any department in their programme type (multiple depts can offer one course)
     staff_dept = request.user.staffprofile.department
     staff_programme_type = getattr(staff_dept.faculty, 'programme_type', 'degree') or 'degree'
     departments = Department.objects.filter(faculty__programme_type=staff_programme_type).select_related('faculty').order_by('name')

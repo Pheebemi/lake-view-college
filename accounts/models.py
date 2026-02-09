@@ -2,9 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from .state import NIGERIA_STATES_AND_LGAS
 from django.core.exceptions import ValidationError
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-import uuid
+
 
 class User(AbstractUser):
     USER_TYPE_CHOICES = (
@@ -73,13 +71,7 @@ class Faculty(models.Model):
     
     class Meta:
         verbose_name_plural = 'Faculties'
-class Department(models.Model):
-    name = models.CharField(max_length=100)
-    faculty = models.ForeignKey(Faculty, related_name='departments', on_delete=models.CASCADE)
-    # description = models.TextField(blank=True, null=True)
 
-    def __str__(self):
-        return self.name
 
 class AcademicSession(models.Model):
     SESSION_TYPE_CHOICES = (
@@ -149,11 +141,14 @@ class Attendance(models.Model):
         return f"{self.student.get_full_name()} - {self.date} - {self.status}"
 
 class Department(models.Model):
-    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name='departments')
     short_name = models.CharField(max_length=30)
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         return self.name
 
