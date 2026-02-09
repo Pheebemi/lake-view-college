@@ -102,12 +102,21 @@ WSGI_APPLICATION = 'lakeView_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+_db_engine = os.getenv('DATABASE_ENGINE', 'django.db.backends.sqlite3')
+_db_name = os.getenv('DATABASE_NAME', 'db.sqlite3')
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DATABASE_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': BASE_DIR / os.getenv('DATABASE_NAME', 'db.sqlite3'),
+        'ENGINE': _db_engine,
+        'NAME': str(BASE_DIR / _db_name) if _db_engine == 'django.db.backends.sqlite3' else _db_name,
     }
 }
+if _db_engine in ('django.db.backends.mysql', 'django.db.backends.postgresql'):
+    DATABASES['default'].update({
+        'USER': os.getenv('DATABASE_USER', ''),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
+        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+        'PORT': os.getenv('DATABASE_PORT', '3306' if 'mysql' in _db_engine else '5432'),
+    })
 
 
 # Password validation
