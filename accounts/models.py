@@ -250,9 +250,7 @@ class Course(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     credits = models.IntegerField()
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
     semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES)
-    level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='courses')
     academic_session = models.ForeignKey(AcademicSession, on_delete=models.CASCADE, related_name='courses', null=True, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -261,10 +259,34 @@ class Course(models.Model):
 
     class Meta:
         ordering = ['code']
-        unique_together = ['code', 'department']
 
     def __str__(self):
         return f"{self.code} - {self.title}"
+
+    def get_offering_departments(self):
+        """Get all departments that offer this course"""
+        return [offering.department for offering in self.offerings.all()]
+
+    def get_offering_levels(self):
+        """Get all levels at which this course is offered"""
+        return [offering.level for offering in self.offerings.all()]
+
+# Course Offering Model - Links courses to departments and levels
+class CourseOffering(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='offerings')
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='course_offerings')
+    level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='course_offerings')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['course', 'department', 'level']
+        verbose_name = 'Course Offering'
+        verbose_name_plural = 'Course Offerings'
+        ordering = ['course__code', 'department__name', 'level__order']
+
+    def __str__(self):
+        return f"{self.course.code} - {self.department.name} - {self.level.display_name}"
 
 # Course Registration Model
 class CourseRegistration(models.Model):

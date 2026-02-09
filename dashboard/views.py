@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from accounts.models import StudentProfile, AcademicRecord, Course, AcademicSession
+from accounts.models import StudentProfile, AcademicRecord, Course, CourseOffering, AcademicSession
 from .decorators import student_required, staff_required
 from datetime import datetime
 from django.contrib import messages
@@ -87,11 +87,11 @@ def staff_dashboard(request):
         current_session__is_active=True
     ).count()
 
-    total_courses = Course.objects.filter(department=department).count()
-    active_courses = Course.objects.filter(
+    total_courses = CourseOffering.objects.filter(department=department).values('course').distinct().count()
+    active_courses = CourseOffering.objects.filter(
         department=department,
-        is_active=True
-    ).count()
+        course__is_active=True
+    ).values('course').distinct().count()
 
     # Get students by level
     level_100_count = StudentProfile.objects.filter(department=department, current_level__name='100').count()
@@ -99,11 +99,11 @@ def staff_dashboard(request):
     level_300_count = StudentProfile.objects.filter(department=department, current_level__name='300').count()
     level_400_count = StudentProfile.objects.filter(department=department, current_level__name='400').count()
 
-    # Get recent courses created by this staff
+    # Get recent courses created by this staff (via offerings in their department)
     recent_courses = Course.objects.filter(
-        department=department,
+        offerings__department=department,
         created_by=request.user
-    ).order_by('-created_at')[:3]
+    ).distinct().order_by('-created_at')[:3]
 
     # Get notifications
     notifications = Notification.objects.filter(user=request.user, is_read=False)[:5]

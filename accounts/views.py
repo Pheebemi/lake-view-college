@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from .models import User, StaffProfile, StudentProfile, Course, CourseRegistration, Department, PaymentTransaction, AcademicSession, Level
+from .models import User, StaffProfile, StudentProfile, Course, CourseOffering, CourseRegistration, Department, PaymentTransaction, AcademicSession, Level
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -248,41 +248,57 @@ def is_staff(user):
 @user_passes_test(is_staff)
 def create_course(request):
     if request.method == 'POST':
-        department = request.user.staffprofile.department
         # Get the active academic session
         active_session = AcademicSession.objects.filter(is_active=True).first()
         if not active_session:
             messages.error(request, 'No active academic session found. Please contact the administrator.')
             return redirect('accounts:create_course')
 
-        # Get the Level instance
-        level_name = request.POST.get('level')
-        try:
-            level = Level.objects.get(name=level_name)
-        except Level.DoesNotExist:
-            messages.error(request, f'Invalid level: {level_name}')
-            return redirect('accounts:create_course')
-
+        # Create the course first (without department/level)
         course = Course.objects.create(
             code=request.POST.get('code'),
             title=request.POST.get('title'),
             description=request.POST.get('description'),
             credits=request.POST.get('credits'),
-            department=department,
             semester=request.POST.get('semester'),
-            level=level,  # Use Level instance instead of string
             academic_session=active_session,
             created_by=request.user
         )
-        messages.success(request, f'Course {course.code} created successfully!')
+
+        # Get selected departments and levels
+        selected_departments = request.POST.getlist('departments')
+        selected_levels = request.POST.getlist('levels')
+
+        # Create CourseOffering records for each department-level combination
+        offerings_created = 0
+        for dept_id in selected_departments:
+            for level_id in selected_levels:
+                try:
+                    department = Department.objects.get(id=dept_id)
+                    level = Level.objects.get(id=level_id)
+                    CourseOffering.objects.create(
+                        course=course,
+                        department=department,
+                        level=level,
+                        is_active=True
+                    )
+                    offerings_created += 1
+                except (Department.DoesNotExist, Level.DoesNotExist):
+                    continue
+
+        if offerings_created > 0:
+            messages.success(request, f'Course {course.code} created successfully with {offerings_created} department-level offerings!')
+        else:
+            messages.warning(request, f'Course {course.code} created but no offerings were specified.')
+
         return redirect('accounts:manage_courses')
-    
-    # Get active academic session for display
-    active_session = AcademicSession.objects.filter(is_active=True).first()
+
+    # Get academic sessions for display
+    academic_sessions = AcademicSession.objects.all().order_by('-start_year')
 
     context = {
         'departments': Department.objects.all(),
-        'active_session': active_session,
+        'academic_sessions': academic_sessions,
         'levels': Level.objects.all().order_by('order')
     }
     return render(request, 'accounts/courses/create_course.html', context)
@@ -291,9 +307,25 @@ def create_course(request):
 @user_passes_test(is_staff)
 def manage_courses(request):
     department = request.user.staffprofile.department
-    courses = Course.objects.filter(department=department)
+    # Get course offerings for this staff member's department
+    course_offerings = CourseOffering.objects.filter(
+        department=department
+    ).select_related('course', 'level').order_by('course__code')
+
+    # Group by course for easier display
+    courses_data = {}
+    for offering in course_offerings:
+        course_id = offering.course.id
+        if course_id not in courses_data:
+            courses_data[course_id] = {
+                'course': offering.course,
+                'offerings': []
+            }
+        courses_data[course_id]['offerings'].append(offering)
+
     context = {
-        'courses': courses
+        'courses_data': courses_data,
+        'department': department
     }
     return render(request, 'accounts/manage_courses.html', context)
 
@@ -316,48 +348,59 @@ def register_courses(request):
             ).delete()
 
         # Create new registrations for all selected courses
+        # Now we need to validate that the course is offered to this student's department/level
         registered_count = 0
         for course_id in selected_course_ids:
             try:
-                course = Course.objects.get(
-                    id=course_id,
+                course = Course.objects.get(id=course_id)
+                # Check if this course is offered to this student's department and level
+                offering_exists = CourseOffering.objects.filter(
+                    course=course,
                     department=student.department,
                     level=student.current_level,
-                    academic_session=student.current_session,
                     is_active=True
-                )
-                CourseRegistration.objects.create(
-                    student=student,
-                    course=course,
-                    status='registered'
-                )
-                registered_count += 1
+                ).exists()
+
+                if offering_exists:
+                    CourseRegistration.objects.create(
+                        student=student,
+                        course=course,
+                        status='registered'
+                    )
+                    registered_count += 1
             except Course.DoesNotExist:
-                # Skip invalid course selections (shouldn't happen with proper form validation)
+                # Skip invalid course selections
                 continue
 
         messages.success(request, f'Successfully registered for {registered_count} course(s)!')
         return redirect('accounts:view_registered_courses')
-    
+
     student = request.user.studentprofile
 
-    # Get courses for both semesters of the current academic session
-    available_courses = Course.objects.filter(
+    # Get course offerings for this student's department and level
+    course_offerings = CourseOffering.objects.filter(
         department=student.department,
         level=student.current_level,
-        academic_session=student.current_session,
+        course__academic_session=student.current_session,
+        course__is_active=True,
         is_active=True
-    ).order_by('semester', 'code')
+    ).select_related('course').order_by('course__semester', 'course__code')
+
+    # Separate courses by semester for template display
+    first_semester_courses = []
+    second_semester_courses = []
+
+    for offering in course_offerings:
+        if offering.course.semester == 'first':
+            first_semester_courses.append(offering.course)
+        elif offering.course.semester == 'second':
+            second_semester_courses.append(offering.course)
 
     # Get all registered courses for this academic session
     registered_courses = CourseRegistration.objects.filter(
         student=student,
         course__academic_session=student.current_session
     ).select_related('course')
-
-    # Separate courses by semester for template display
-    first_semester_courses = available_courses.filter(semester='first')
-    second_semester_courses = available_courses.filter(semester='second')
 
     # Get registered course IDs for easy checking in template
     registered_course_ids = set(reg.course.id for reg in registered_courses)
@@ -682,18 +725,19 @@ def student_courses(request):
         
     try:
         student = request.user.studentprofile
-        
-        # Get all courses for student's department
-        department_courses = Course.objects.filter(
+
+        # Get course offerings for student's department and level
+        course_offerings = CourseOffering.objects.filter(
             department=student.department,
             level=student.current_level,
-            academic_session=student.current_session,
+            course__academic_session=student.current_session,
+            course__is_active=True,
             is_active=True
-        ).order_by('semester')
-        
+        ).select_related('course').order_by('course__semester', 'course__code')
+
         # Separate courses by semester
-        first_semester_courses = department_courses.filter(semester='first')
-        second_semester_courses = department_courses.filter(semester='second')
+        first_semester_courses = [offering.course for offering in course_offerings if offering.course.semester == 'first']
+        second_semester_courses = [offering.course for offering in course_offerings if offering.course.semester == 'second']
         
         # Get registered courses
         registered_courses = CourseRegistration.objects.filter(

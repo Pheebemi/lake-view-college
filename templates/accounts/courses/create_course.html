@@ -59,19 +59,6 @@
                                 class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Level</label>
-                            <select name="level" required class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white">
-                                {% for level in levels %}
-                                <option value="{{ level.name }}">{{ level.display_name }}</option>
-                                {% empty %}
-                                <option value="" disabled>No levels available</option>
-                                {% endfor %}
-                            </select>
-                            {% if not levels %}
-                            <p class="text-red-500 text-sm mt-1">No levels found. Contact admin.</p>
-                            {% endif %}
-                        </div>
-                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
                             <select name="semester" required class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition bg-white">
                                 <option value="first">First Semester</option>
@@ -87,6 +74,43 @@
                                 </option>
                                 {% endfor %}
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- Department and Level Selection -->
+                    <div class="p-6 border-t border-gray-200 bg-gray-50">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Select Departments <span class="text-red-500">*</span></label>
+                                <div class="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-xl p-3 bg-white">
+                                    {% for department in departments %}
+                                    <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                        <input type="checkbox" name="departments" value="{{ department.id }}"
+                                               class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
+                                        <span class="text-sm">{{ department.name }}</span>
+                                    </label>
+                                    {% empty %}
+                                    <p class="text-gray-500 text-sm">No departments available</p>
+                                    {% endfor %}
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Select which departments can offer this course</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Select Levels <span class="text-red-500">*</span></label>
+                                <div class="space-y-2 max-h-48 overflow-y-auto border border-gray-300 rounded-xl p-3 bg-white">
+                                    {% for level in levels %}
+                                    <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                        <input type="checkbox" name="levels" value="{{ level.id }}"
+                                               class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
+                                        <span class="text-sm">{{ level.display_name }}</span>
+                                    </label>
+                                    {% empty %}
+                                    <p class="text-gray-500 text-sm">No levels available</p>
+                                    {% endfor %}
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Select which levels can take this course</p>
+                            </div>
                         </div>
                     </div>
                 </div>

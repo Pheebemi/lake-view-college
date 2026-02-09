@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
-from .models import User, StaffProfile, StudentProfile, AcademicRecord, PaymentTransaction, Faculty, Department, Course, CourseRegistration, Enrollment, Verification, AcademicSession, Level, FeeStructure
+from .models import User, StaffProfile, StudentProfile, AcademicRecord, PaymentTransaction, Faculty, Department, Course, CourseOffering, CourseRegistration, Enrollment, Verification, AcademicSession, Level, FeeStructure
 
 # Customizing the User Admin
 @admin.register(User)
@@ -69,10 +69,25 @@ class DepartmentAdmin(admin.ModelAdmin):
 # Course Admin
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('code', 'title', 'level', 'academic_session', 'department', 'semester', 'credits', 'is_active', 'created_at')
-    search_fields = ('code', 'title', 'department__name')
-    list_filter = ('level', 'academic_session', 'department', 'semester', 'is_active')
+    list_display = ('code', 'title', 'academic_session', 'semester', 'credits', 'is_active', 'created_at', 'offering_count')
+    search_fields = ('code', 'title')
+    list_filter = ('academic_session', 'semester', 'is_active')
     list_editable = ('is_active',)
+
+    def offering_count(self, obj):
+        return obj.offerings.count()
+    offering_count.short_description = 'Departments Offering'
+
+# Course Offering Admin
+@admin.register(CourseOffering)
+class CourseOfferingAdmin(admin.ModelAdmin):
+    list_display = ('course', 'department', 'level', 'is_active', 'created_at')
+    search_fields = ('course__code', 'course__title', 'department__name', 'level__display_name')
+    list_filter = ('department', 'level', 'is_active', 'course__academic_session')
+    list_editable = ('is_active',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('course', 'department', 'level')
 
 @admin.register(CourseRegistration)
 class CourseRegistrationAdmin(admin.ModelAdmin):
