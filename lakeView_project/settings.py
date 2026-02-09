@@ -117,6 +117,10 @@ if _db_engine in ('django.db.backends.mysql', 'django.db.backends.postgresql'):
         'HOST': os.getenv('DATABASE_HOST', 'localhost'),
         'PORT': os.getenv('DATABASE_PORT', '3306' if 'mysql' in _db_engine else '5432'),
     })
+if _db_engine == 'django.db.backends.mysql':
+    DATABASES['default']['OPTIONS'] = {
+        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+    }
 
 
 # Password validation

@@ -171,6 +171,61 @@ python manage.py createsuperuser
 ```
 
 - If you use MySQL, install the driver first: `pip install mysqlclient`.
+- If you use **PostgreSQL**, see the section below.
+
+---
+
+## Using PostgreSQL on cPanel
+
+Do this **after** `pip install -r requirements.txt` and **before** `python manage.py migrate`.
+
+### 1. Create the database in cPanel
+
+1. In cPanel go to **PostgreSQL® Databases** (or **Databases** → PostgreSQL).
+2. **Create a database** (e.g. `lakerefy_lakeview`). Note the full name (often `cpaneluser_dbname`).
+3. **Create a user** and set a strong password. Note the username (often `cpaneluser_dbuser`).
+4. **Add the user to the database** and grant **ALL PRIVILEGES**.
+5. Note: **Host** is usually `localhost`; **Port** is usually `5432`.
+
+### 2. Install the PostgreSQL adapter
+
+With your virtualenv activated:
+
+```bash
+pip install psycopg2-binary
+```
+
+Or from the repo file:
+
+```bash
+pip install -r requirements-postgres.txt
+```
+
+### 3. Set `.env` for PostgreSQL
+
+Edit the `.env` file in your app root (e.g. `/home/lakerefy/lakeview/.env`) and set:
+
+```env
+DATABASE_ENGINE=django.db.backends.postgresql
+DATABASE_NAME=lakerefy_lakeview
+DATABASE_USER=lakerefy_dbuser
+DATABASE_PASSWORD=your_db_password_here
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+```
+
+Use the **exact** database name and user from cPanel (including the prefix like `lakerefy_`).
+
+### 4. Run migrations
+
+```bash
+cd /home/lakerefy/lakeview
+source /home/lakerefy/virtualenv/lakeview/3.11/bin/activate
+python manage.py migrate
+python manage.py createsuperuser
+```
+
+Then restart the app in **Setup Python App**. Your site will now use PostgreSQL.
 
 ---
 
