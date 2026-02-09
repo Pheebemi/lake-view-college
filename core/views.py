@@ -705,6 +705,11 @@ def get_student_course_data(request):
             if course.id in registered_course_ids
         ]
         
+        # Get current academic session
+        from accounts.models import AcademicSession
+        current_session = AcademicSession.objects.filter(is_active=True).first()
+        session_name = current_session.name if current_session else student_profile.current_session.name if student_profile.current_session else "2023/2024"
+
         data = {
             'student_info': {
                 'name': request.user.get_full_name(),
@@ -714,6 +719,7 @@ def get_student_course_data(request):
                 'semester': student_profile.get_current_semester_display(),
                 'faculty': student_profile.faculty.name,
             },
+            'academic_session': session_name,
             'courses': {
                 'first_semester': first_semester_registered,
                 'second_semester': second_semester_registered
