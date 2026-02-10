@@ -284,23 +284,21 @@ class Command(BaseCommand):
                     user.set_password(password)
                     user.save()
                     state = states[i % len(states)]
-                    StudentProfile.objects.get_or_create(
-                        user=user,
-                        defaults={
-                            "programme_type": prog_type,
-                            "gender": s["gender"],
-                            "faculty": fac,
-                            "department": dept,
-                            "program": s["program"],
-                            "admission_year": "2024",
-                            "current_level": level,
-                            "current_semester": "first",
-                            "current_session": session,
-                            "state_of_origin": state,
-                            "local_government": f"{state} Central",
-                            "date_of_birth": date(2000 + i, 3, 15),
-                        },
-                    )
+                    # Signal may have created a default profile; update it or create
+                    profile, p_created = StudentProfile.objects.get_or_create(user=user)
+                    profile.programme_type = prog_type
+                    profile.gender = s["gender"]
+                    profile.faculty = fac
+                    profile.department = dept
+                    profile.program = s["program"]
+                    profile.admission_year = "2024"
+                    profile.current_level = level
+                    profile.current_semester = "first"
+                    profile.current_session = session
+                    profile.state_of_origin = state
+                    profile.local_government = f"{state} Central"
+                    profile.date_of_birth = date(2000 + i, 3, 15)
+                    profile.save()
                     self.stdout.write(self.style.SUCCESS(
                         f"   Student: {s['matric']} ({s['first_name']} {s['last_name']}) -> {dept.name} / {level.display_name}"
                     ))
