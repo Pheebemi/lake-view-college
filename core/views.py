@@ -154,6 +154,11 @@ def applicant_dashboard(request):
         messages.error(request, "Applicant profile not found.")
         return redirect('core:landing_page')
 
+def health_check(request):
+    """Simple response to verify the app is running (no DB, no template)."""
+    return HttpResponse('OK', content_type='text/plain')
+    
+
 def landing_page(request):
     faculties = Faculty.objects.all()
     context = {'faculties': faculties}

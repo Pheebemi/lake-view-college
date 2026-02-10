@@ -8,6 +8,7 @@ from django.conf import settings
 app_name = 'core'
 
 urlpatterns = [
+    path('health/', views.health_check, name='health_check'),
     path('', views.landing_page, name='landing_page'),
     path('apply/', views.create_applicant, name='apply_page'),
     path('contact/', views.contact_page, name='contact_page'),

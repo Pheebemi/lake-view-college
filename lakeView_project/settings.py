@@ -29,7 +29,16 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-#0aot&y4&=gd54c55-%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'lakeviewcoe.edu.ng',
+    'www.lakeviewcoe.edu.ng',
+]
+# Also allow any from env (e.g. for other domains or overrides)
+_env_hosts = os.getenv('DJANGO_ALLOWED_HOSTS', '').strip()
+if _env_hosts:
+    ALLOWED_HOSTS = list(ALLOWED_HOSTS) + [h.strip() for h in _env_hosts.split(',') if h.strip()]
 
 
 # Application definition

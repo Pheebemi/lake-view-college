@@ -12,5 +12,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 
+# Serve static and media when web server (cPanel) doesn't have a place to configure them
 if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+else:
+    # Production: Django serves static/media if cPanel Setup Python App has no static path
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

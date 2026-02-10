@@ -1,5 +1,5 @@
 """
-LiteSpeed WSGI entry point - file must be named 'lswsgi' (no .py) for cPanel/LiteSpeed.
+cPanel WSGI entry point - use startup file name "passenger_wsgi" (no .py).
 """
 import sys
 import os
