@@ -168,7 +168,7 @@ USE_TZ = os.getenv('USE_TZ', 'True').lower() == 'true'
 
 STATIC_URL = os.getenv('STATIC_URL', '/static/')
 MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
-STATICFILE_DIRS = BASE_DIR/'static'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / os.getenv('STATIC_ROOT', 'staticfiles')
 MEDIA_ROOT = BASE_DIR / os.getenv('MEDIA_ROOT', 'media')
 
