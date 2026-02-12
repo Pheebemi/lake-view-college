@@ -647,8 +647,8 @@ def initiate_payment(request):
             current_session = AcademicSession.objects.filter(name="2023/2024").first()
         session_name = current_session.name if current_session else "2023/2024"
 
-        # Generate unique reference
-        reference = f"SF-{student.user.matriculation_number}-{timezone.now().timestamp()}"
+        # Generate unique reference (use student.id instead of matriculation_number to avoid special characters like /)
+        reference = f"SF-{student.id}-{int(timezone.now().timestamp())}"
 
         # Initialize payment with Paystack
         url = "https://api.paystack.co/transaction/initialize"
