@@ -105,41 +105,67 @@ class Command(BaseCommand):
                     "departments": [
                         {"name": "Computer Science", "short_name": "CSC"},
                         {"name": "Mathematics", "short_name": "MTH"},
-                        {"name": "Physics", "short_name": "PHY"},
+                        {"name": "Statistics", "short_name": "STA"},
+                    ],
+                },
+                {
+                    "faculty": {"name": "Faculty of Social Sciences", "short_name": "FOSS"},
+                    "departments": [
+                        {"name": "Political Science", "short_name": "POL"},
+                        {"name": "Sociology", "short_name": "SOC"},
+                        {"name": "Economics", "short_name": "ECO"},
+                    ],
+                },
+                {
+                    "faculty": {"name": "Faculty of Management Sciences", "short_name": "FOMS"},
+                    "departments": [
+                        {"name": "Business Administration", "short_name": "BUS"},
+                        {"name": "Public Administration", "short_name": "PUB"},
+                        {"name": "Accounting", "short_name": "ACC"},
                     ],
                 },
                 {
                     "faculty": {"name": "Faculty of Arts", "short_name": "FOA"},
                     "departments": [
-                        {"name": "English Language", "short_name": "ENG"},
-                        {"name": "History", "short_name": "HIS"},
+                        {"name": "English and Literary Studies", "short_name": "ENG"},
+                        {"name": "Christian Religious Studies", "short_name": "CRS"},
+                        {"name": "Islamic Religious Studies", "short_name": "IRS"},
                     ],
                 },
                 {
                     "faculty": {"name": "Faculty of Education", "short_name": "FOE"},
                     "departments": [
-                        {"name": "Education", "short_name": "EDU"},
-                        {"name": "Mathematics Education", "short_name": "MED"},
+                        {"name": "Health Education", "short_name": "HED"},
+                        {"name": "Physical Education", "short_name": "PED"},
+                        {"name": "Biology Education", "short_name": "BED"},
+                        {"name": "Social Studies Education", "short_name": "SED"},
                     ],
                 },
             ],
             "nd": [
                 {
-                    "faculty": {"name": "School of ND (Diploma) Studies", "short_name": "NDS"},
+                    "faculty": {"name": "School of Diploma Studies", "short_name": "SDS"},
                     "departments": [
-                        {"name": "ND Computer Science", "short_name": "ND-CSC"},
-                        {"name": "ND Engineering", "short_name": "ND-ENG"},
-                        {"name": "ND Public Health", "short_name": "ND-PH"},
+                        {"name": "Diploma Computer Science", "short_name": "DCS"},
+                        {"name": "Diploma Public Health", "short_name": "DPH"},
                     ],
                 },
             ],
             "nce": [
                 {
-                    "faculty": {"name": "School of NCE Education", "short_name": "NCE-ED"},
+                    "faculty": {"name": "School of NCE Education", "short_name": "SNE"},
                     "departments": [
-                        {"name": "NCE Primary Education", "short_name": "NCE-PED"},
-                        {"name": "NCE Arts Education", "short_name": "NCE-ART"},
-                        {"name": "NCE Science Education", "short_name": "NCE-SCI"},
+                        {"name": "NCE Economics", "short_name": "NECO"},
+                        {"name": "NCE Political Science", "short_name": "NCPS"},
+                        {"name": "NCE Arabic", "short_name": "NCAR"},
+                        {"name": "NCE Islamic Studies", "short_name": "NCIS"},
+                        {"name": "NCE English", "short_name": "NCEN"},
+                        {"name": "NCE History", "short_name": "NCHI"},
+                        {"name": "NCE Fulfulde", "short_name": "NCFU"},
+                        {"name": "NCE Mumuve Language", "short_name": "NCMU"},
+                        {"name": "NCE Christian Religious Studies", "short_name": "NCCR"},
+                        {"name": "NCE Hausa", "short_name": "NCHA"},
+                        {"name": "NCE Business Education", "short_name": "NCBE"},
                     ],
                 },
             ],
@@ -390,16 +416,29 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------ #
     def _create_fee_structures(self, session):
         self.stdout.write(self.style.MIGRATE_HEADING("7. Fee Structures"))
-        fee_amounts = {
-            "100": 150000, "200": 120000, "300": 120000, "400": 120000,
-            "ND1": 100000, "ND2": 100000,
-            "NCE1": 80000, "NCE2": 80000,
-        }
-
+        
         created = 0
         for dept in Department.objects.select_related("faculty").all():
-            prog = getattr(dept.faculty, "programme_type", "degree") or "degree"
-            for level in Level.objects.filter(programme_type=prog, is_active=True):
+            prog_type = getattr(dept.faculty, "programme_type", "degree") or "degree"
+            
+            # Determine fee amount based on faculty and programme type
+            if prog_type == "degree":
+                # Science faculty: 65,000 per level
+                # Other degree faculties: 60,000 per level
+                is_science = dept.faculty.short_name == "FOS"  # Faculty of Science
+                fee_amount = 65000 if is_science else 60000
+                fee_amounts = {
+                    "100": fee_amount,
+                    "200": fee_amount,
+                    "300": fee_amount,
+                    "400": fee_amount,
+                }
+            elif prog_type == "nd":
+                fee_amounts = {"ND1": 50000, "ND2": 50000}
+            else:  # nce
+                fee_amounts = {"NCE1": 40000, "NCE2": 40000}
+            
+            for level in Level.objects.filter(programme_type=prog_type, is_active=True):
                 if level.name not in fee_amounts:
                     continue
                 _, c = FeeStructure.objects.get_or_create(
@@ -411,7 +450,7 @@ class Command(BaseCommand):
                 if c:
                     created += 1
 
-        # Applicant / Screening fees
+        # Applicant / Screening fees (unchanged - leaving applicant part intact)
         admin_fac, _ = Faculty.objects.get_or_create(
             short_name="ADMIN", programme_type="degree",
             defaults={"name": "Central Administration"},
@@ -457,15 +496,24 @@ class Command(BaseCommand):
             )
 
         choices = {
-            "diploma": ["Computer Science", "Public Health", "Engineering"],
+            "diploma": ["Computer Science", "Public Health"],
             "degree": [
-                "Adult Education", "Mathematics Education", "Economics",
-                "Sociology", "Accounting", "Computer Science", "Physics",
-                "English Language", "History",
+                # Faculty of Science (65k)
+                "BSc Computer Science", "BSc Mathematics", "BSc Statistics",
+                # Faculty of Social Sciences (60k)
+                "BSc Political Science", "BSc Sociology", "BSc Economics",
+                # Faculty of Management Sciences (60k)
+                "BSc Business Administration", "BSc Public Administration", "BSc Accounting",
+                # Faculty of Arts (60k)
+                "BA English and Literary Studies", "BA Christian Religious Studies", "BA Islamic Religious Studies",
+                # Faculty of Education (60k)
+                "BSc (Ed) Health Education", "BSc (Ed) Physical Education", "BSc (Ed) Biology Education", "BSc (Ed) Social Studies",
             ],
             "nce": [
-                "Arabic", "English", "Fulfulde", "Mumuye",
-                "Hausa", "History", "Primary Education", "Science Education",
+                "NCE Economics", "NCE Political Science", "NCE Arabic",
+                "NCE Islamic Studies", "NCE English", "NCE History",
+                "NCE Fulfulde", "NCE Mumuve Language", "NCE Christian Religious Studies",
+                "NCE Hausa", "NCE Business Education",
             ],
         }
         for ptype, names in choices.items():
