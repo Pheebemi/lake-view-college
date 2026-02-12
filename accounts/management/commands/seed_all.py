@@ -138,7 +138,6 @@ class Command(BaseCommand):
                         {"name": "Health Education", "short_name": "HED"},
                         {"name": "Physical Education", "short_name": "PED"},
                         {"name": "Biology Education", "short_name": "BED"},
-                        {"name": "Social Studies Education", "short_name": "SED"},
                     ],
                 },
             ],
@@ -507,7 +506,7 @@ class Command(BaseCommand):
                 # Faculty of Arts (60k)
                 "BA English and Literary Studies", "BA Christian Religious Studies", "BA Islamic Religious Studies",
                 # Faculty of Education (60k)
-                "BSc (Ed) Health Education", "BSc (Ed) Physical Education", "BSc (Ed) Biology Education", "BSc (Ed) Social Studies",
+                "BSc (Ed) Health Education", "BSc (Ed) Physical Education", "BSc (Ed) Biology Education",
             ],
             "nce": [
                 "NCE Economics", "NCE Political Science", "NCE Arabic",
