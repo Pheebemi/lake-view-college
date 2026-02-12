@@ -434,7 +434,7 @@ class Command(BaseCommand):
                     "400": fee_amount,
                 }
             elif prog_type == "nd":
-                fee_amounts = {"ND1": 50000, "ND2": 50000}
+                fee_amounts = {"ND1": 38000, "ND2": 38000}
             else:  # nce
                 fee_amounts = {"NCE1": 40000, "NCE2": 40000}
             
