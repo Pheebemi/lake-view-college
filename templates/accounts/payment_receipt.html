@@ -7,10 +7,53 @@
     {% load static %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
         @media print {
-            body { margin: 0; }
+            html, body {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
             .no-print { display: none !important; }
             .print-button { display: none !important; }
+            .receipt-container {
+                max-height: 277mm;
+                padding: 15px;
+                border: 1px solid #ccc;
+                box-shadow: none;
+                page-break-inside: avoid;
+                page-break-after: avoid;
+                page-break-before: avoid;
+            }
+            .receipt-header {
+                padding-bottom: 10px;
+                margin-bottom: 15px;
+            }
+            .logo {
+                width: 50px;
+                height: 50px;
+                margin-bottom: 8px;
+            }
+            .school-name { font-size: 18px; }
+            .school-address { font-size: 11px; margin-bottom: 5px; }
+            .receipt-title { font-size: 20px; margin-bottom: 5px; }
+            .receipt-number { padding: 8px; margin-bottom: 12px; }
+            .receipt-number .value { font-size: 14px; }
+            .section { margin-bottom: 12px; }
+            .section-title { font-size: 14px; padding-bottom: 5px; margin-bottom: 8px; }
+            .info-grid { gap: 8px; }
+            .info-label { font-size: 11px; margin-bottom: 2px; }
+            .info-value { font-size: 13px; padding: 5px 8px; }
+            .payment-table th,
+            .payment-table td { padding: 6px 8px; font-size: 12px; }
+            .payment-table th { font-size: 11px; }
+            .footer { margin-top: 12px; padding-top: 10px; }
         }
         
         body {
@@ -222,10 +265,6 @@
             z-index: -1;
         }
         
-        @media print {
-            .print-button { display: none; }
-            .watermark { display: none; }
-        }
     </style>
 </head>
 <body>

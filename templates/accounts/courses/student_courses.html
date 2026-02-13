@@ -304,338 +304,191 @@
                         <meta charset="UTF-8">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Course Form - ${data.student_info.name}</title>
-                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
                         <style>
-                            @media print {
-                                body { margin: 0; }
-                                .no-print { display: none !important; }
-                                .page-break { page-break-before: always; }
+                            @page {
+                                size: A4;
+                                margin: 10mm 15mm;
                             }
-                            
+                            @media print {
+                                html, body {
+                                    width: 210mm;
+                                    height: 297mm;
+                                    margin: 0;
+                                    padding: 0;
+                                    overflow: hidden;
+                                }
+                                .no-print { display: none !important; }
+                            }
+                            * { margin: 0; padding: 0; box-sizing: border-box; }
                             body {
-                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                                line-height: 1.6;
-                                color: #333;
-                                max-width: 900px;
+                                font-family: 'Times New Roman', Times, serif;
+                                font-size: 13px;
+                                line-height: 1.4;
+                                color: #000;
+                                max-width: 800px;
                                 margin: 0 auto;
                                 padding: 20px;
                                 background: white;
                             }
-                            
                             .header {
                                 text-align: center;
-                                border-bottom: 3px solid #2563eb;
-                                padding-bottom: 20px;
-                                margin-bottom: 30px;
+                                margin-bottom: 15px;
                             }
-                            
-                            .logo {
-                                width: 80px;
-                                height: 80px;
-                                margin: 0 auto 15px;
+                            .header img {
+                                width: 70px;
+                                height: 70px;
                                 display: block;
+                                margin: 0 auto 8px;
                             }
-                            
                             .school-name {
-                                font-size: 24px;
+                                font-size: 22px;
                                 font-weight: bold;
-                                color: #1e40af;
-                                margin-bottom: 5px;
+                                text-transform: uppercase;
                             }
-                            
-                            .form-title {
-                                font-size: 28px;
-                                font-weight: bold;
-                                color: #1e3a8a;
-                                margin-bottom: 10px;
-                            }
-                            
-                            .student-info {
-                                background: #f8fafc;
-                                border: 2px solid #e2e8f0;
-                                border-radius: 10px;
-                                padding: 20px;
-                                margin-bottom: 30px;
-                            }
-                            
-                            .info-grid {
-                                display: grid;
-                                grid-template-columns: 1fr 1fr;
-                                gap: 20px;
-                            }
-                            
-                            .info-item {
-                                display: flex;
-                                flex-direction: column;
-                            }
-                            
-                            .info-label {
-                                font-weight: bold;
-                                color: #475569;
-                                margin-bottom: 5px;
-                                font-size: 14px;
-                            }
-                            
-                            .info-value {
+                            .faculty-name {
                                 font-size: 16px;
-                                color: #1e293b;
-                                padding: 8px 12px;
-                                background: white;
-                                border: 1px solid #cbd5e1;
-                                border-radius: 6px;
+                                margin-top: 2px;
                             }
-                            
-                            .semester-section {
-                                margin-bottom: 30px;
-                                page-break-inside: avoid;
+                            .dept-name {
+                                font-size: 14px;
+                                margin-top: 2px;
                             }
-                            
-                            .semester-title {
-                                font-size: 20px;
+                            .form-title {
+                                font-size: 14px;
                                 font-weight: bold;
-                                color: #1e40af;
-                                border-bottom: 2px solid #3b82f6;
-                                padding-bottom: 10px;
-                                margin-bottom: 20px;
-                                background: #f8fafc;
-                                padding: 15px;
-                                border-radius: 8px;
+                                margin-top: 8px;
                             }
-                            
-                            .course-table {
+                            .student-info {
+                                margin-bottom: 10px;
+                                border-top: 1px solid #000;
+                                padding-top: 8px;
+                            }
+                            .info-row {
+                                display: flex;
+                                justify-content: space-between;
+                                margin-bottom: 3px;
+                                font-size: 13px;
+                            }
+                            .semester-heading {
+                                text-align: center;
+                                font-weight: bold;
+                                font-size: 14px;
+                                margin: 12px 0 4px;
+                            }
+                            table {
                                 width: 100%;
                                 border-collapse: collapse;
-                                margin-top: 15px;
-                                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                                font-size: 12px;
                             }
-                            
-                            .course-table th,
-                            .course-table td {
-                                border: 1px solid #e2e8f0;
-                                padding: 12px;
+                            table th, table td {
+                                border: 1px solid #000;
+                                padding: 4px 8px;
                                 text-align: left;
                             }
-                            
-                            .course-table th {
-                                background: #1e40af;
-                                color: white;
+                            table th {
                                 font-weight: bold;
-                                font-size: 14px;
-                            }
-                            
-                            .course-table tr:nth-child(even) {
-                                background: #f8fafc;
-                            }
-                            
-                            .course-table tr:hover {
-                                background: #e2e8f0;
-                            }
-                            
-                            .credits-summary {
-                                background: #f0f9ff;
-                                border: 1px solid #0ea5e9;
-                                border-radius: 8px;
-                                padding: 15px;
-                                margin-top: 15px;
+                                background: #f5f5f5;
                                 text-align: center;
+                                font-size: 12px;
                             }
-                            
-                            .credits-summary h4 {
-                                color: #0c4a6e;
-                                margin: 0 0 10px 0;
-                                font-size: 16px;
+                            td.center { text-align: center; }
+                            .total-line {
+                                margin: 6px 0 0;
+                                font-size: 13px;
                             }
-                            
-                            .credits-summary p {
-                                color: #0369a1;
+                            .signatures {
+                                margin-top: 25px;
+                                font-size: 13px;
+                            }
+                            .sig-line {
+                                margin-bottom: 12px;
+                            }
+                            .sig-line span {
                                 font-weight: bold;
-                                font-size: 18px;
-                                margin: 0;
                             }
-                            
-                            .print-button {
+                            .print-btn {
                                 position: fixed;
                                 top: 20px;
                                 right: 20px;
-                                padding: 12px 24px;
+                                padding: 10px 20px;
                                 background: #059669;
                                 color: white;
                                 border: none;
-                                border-radius: 8px;
+                                border-radius: 6px;
                                 font-weight: bold;
+                                font-size: 14px;
                                 cursor: pointer;
-                                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                                 z-index: 1000;
                             }
-                            
-                            .print-button:hover {
-                                background: #047857;
-                            }
-                            
-                            .footer {
-                                text-align: center;
-                                margin-top: 40px;
-                                padding-top: 20px;
-                                border-top: 1px solid #e2e8f0;
-                                color: #64748b;
-                            }
-                            
-                            .no-courses {
-                                text-align: center;
-                                padding: 40px;
-                                color: #64748b;
-                                font-style: italic;
-                                background: #f8fafc;
-                                border: 1px dashed #cbd5e1;
-                                border-radius: 8px;
-                            }
-                            
-                            @media print {
-                                .print-button { display: none; }
-                            }
+                            .print-btn:hover { background: #047857; }
                         </style>
                     </head>
                     <body>
-                        <button class="print-button no-print" onclick="window.print()">
-                            🖨️ Print Course Form
-                        </button>
-                        
+                        <button class="print-btn no-print" onclick="window.print()">Print Course Form</button>
+
                         <div class="header">
-                            <img src="{% static 'assets/images/logos/lakeview.jpg' %}" alt="LakeView Logo" class="logo">
+                            <img src="{% static 'assets/images/logos/lakeview.jpg' %}" alt="Logo">
                             <div class="school-name">LakeView College of Education</div>
-                            <div class="form-title">Course Registration Form</div>
-                            <div style="font-size: 16px; color: #64748b;">Academic Year: ${data.academic_session}</div>
+                            <div class="faculty-name">${data.student_info.faculty}</div>
+                            <div class="dept-name">(Department of ${data.student_info.department})</div>
+                            <div class="form-title">STUDENT REGISTERED COURSES</div>
                         </div>
-                        
-                        <!-- Student Information -->
+
                         <div class="student-info">
-                            <h3 style="font-size: 18px; font-weight: bold; color: #1e40af; margin-bottom: 15px; text-align: center;">
-                                <i class="fas fa-user-graduate mr-2"></i>Student Information
-                            </h3>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <div class="info-label">Full Name</div>
-                                    <div class="info-value">${data.student_info.name}</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Matriculation Number</div>
-                                    <div class="info-value">${data.student_info.matriculation_number}</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Faculty</div>
-                                    <div class="info-value">${data.student_info.faculty}</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Department</div>
-                                    <div class="info-value">${data.student_info.department}</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Level</div>
-                                    <div class="info-value">${data.student_info.level} Level</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Current Semester</div>
-                                    <div class="info-value">${data.student_info.semester}</div>
-                                </div>
+                            <div class="info-row">
+                                <div>SESSION: ${data.academic_session}</div>
+                                <div>LEVEL: ${data.student_info.level}</div>
+                            </div>
+                            <div class="info-row">
+                                <div>NAME: ${data.student_info.name.toUpperCase()}</div>
+                                <div>MATRIC NO: ${data.student_info.matriculation_number}</div>
                             </div>
                         </div>
-                        
-                        <!-- First Semester Courses -->
-                        <div class="semester-section">
-                            <div class="semester-title">
-                                <i class="fas fa-calendar-alt mr-2"></i>First Semester Courses
-                            </div>
-                            
-                            ${data.courses.first_semester.length > 0 ? `
-                                <table class="course-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Course Code</th>
-                                            <th>Course Title</th>
-                                            <th>Credit Units</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${data.courses.first_semester.map(course => 
-                                            `<tr>
-                                                <td><strong>${course.code}</strong></td>
-                                                <td>${course.title}</td>
-                                                <td style="text-align: center;">${course.credits}</td>
-                                            </tr>`
-                                        ).join('')}
-                                    </tbody>
-                                </table>
-                                
-                                <div class="credits-summary">
-                                    <h4>First Semester Total Credits</h4>
-                                    <p>${data.total_credits.first_semester} Credit Units</p>
-                                </div>
-                            ` : `
-                                <div class="no-courses">
-                                    <i class="fas fa-info-circle text-2xl mb-2"></i>
-                                    <p>No courses registered for First Semester</p>
-                                </div>
-                            `}
-                        </div>
-                        
-                        <!-- Second Semester Courses -->
-                        <div class="semester-section">
-                            <div class="semester-title">
-                                <i class="fas fa-calendar-alt mr-2"></i>Second Semester Courses
-                            </div>
-                            
-                            ${data.courses.second_semester.length > 0 ? `
-                                <table class="course-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Course Code</th>
-                                            <th>Course Title</th>
-                                            <th>Credit Units</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${data.courses.second_semester.map(course => 
-                                            `<tr>
-                                                <td><strong>${course.code}</strong></td>
-                                                <td>${course.title}</td>
-                                                <td style="text-align: center;">${course.credits}</td>
-                                            </tr>`
-                                        ).join('')}
-                                    </tbody>
-                                </table>
-                                
-                                <div class="credits-summary">
-                                    <h4>Second Semester Total Credits</h4>
-                                    <p>${data.total_credits.second_semester} Credit Units</p>
-                                </div>
-                            ` : `
-                                <div class="no-courses">
-                                    <i class="fas fa-info-circle text-2xl mb-2"></i>
-                                    <p>No courses registered for Second Semester</p>
-                                </div>
-                            `}
-                        </div>
-                        
-                        <!-- Total Credits Summary -->
-                        <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 10px; padding: 20px; margin: 30px 0; text-align: center;">
-                            <h3 style="color: #92400e; margin: 0 0 15px 0; font-size: 20px;">
-                                <i class="fas fa-calculator mr-2"></i>Total Academic Load
-                            </h3>
-                            <p style="color: #92400e; font-size: 24px; font-weight: bold; margin: 0;">
-                                ${data.total_credits.total} Credit Units
-                            </p>
-                        </div>
-                        
-                        <div class="footer">
-                            <p><strong>LakeView College of Education</strong></p>
-                            <p>Academic Affairs Office | Phone: +234 XXX XXX XXXX | Email: academic@lakeview.edu.ng</p>
-                            <p>Generated on: ${new Date().toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            })}</p>
+
+                        ${data.courses.first_semester.length > 0 ? `
+                            <div class="semester-heading">FIRST SEMESTER</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px;">SN</th>
+                                        <th style="width:90px;">CODE</th>
+                                        <th>TITLE</th>
+                                        <th style="width:50px;">UNIT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.courses.first_semester.map((course, i) =>
+                                        '<tr><td class="center">' + (i + 1) + '</td><td>' + course.code + '</td><td>' + course.title + '</td><td class="center">' + course.credits + '</td></tr>'
+                                    ).join('')}
+                                </tbody>
+                            </table>
+                            <div class="total-line">Total Unit of First Semester is ${data.total_credits.first_semester}</div>
+                        ` : ''}
+
+                        ${data.courses.second_semester.length > 0 ? `
+                            <div class="semester-heading">SECOND SEMESTER</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px;">SN</th>
+                                        <th style="width:90px;">CODE</th>
+                                        <th>TITLE</th>
+                                        <th style="width:50px;">UNIT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.courses.second_semester.map((course, i) =>
+                                        '<tr><td class="center">' + (i + 1) + '</td><td>' + course.code + '</td><td>' + course.title + '</td><td class="center">' + course.credits + '</td></tr>'
+                                    ).join('')}
+                                </tbody>
+                            </table>
+                            <div class="total-line">Total Unit of Second Semester is ${data.total_credits.second_semester}</div>
+                        ` : ''}
+
+                        <div class="signatures">
+                            <div class="sig-line"><span>STUDENT'S SIGNATURE:</span> .......................................................................................................................................................................................................</div>
+                            <div class="sig-line"><span>HOD'S SIGNATURE:</span> ............................................................................................................................................................................................................</div>
+                            <div class="sig-line"><span>REGISTRAR'S SIGNATURE:</span> .............................................................................................................................................................................................</div>
                         </div>
                     </body>
                     </html>
