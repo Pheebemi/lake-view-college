@@ -280,347 +280,112 @@
                     <html lang="en">
                     <head>
                         <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Student Profile - ${data.personal_info.full_name}</title>
-                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
                         <style>
+                            @page { size: A4; margin: 12mm 15mm; }
                             @media print {
-                                body { margin: 0; }
+                                html, body { width: 210mm; height: 297mm; margin: 0; padding: 0; overflow: hidden; }
                                 .no-print { display: none !important; }
-                                .page-break { page-break-before: always; }
                             }
-                            
-                            body {
-                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                                line-height: 1.6;
-                                color: #333;
-                                max-width: 900px;
-                                margin: 0 auto;
-                                padding: 20px;
-                                background: white;
-                            }
-                            
-                            .header {
-                                text-align: center;
-                                border-bottom: 3px solid #2563eb;
-                                padding-bottom: 20px;
-                                margin-bottom: 30px;
-                            }
-                            
-                            .logo {
-                                width: 80px;
-                                height: 80px;
-                                margin: 0 auto 15px;
-                                display: block;
-                            }
-                            
-                            .school-name {
-                                font-size: 24px;
-                                font-weight: bold;
-                                color: #1e40af;
-                                margin-bottom: 5px;
-                            }
-                            
-                            .form-title {
-                                font-size: 28px;
-                                font-weight: bold;
-                                color: #1e3a8a;
-                                margin-bottom: 10px;
-                            }
-                            
-                            .profile-section {
-                                display: flex;
-                                align-items: flex-start;
-                                gap: 30px;
-                                margin-bottom: 30px;
-                                page-break-inside: avoid;
-                            }
-                            
-                            .profile-picture {
-                                flex-shrink: 0;
-                                width: 200px;
-                                text-align: center;
-                            }
-                            
-                            .profile-picture img {
-                                width: 180px;
-                                height: 180px;
-                                border-radius: 50%;
-                                border: 4px solid #2563eb;
-                                object-fit: cover;
-                            }
-                            
-                            .profile-picture .placeholder {
-                                width: 180px;
-                                height: 180px;
-                                border-radius: 50%;
-                                border: 4px solid #2563eb;
-                                background: #dbeafe;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                font-size: 48px;
-                                color: #2563eb;
-                                font-weight: bold;
-                            }
-                            
-                            .profile-info {
-                                flex: 1;
-                            }
-                            
-                            .section {
-                                margin-bottom: 30px;
-                                page-break-inside: avoid;
-                            }
-                            
-                            .section-title {
-                                font-size: 20px;
-                                font-weight: bold;
-                                color: #1e40af;
-                                border-bottom: 2px solid #3b82f6;
-                                padding-bottom: 10px;
-                                margin-bottom: 20px;
-                                background: #f8fafc;
-                                padding: 15px;
-                                border-radius: 8px;
-                            }
-                            
-                            .info-grid {
-                                display: grid;
-                                grid-template-columns: 1fr 1fr;
-                                gap: 20px;
-                            }
-                            
-                            .info-item {
-                                display: flex;
-                                flex-direction: column;
-                            }
-                            
-                            .info-label {
-                                font-weight: bold;
-                                color: #475569;
-                                margin-bottom: 5px;
-                                font-size: 14px;
-                            }
-                            
-                            .info-value {
-                                font-size: 16px;
-                                color: #1e293b;
-                                padding: 10px 15px;
-                                background: #f8fafc;
-                                border: 1px solid #e2e8f0;
-                                border-radius: 6px;
-                                min-height: 20px;
-                            }
-                            
-                            .academic-badge {
-                                display: inline-block;
-                                padding: 8px 16px;
-                                background: #10b981;
-                                color: white;
-                                border-radius: 20px;
-                                font-weight: bold;
-                                font-size: 14px;
-                                margin: 5px;
-                            }
-                            
-                            .print-button {
-                                position: fixed;
-                                top: 20px;
-                                right: 20px;
-                                padding: 12px 24px;
-                                background: #059669;
-                                color: white;
-                                border: none;
-                                border-radius: 8px;
-                                font-weight: bold;
-                                cursor: pointer;
-                                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                                z-index: 1000;
-                            }
-                            
-                            .print-button:hover {
-                                background: #047857;
-                            }
-                            
-                            .footer {
-                                text-align: center;
-                                margin-top: 40px;
-                                padding-top: 20px;
-                                border-top: 1px solid #e2e8f0;
-                                color: #64748b;
-                            }
-                            
-                            .highlight-box {
-                                background: #fef3c7;
-                                border: 1px solid #f59e0b;
-                                border-radius: 8px;
-                                padding: 20px;
-                                margin: 20px 0;
-                            }
-                            
-                            .highlight-box h4 {
-                                color: #92400e;
-                                margin-top: 0;
-                            }
-                            
-                            .highlight-box ul {
-                                margin: 0;
-                                padding-left: 20px;
-                                color: #92400e;
-                            }
-                            
-                            @media print {
-                                .print-button { display: none; }
-                            }
+                            * { margin: 0; padding: 0; box-sizing: border-box; }
+                            body { font-family: 'Times New Roman', Times, serif; font-size: 13px; line-height: 1.4; color: #000; max-width: 800px; margin: 0 auto; padding: 20px; background: white; }
+                            .top-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+                            .top-bar img { width: 70px; height: 70px; object-fit: cover; }
+                            .passport { width: 90px; height: 100px; border: 1px solid #000; object-fit: cover; }
+                            .passport-placeholder { width: 90px; height: 100px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; background: #f0f0f0; }
+                            .school-title { text-align: center; margin-bottom: 15px; }
+                            .school-title h1 { font-size: 22px; font-style: italic; }
+                            .section-heading { text-align: center; font-weight: bold; font-size: 15px; margin: 18px 0 8px; text-transform: uppercase; }
+                            .detail-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+                            .detail-table td { padding: 5px 8px; border-bottom: 1px dashed #999; vertical-align: top; font-size: 12px; }
+                            .detail-table .label { font-weight: bold; width: 120px; white-space: nowrap; text-transform: uppercase; font-size: 11px; }
+                            .detail-table .value { min-width: 140px; }
+                            .print-btn { position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: #059669; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; z-index: 1000; }
+                            .print-btn:hover { background: #047857; }
                         </style>
                     </head>
                     <body>
-                        <button class="print-button no-print" onclick="window.print()">
-                            🖨️ Print Profile
-                        </button>
-                        
-                        <div class="header">
-                            <img src="{% static 'assets/images/logos/lakeview.jpg' %}" alt="LakeView Logo" class="logo">
-                            <div class="school-name">LakeView College of Education</div>
-                            <div class="form-title">Student Profile</div>
-                            <div style="font-size: 16px; color: #64748b;">Academic Year: 2024/2025</div>
+                        <button class="print-btn no-print" onclick="window.print()">Print Profile</button>
+
+                        <div class="top-bar">
+                            <img src="{% static 'assets/images/logos/lakeview.jpg' %}" alt="Logo">
+                            ${data.profile_picture
+                                ? '<img src="' + data.profile_picture + '" alt="Photo" class="passport">'
+                                : '<div class="passport-placeholder">' + data.personal_info.full_name.split(' ').map(n => n[0]).join('') + '</div>'}
                         </div>
-                        
-                        <!-- Profile Picture and Basic Info -->
-                        <div class="profile-section">
-                            <div class="profile-picture">
-                                ${data.profile_picture ? 
-                                    `<img src="${data.profile_picture}" alt="Profile Picture">` : 
-                                    `<div class="placeholder">${data.personal_info.full_name.split(' ').map(n => n[0]).join('')}</div>`
-                                }
-                                <p style="margin-top: 15px; font-weight: bold; color: #1e40af;">Student ID</p>
-                                <p style="color: #64748b; font-size: 14px;">${data.personal_info.matriculation_number}</p>
-                            </div>
-                            
-                            <div class="profile-info">
-                                <div class="section-title">
-                                    <i class="fas fa-user mr-2"></i>Personal Information
-                                </div>
-                                <div class="info-grid">
-                                    <div class="info-item">
-                                        <div class="info-label">Full Name</div>
-                                        <div class="info-value">${data.personal_info.full_name}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Email Address</div>
-                                        <div class="info-value">${data.personal_info.email}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Phone Number</div>
-                                        <div class="info-value">${data.personal_info.phone_number}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Date of Birth</div>
-                                        <div class="info-value">${data.personal_info.date_of_birth}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Gender</div>
-                                        <div class="info-value">${data.personal_info.gender}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">State of Origin</div>
-                                        <div class="info-value">${data.personal_info.state_of_origin}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Local Government</div>
-                                        <div class="info-value">${data.personal_info.local_government}</div>
-                                    </div>
-                                    <div class="info-item" style="grid-column: 1 / -1;">
-                                        <div class="info-label">Permanent Address</div>
-                                        <div class="info-value">${data.personal_info.permanent_address}</div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="school-title">
+                            <h1>LakeView College of Education</h1>
                         </div>
-                        
-                        <!-- Academic Information -->
-                        <div class="section">
-                            <div class="section-title">
-                                <i class="fas fa-graduation-cap mr-2"></i>Academic Information
-                            </div>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <div class="info-label">Faculty</div>
-                                    <div class="info-value">${data.academic_info.faculty}</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Department</div>
-                                    <div class="info-value">${data.academic_info.department}</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Program</div>
-                                    <div class="info-value">${data.academic_info.program}</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Admission Year</div>
-                                    <div class="info-value">${data.academic_info.admission_year}</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Current Level</div>
-                                    <div class="info-value">${data.academic_info.current_level} Level</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">Current Semester</div>
-                                    <div class="info-value">${data.academic_info.current_semester}</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Academic Performance -->
-                            <div style="margin-top: 20px; text-align: center;">
-                                <div class="academic-badge">
-                                    <i class="fas fa-star mr-2"></i>CGPA: ${data.academic_info.cgpa}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Academic Status -->
-                        <div class="section">
-                            <div class="section-title">
-                                <i class="fas fa-clipboard-check mr-2"></i>Academic Status
-                            </div>
-                            <div style="text-align: center; padding: 20px;">
-                                <div class="academic-badge" style="background: #10b981;">
-                                    <i class="fas fa-check-circle mr-2"></i>Active Student
-                                </div>
-                                <p style="margin-top: 15px; color: #64748b;">
-                                    This student is currently enrolled and actively pursuing their academic program at LakeView College of Education.
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <!-- Important Notes -->
-                        <div class="section">
-                            <div class="section-title">
-                                <i class="fas fa-info-circle mr-2"></i>Important Notes
-                            </div>
-                            <div class="highlight-box">
-                                <h4>Please Note:</h4>
-                                <ul>
-                                    <li>This profile is valid for the current academic session</li>
-                                    <li>Keep this document for your records and official purposes</li>
-                                    <li>Contact the student affairs office for any updates or corrections</li>
-                                    <li>This profile is generated from the official student database</li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <div class="footer">
-                            <p><strong>LakeView College of Education</strong></p>
-                            <p>Student Affairs Office | Phone: +234 XXX XXX XXXX | Email: studentaffairs@lakeview.edu.ng</p>
-                            <p>Generated on: ${new Date().toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            })}</p>
-                        </div>
+
+                        <div class="section-heading">Personal Details</div>
+                        <table class="detail-table">
+                            <tr>
+                                <td class="label">Name</td>
+                                <td class="value">${data.personal_info.full_name.toUpperCase()}</td>
+                                <td class="label">Matric Number</td>
+                                <td class="value">${data.personal_info.matriculation_number}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">Email</td>
+                                <td class="value">${data.personal_info.email}</td>
+                                <td class="label">Phone</td>
+                                <td class="value">${data.personal_info.phone_number}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">Gender</td>
+                                <td class="value">${data.personal_info.gender}</td>
+                                <td class="label">Date of Birth</td>
+                                <td class="value">${data.personal_info.date_of_birth}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">State of Origin</td>
+                                <td class="value">${data.personal_info.state_of_origin}</td>
+                                <td class="label">Local Govt</td>
+                                <td class="value">${data.personal_info.local_government || 'N/A'}</td>
+                            </tr>
+                        </table>
+
+                        <div class="section-heading">Academic Details</div>
+                        <table class="detail-table">
+                            <tr>
+                                <td class="label">Programme</td>
+                                <td class="value">${data.academic_info.program}</td>
+                                <td class="label">Department</td>
+                                <td class="value">${data.academic_info.department}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">Faculty</td>
+                                <td class="value">${data.academic_info.faculty}</td>
+                                <td class="label">Current Level</td>
+                                <td class="value">${data.academic_info.current_level}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">Admission Year</td>
+                                <td class="value">${data.academic_info.admission_year}</td>
+                                <td class="label">Semester</td>
+                                <td class="value">${data.academic_info.current_semester}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">CGPA</td>
+                                <td class="value">${data.academic_info.cgpa}</td>
+                                <td class="label"></td>
+                                <td class="value"></td>
+                            </tr>
+                        </table>
+
+                        <div class="section-heading">Permanent Address</div>
+                        <table class="detail-table">
+                            <tr>
+                                <td class="label">Email</td>
+                                <td class="value">${data.personal_info.email}</td>
+                                <td class="label">Contact</td>
+                                <td class="value">${data.personal_info.phone_number}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">Address</td>
+                                <td class="value" colspan="3">${data.personal_info.permanent_address}</td>
+                            </tr>
+                        </table>
                     </body>
                     </html>
                 `;
