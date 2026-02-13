@@ -199,493 +199,206 @@
                     // Create a new window for printing
                     const printWindow = window.open('', '_blank', 'width=900,height=700');
                     
-                    // Create the comprehensive printable HTML content
+                    // Determine programme type
+                    const getProgrammeType = () => {
+                        let pt = data.applicant_info?.program_type || data.program_type || data.form_data?.program_type || data.applicant_info?.program || data.applicant_info?.program_name || data.applicant_info?.course || '';
+                        const ptl = pt.toLowerCase();
+                        if (ptl.includes('degree') || ptl.includes('b.ed') || ptl.includes('bachelor')) return 'DEGREE PROGRAMME';
+                        if (ptl.includes('nce') || ptl.includes('national certificate')) return 'NCE PROGRAMME';
+                        if (ptl.includes('diploma') || ptl.includes('dip')) return 'DIPLOMA PROGRAMME';
+                        return pt ? pt.toUpperCase() + ' PROGRAMME' : 'PROGRAMME';
+                    };
+
                     const printContent = `
                         <!DOCTYPE html>
                         <html lang="en">
                         <head>
                             <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <title>Screening Form - ${data.applicant_info.name}</title>
-                            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
                             <style>
+                                @page { size: A4; margin: 8mm 12mm; }
                                 @media print {
-                                    body { margin: 0; }
+                                    html, body { width: 210mm; height: 297mm; margin: 0; padding: 0; overflow: hidden; }
                                     .no-print { display: none !important; }
-                                    .page-break { page-break-before: always; }
                                 }
-                                
-                                body {
-                                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                                    line-height: 1.6;
-                                    color: #333;
-                                    max-width: 900px;
-                                    margin: 0 auto;
-                                    padding: 20px;
-                                    background: white;
-                                }
-                                
-                                .header {
-                                    text-align: center;
-                                    border-bottom: 3px solid #2563eb;
-                                    padding-bottom: 20px;
-                                    margin-bottom: 30px;
-                                }
-                                
-                                .logo {
-                                    width: 80px;
-                                    height: 80px;
-                                    margin: 0 auto 15px;
-                                    display: block;
-                                }
-                                
-                                .school-name {
-                                    font-size: 24px;
-                                    font-weight: bold;
-                                    color: #1e40af;
-                                    margin-bottom: 5px;
-                                }
-                                
-                                .form-title {
-                                    font-size: 28px;
-                                    font-weight: bold;
-                                    color: #1e3a8a;
-                                    margin-bottom: 10px;
-                                }
-                                
-                                .section {
-                                    margin-bottom: 30px;
-                                    page-break-inside: avoid;
-                                }
-                                
-                                .section-title {
-                                    font-size: 20px;
-                                    font-weight: bold;
-                                    color: #1e40af;
-                                    border-bottom: 2px solid #3b82f6;
-                                    padding-bottom: 10px;
-                                    margin-bottom: 20px;
-                                    background: #f8fafc;
-                                    padding: 15px;
-                                    border-radius: 8px;
-                                }
-                                
-                                .info-grid {
-                                    display: grid;
-                                    grid-template-columns: 1fr 1fr;
-                                    gap: 20px;
-                                }
-                                
-                                .info-item {
-                                    display: flex;
-                                    flex-direction: column;
-                                }
-                                
-                                .info-label {
-                                    font-weight: bold;
-                                    color: #475569;
-                                    margin-bottom: 5px;
-                                    font-size: 14px;
-                                }
-                                
-                                .info-value {
-                                    font-size: 16px;
-                                    color: #1e293b;
-                                    padding: 10px 15px;
-                                    background: #f8fafc;
-                                    border: 1px solid #e2e8f0;
-                                    border-radius: 6px;
-                                    min-height: 20px;
-                                }
-                                
-                                .subjects-table {
-                                    width: 100%;
-                                    border-collapse: collapse;
-                                    margin-top: 15px;
-                                }
-                                
-                                .subjects-table th,
-                                .subjects-table td {
-                                    border: 1px solid #e2e8f0;
-                                    padding: 12px;
-                                    text-align: left;
-                                }
-                                
-                                .subjects-table th {
-                                    background: #f1f5f9;
-                                    font-weight: bold;
-                                    color: #475569;
-                                }
-                                
-                                .subjects-table tr:nth-child(even) {
-                                    background: #f8fafc;
-                                }
-                                
-                                .status-badge {
-                                    display: inline-block;
-                                    padding: 8px 16px;
-                                    background: #fbbf24;
-                                    color: #92400e;
-                                    border-radius: 20px;
-                                    font-weight: bold;
-                                    font-size: 14px;
-                                }
-                                
-                                .print-button {
-                                    position: fixed;
-                                    top: 20px;
-                                    right: 20px;
-                                    padding: 12px 24px;
-                                    background: #059669;
-                                    color: white;
-                                    border: none;
-                                    border-radius: 8px;
-                                    font-weight: bold;
-                                    cursor: pointer;
-                                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                                    z-index: 1000;
-                                }
-                                
-                                .print-button:hover {
-                                    background: #047857;
-                                }
-                                
-                                .footer {
-                                    text-align: center;
-                                    margin-top: 40px;
-                                    padding-top: 20px;
-                                    border-top: 1px solid #e2e8f0;
-                                    color: #64748b;
-                                }
-                                
-                                .highlight-box {
-                                    background: #fef3c7;
-                                    border: 1px solid #f59e0b;
-                                    border-radius: 8px;
-                                    padding: 20px;
-                                    margin: 20px 0;
-                                }
-                                
-                                .highlight-box h4 {
-                                    color: #92400e;
-                                    margin-top: 0;
-                                }
-                                
-                                .highlight-box ul {
-                                    margin: 0;
-                                    padding-left: 20px;
-                                    color: #92400e;
-                                }
-                                
-                                @media print {
-                                    .print-button { display: none; }
-                                }
+                                * { margin: 0; padding: 0; box-sizing: border-box; }
+                                body { font-family: 'Times New Roman', Times, serif; font-size: 11px; line-height: 1.3; color: #000; max-width: 800px; margin: 0 auto; padding: 15px; background: white; }
+                                .header { text-align: center; margin-bottom: 8px; }
+                                .header img { width: 60px; height: 60px; display: block; margin: 0 auto 5px; }
+                                .school-name { font-size: 20px; font-weight: bold; text-transform: uppercase; }
+                                .school-tagline { font-size: 12px; font-style: italic; }
+                                .form-title { font-size: 15px; font-weight: bold; margin-top: 6px; }
+                                .programme-badge { font-size: 11px; font-weight: bold; margin-top: 4px; }
+                                .section-heading { text-align: center; font-weight: bold; font-size: 12px; margin: 10px 0 4px; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 2px; }
+                                .detail-table { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
+                                .detail-table td { padding: 3px 6px; border-bottom: 1px dashed #bbb; vertical-align: top; font-size: 10px; }
+                                .detail-table .label { font-weight: bold; width: 110px; white-space: nowrap; text-transform: uppercase; font-size: 9px; }
+                                .detail-table .value { min-width: 100px; }
+                                .sub-heading { font-weight: bold; font-size: 10px; margin: 6px 0 2px; text-transform: uppercase; }
+                                table.subjects { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 2px; }
+                                table.subjects th, table.subjects td { border: 1px solid #000; padding: 2px 6px; text-align: left; }
+                                table.subjects th { background: #f0f0f0; font-size: 9px; text-align: center; }
+                                td.center { text-align: center; }
+                                .signatures { margin-top: 15px; font-size: 11px; }
+                                .sig-line { margin-bottom: 10px; }
+                                .sig-line span { font-weight: bold; }
+                                .footer { text-align: center; margin-top: 10px; font-size: 9px; color: #888; border-top: 1px solid #ddd; padding-top: 4px; }
+                                .print-btn { position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: #059669; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; z-index: 1000; }
+                                .print-btn:hover { background: #047857; }
                             </style>
                         </head>
                         <body>
-                            <button class="print-button no-print" onclick="window.print()">
-                                🖨️ Print Form
-                            </button>
-                            
+                            <button class="print-btn no-print" onclick="window.print()">Print Screening Form</button>
+
                             <div class="header">
-                                <img src="{% static 'assets/images/logos/lakeview.jpg' %}" alt="LakeView Logo" class="logo">
+                                <img src="{% static 'assets/images/logos/lakeview.jpg' %}" alt="Logo">
                                 <div class="school-name">LakeView College of Education</div>
-                                <div class="form-title">Screening Form</div>
-                                <div style="font-size: 18px; font-weight: bold; color: #dc2626; margin: 10px 0; padding: 8px 16px; background: #fef2f2; border: 2px solid #dc2626; border-radius: 20px; display: inline-block;">
-                                    ${(() => {
-                                        // Debug: log the data to see what's available
-                                        console.log('Full data:', data);
-                                        console.log('Applicant info:', data.applicant_info);
-                                        console.log('Program choices:', data.program_choices);
-                                        console.log('Form data:', data.form_data);
-                                        
-                                        // Try to get program type from multiple possible sources
-                                        let programType = 'Unknown';
-                                        
-                                        // Check if we can get it from the applicant's program
-                                        if (data.applicant_info?.program_type) {
-                                            programType = data.applicant_info.program_type;
-                                        } else if (data.program_type) {
-                                            programType = data.program_type;
-                                        } else if (data.form_data?.program_type) {
-                                            programType = data.form_data.program_type;
-                                        } else if (data.applicant_info?.program) {
-                                            programType = data.applicant_info.program;
-                                        } else if (data.applicant_info?.program_name) {
-                                            programType = data.applicant_info.program_name;
-                                        } else if (data.applicant_info?.course) {
-                                            programType = data.applicant_info.course;
-                                        }
-                                        
-                                        console.log('Final program type found:', programType);
-                                        
-                                        // Check for program type keywords in the program name/type
-                                        const programTypeLower = programType.toLowerCase();
-                                        
-                                        if (programTypeLower.includes('degree') || programTypeLower.includes('b.ed') || programTypeLower.includes('bachelor')) {
-                                            return 'DEGREE PROGRAMME';
-                                        } else if (programTypeLower.includes('nce') || programTypeLower.includes('national certificate')) {
-                                            return 'NCE PROGRAMME';
-                                        } else if (programTypeLower.includes('diploma') || programTypeLower.includes('dip')) {
-                                            return 'DIPLOMA PROGRAMME';
-                                        } else if (programType !== 'Unknown') {
-                                            return programType.toUpperCase() + ' PROGRAMME';
-                                        } else {
-                                            return 'PROGRAMME';
-                                        }
-                                    })()}
-                                </div>
-                                <div style="font-size: 16px; color: #64748b;">Academic Year: 2024/2025</div>
+                                <div class="school-tagline">...Centre of Excellence</div>
+                                <div class="form-title">SCREENING FORM</div>
+                                <div class="programme-badge">${getProgrammeType()}</div>
                             </div>
-                            
-                            <!-- Personal Information -->
-                            <div class="section">
-                                <div class="section-title">
-                                    <i class="fas fa-user mr-2"></i>Personal Information
-                                </div>
-                                <div class="info-grid">
-                                    <div class="info-item">
-                                        <div class="info-label">First Name</div>
-                                        <div class="info-value">${data.personal_info.first_name || 'N/A'}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Middle Name</div>
-                                        <div class="info-value">${data.personal_info.middle_name || 'N/A'}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Surname</div>
-                                        <div class="info-value">${data.personal_info.surname || 'N/A'}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Date of Birth</div>
-                                        <div class="info-value">${data.personal_info.date_of_birth}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Sex</div>
-                                        <div class="info-value">${data.personal_info.sex}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">State of Origin</div>
-                                        <div class="info-value">${data.personal_info.state_of_origin}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Local Government</div>
-                                        <div class="info-value">${data.personal_info.local_government}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Email</div>
-                                        <div class="info-value">${data.personal_info.email}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Phone Number</div>
-                                        <div class="info-value">${data.personal_info.phone_number}</div>
-                                    </div>
-                                    <div class="info-item" style="grid-column: 1 / -1;">
-                                        <div class="info-label">Contact Address</div>
-                                        <div class="info-value">${data.personal_info.contact_address}</div>
-                                    </div>
-                                </div>
+
+                            <div class="section-heading">Personal Information</div>
+                            <table class="detail-table">
+                                <tr>
+                                    <td class="label">Surname</td>
+                                    <td class="value">${(data.personal_info.surname || 'N/A').toUpperCase()}</td>
+                                    <td class="label">First Name</td>
+                                    <td class="value">${(data.personal_info.first_name || 'N/A').toUpperCase()}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">Middle Name</td>
+                                    <td class="value">${(data.personal_info.middle_name || 'N/A').toUpperCase()}</td>
+                                    <td class="label">Sex</td>
+                                    <td class="value">${data.personal_info.sex}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">Date of Birth</td>
+                                    <td class="value">${data.personal_info.date_of_birth}</td>
+                                    <td class="label">State of Origin</td>
+                                    <td class="value">${data.personal_info.state_of_origin}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">Local Govt</td>
+                                    <td class="value">${data.personal_info.local_government}</td>
+                                    <td class="label">Phone</td>
+                                    <td class="value">${data.personal_info.phone_number}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">Email</td>
+                                    <td class="value">${data.personal_info.email}</td>
+                                    <td class="label">Address</td>
+                                    <td class="value">${data.personal_info.contact_address}</td>
+                                </tr>
+                            </table>
+
+                            <div class="section-heading">JAMB & Academic Background</div>
+                            <table class="detail-table">
+                                <tr>
+                                    <td class="label">JAMB Reg No</td>
+                                    <td class="value">${data.jamb_details.jamb_reg_no || 'N/A'}</td>
+                                    <td class="label">JAMB Score</td>
+                                    <td class="value">${data.jamb_details.jamb_score || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">Primary School</td>
+                                    <td class="value">${data.academic_info.primary_school || 'N/A'}</td>
+                                    <td class="label">Dates</td>
+                                    <td class="value">${data.academic_info.primary_school_dates || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">Secondary School</td>
+                                    <td class="value">${data.academic_info.secondary_school || 'N/A'}</td>
+                                    <td class="label">Dates</td>
+                                    <td class="value">${data.academic_info.secondary_school_dates || 'N/A'}</td>
+                                </tr>
+                            </table>
+
+                            <div class="section-heading">Examination Details</div>
+                            <table class="detail-table">
+                                <tr>
+                                    <td class="label">1st Sitting Type</td>
+                                    <td class="value">${data.examination_details.first_sitting.exam_type}</td>
+                                    <td class="label">Exam No</td>
+                                    <td class="value">${data.examination_details.first_sitting.exam_number}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">1st Sitting Year</td>
+                                    <td class="value">${data.examination_details.first_sitting.exam_year}</td>
+                                    <td class="label"></td>
+                                    <td class="value"></td>
+                                </tr>
+                                <tr>
+                                    <td class="label">2nd Sitting Type</td>
+                                    <td class="value">${data.examination_details.second_sitting.exam_type || 'N/A'}</td>
+                                    <td class="label">Exam No</td>
+                                    <td class="value">${data.examination_details.second_sitting.exam_number || 'N/A'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">2nd Sitting Year</td>
+                                    <td class="value">${data.examination_details.second_sitting.exam_year || 'N/A'}</td>
+                                    <td class="label"></td>
+                                    <td class="value"></td>
+                                </tr>
+                            </table>
+
+                            <div class="sub-heading">First Sitting Subjects</div>
+                            <table class="subjects">
+                                <thead>
+                                    <tr>
+                                        <th style="width:30px;">SN</th>
+                                        <th>Subject</th>
+                                        <th style="width:60px;">Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.subjects.first_sitting.map((s, i) =>
+                                        '<tr><td class="center">' + (i+1) + '</td><td>' + s.subject + '</td><td class="center">' + s.grade + '</td></tr>'
+                                    ).join('')}
+                                </tbody>
+                            </table>
+
+                            ${data.subjects.second_sitting.length > 0 ? `
+                                <div class="sub-heading">Second Sitting Subjects</div>
+                                <table class="subjects">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px;">SN</th>
+                                            <th>Subject</th>
+                                            <th style="width:60px;">Grade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.subjects.second_sitting.map((s, i) =>
+                                            '<tr><td class="center">' + (i+1) + '</td><td>' + s.subject + '</td><td class="center">' + s.grade + '</td></tr>'
+                                        ).join('')}
+                                    </tbody>
+                                </table>
+                            ` : ''}
+
+                            <div class="section-heading">Programme Choices</div>
+                            <table class="detail-table">
+                                <tr>
+                                    <td class="label">1st Choice</td>
+                                    <td class="value">${data.program_choices.first_choice}</td>
+                                    <td class="label">2nd Choice</td>
+                                    <td class="value">${data.program_choices.second_choice}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">3rd Choice</td>
+                                    <td class="value">${data.program_choices.third_choice}</td>
+                                    <td class="label"></td>
+                                    <td class="value"></td>
+                                </tr>
+                            </table>
+
+                            <div class="signatures">
+                                <div class="sig-line"><span>APPLICANT'S SIGNATURE:</span> ..............................................................................................................................................................................................</div>
+                                <div class="sig-line"><span>DATE:</span> ..........................................................................................................................................................................................................................</div>
                             </div>
-                            
-                            <!-- JAMB Details -->
-                            <div class="section">
-                                <div class="section-title">
-                                    <i class="fas fa-graduation-cap mr-2"></i>JAMB Details
-                                </div>
-                                <div class="info-grid">
-                                    <div class="info-item">
-                                        <div class="info-label">JAMB Registration Number</div>
-                                        <div class="info-value">${data.jamb_details.jamb_reg_no || 'N/A'}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">JAMB Score</div>
-                                        <div class="info-value">${data.jamb_details.jamb_score || 'N/A'}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Academic Information -->
-                            <div class="section">
-                                <div class="section-title">
-                                    <i class="fas fa-school mr-2"></i>Academic Information
-                                </div>
-                                <div class="info-grid">
-                                    <div class="info-item">
-                                        <div class="info-label">Primary School</div>
-                                        <div class="info-value">${data.academic_info.primary_school || 'N/A'}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Primary School Dates</div>
-                                        <div class="info-value">${data.academic_info.primary_school_dates || 'N/A'}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Secondary School</div>
-                                        <div class="info-value">${data.academic_info.secondary_school || 'N/A'}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Secondary School Dates</div>
-                                        <div class="info-value">${data.academic_info.secondary_school_dates || 'N/A'}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Examination Details -->
-                            <div class="section">
-                                <div class="section-title">
-                                    <i class="fas fa-certificate mr-2"></i>Examination Details
-                                </div>
-                                
-                                <!-- First Sitting -->
-                                <div style="margin-bottom: 20px;">
-                                    <h4 style="color: #1e40af; margin-bottom: 15px;">
-                                        <i class="fas fa-star text-yellow-500 mr-2"></i>First Sitting (Required)
-                                    </h4>
-                                    <div class="info-grid">
-                                        <div class="info-item">
-                                            <div class="info-label">Exam Type</div>
-                                            <div class="info-value">${data.examination_details.first_sitting.exam_type}</div>
-                                        </div>
-                                        <div class="info-item">
-                                            <div class="info-label">Exam Number</div>
-                                            <div class="info-value">${data.examination_details.first_sitting.exam_number}</div>
-                                        </div>
-                                        <div class="info-item">
-                                            <div class="info-label">Exam Year</div>
-                                            <div class="info-value">${data.examination_details.first_sitting.exam_year}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Second Sitting -->
-                                <div>
-                                    <h4 style="color: #64748b; margin-bottom: 15px;">
-                                        <i class="fas fa-star text-gray-400 mr-2"></i>Second Sitting (Optional)
-                                    </h4>
-                                    <div class="info-grid">
-                                        <div class="info-item">
-                                            <div class="info-label">Exam Type</div>
-                                            <div class="info-value">${data.examination_details.second_sitting.exam_type}</div>
-                                        </div>
-                                        <div class="info-item">
-                                            <div class="info-label">Exam Number</div>
-                                            <div class="info-value">${data.examination_details.second_sitting.exam_number}</div>
-                                        </div>
-                                        <div class="info-item">
-                                            <div class="info-label">Exam Year</div>
-                                            <div class="info-value">${data.examination_details.second_sitting.exam_year}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Academic Subjects -->
-                            <div class="section">
-                                <div class="section-title">
-                                    <i class="fas fa-book mr-2"></i>Academic Subjects
-                                </div>
-                                
-                                <!-- First Sitting Subjects -->
-                                <div style="margin-bottom: 20px;">
-                                    <h4 style="color: #1e40af; margin-bottom: 15px;">First Sitting Subjects</h4>
-                                    <table class="subjects-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Subject</th>
-                                                <th>Grade</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${data.subjects.first_sitting.map(subject => 
-                                                `<tr><td>${subject.subject}</td><td>${subject.grade}</td></tr>`
-                                            ).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                
-                                <!-- Second Sitting Subjects -->
-                                ${data.subjects.second_sitting.length > 0 ? `
-                                <div>
-                                    <h4 style="color: #64748b; margin-bottom: 15px;">Second Sitting Subjects</h4>
-                                    <table class="subjects-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Subject</th>
-                                                <th>Grade</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${data.subjects.second_sitting.map(subject => 
-                                                `<tr><td>${subject.subject}</td><td>${subject.grade}</td></tr>`
-                                            ).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                ` : ''}
-                            </div>
-                            
-                            <!-- Program Choices -->
-                            <div class="section">
-                                <div class="section-title">
-                                    <i class="fas fa-list-ol mr-2"></i>Program Choices
-                                </div>
-                                <div class="info-grid">
-                                    <div class="info-item">
-                                        <div class="info-label">First Choice</div>
-                                        <div class="info-value">${data.program_choices.first_choice}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Second Choice</div>
-                                        <div class="info-value">${data.program_choices.second_choice}</div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Third Choice</div>
-                                        <div class="info-value">${data.program_choices.third_choice}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Application Status -->
-                            <div class="section">
-                                <div class="section-title">
-                                    <i class="fas fa-clipboard-check mr-2"></i>Application Status
-                                </div>
-                                <div style="text-align: center; padding: 20px;">
-                                    <div class="status-badge">
-                                        <i class="fas fa-clock mr-2"></i> Pending Review
-                                    </div>
-                                    <p style="margin-top: 15px; color: #64748b;">
-                                        Your screening form has been successfully submitted and is currently under review by our admissions team.
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <!-- Important Notes -->
-                            <div class="section">
-                                <div class="section-title">
-                                    <i class="fas fa-info-circle mr-2"></i>Important Notes
-                                </div>
-                                <div class="highlight-box">
-                                    <h4>Please Note:</h4>
-                                    <ul>
-                                        <li>Please keep this form for your records</li>
-                                        <li>You will be notified via email about your application status</li>
-                                        <li>Ensure all uploaded documents are clear and legible</li>
-                                        <li>Contact the admissions office if you have any questions</li>
-                                        <li>This form is valid for the 2024/2025 academic session</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            
+
                             <div class="footer">
-                                <p><strong>LakeView College of Education</strong></p>
-                                <p>Admissions Office | Phone: +234 XXX XXX XXXX | Email: admissions@lakeview.edu.ng</p>
-                                <p>Generated on: ${new Date().toLocaleDateString('en-US', { 
-                                    year: 'numeric', 
-                                    month: 'long', 
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                })}</p>
+                                This screening form was generated from LakeView College portal.
                             </div>
                         </body>
                         </html>
