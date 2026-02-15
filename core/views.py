@@ -165,9 +165,6 @@ def landing_page(request):
     return render(request, 'core/landing.html', context)
 
 
-def contact_page(request):
-    return render(request, 'core/contact.html')
-
 def about_page(request):
     return render(request, 'core/about.html')
 
