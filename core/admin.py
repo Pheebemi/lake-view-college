@@ -150,5 +150,7 @@ class ScreeningPaymentAdmin(admin.ModelAdmin):
 
 @admin.register(Applicant)
 class ApplicantAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_number', 'state')
+    list_display = ('user', 'phone_number', 'state', 'status')
+    list_filter = ('status',)
+    list_editable = ('status',)
     search_fields = ('user__username', 'user__email', 'phone_number')

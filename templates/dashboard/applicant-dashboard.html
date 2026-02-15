@@ -44,10 +44,20 @@
                                 <p class="text-lg font-semibold text-gray-900">{{ applicant.programs.name }}</p>
                             </div>
                             <div class="mt-3 sm:mt-0 sm:ml-4">
-                                {% if has_submitted_form %}
+                                {% if applicant.status == 'pending_review' %}
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold text-yellow-800 bg-yellow-100 border border-yellow-200">
                                         <i class="fas fa-clock mr-2"></i>
                                         Pending Review
+                                    </span>
+                                {% elif applicant.status == 'approved' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold text-green-800 bg-green-100 border border-green-200">
+                                        <i class="fas fa-check-circle mr-2"></i>
+                                        Approved
+                                    </span>
+                                {% elif applicant.status == 'rejected' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold text-red-800 bg-red-100 border border-red-200">
+                                        <i class="fas fa-times-circle mr-2"></i>
+                                        Rejected
                                     </span>
                                 {% else %}
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold text-red-800 bg-red-100 border border-red-200">
@@ -62,11 +72,11 @@
                         <div class="mt-4">
                             <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
                                 <span>Application Progress</span>
-                                <span>{% if has_submitted_form %}100%{% else %}0%{% endif %}</span>
+                                <span>{% if applicant.status != 'not_applied' %}100%{% else %}0%{% endif %}</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
                                 <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" 
-                                     style="width: {% if has_submitted_form %}100%{% else %}0%{% endif %}"></div>
+                                     style="width: {% if applicant.status != 'not_applied' %}100%{% else %}0%{% endif %}"></div>
                             </div>
                         </div>
                     </div>
@@ -116,7 +126,7 @@
         
             <!-- Action Buttons -->
             <div class="mt-8 text-center">
-                {% if not has_submitted_form %}
+                {% if applicant.status == 'not_applied' %}
                     <!-- Check if applicant has paid for screening form -->
                     {% if has_paid_screening_fee %}
                         <a href="{% url 'core:screening_form' %}" 

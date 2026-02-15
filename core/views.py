@@ -454,6 +454,10 @@ def screening_form(request):
                         'message': f'Step {request.POST.get("step", "unknown")} saved successfully'
                     })
 
+                # Update applicant status to pending_review after final form submission
+                applicant.status = 'pending_review'
+                applicant.save(update_fields=['status'])
+
                 # Add success message for final submission
                 messages.success(request, 'Screening form submitted successfully!')
 

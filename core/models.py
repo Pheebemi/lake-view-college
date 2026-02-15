@@ -184,6 +184,12 @@ class Applicant(models.Model):
         ('utme', 'UTME'),
         ('de', 'DE'),
     )
+    STATUS_CHOICES = (
+        ('not_applied', 'Not Applied'),
+        ('pending_review', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
     NIGERIAN_STATES = [(state, state) for state in NIGERIA_STATES_AND_LGAS.keys()]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applicants')
     state = models.CharField(choices=NIGERIAN_STATES, max_length=100)
@@ -192,6 +198,7 @@ class Applicant(models.Model):
     gender = models.CharField(max_length=1, choices=(('M', 'Male'), ('F', 'Female')), blank=True, null=True)
     programs = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True)
     mode = models.CharField(choices=MODE_CHOICES, max_length=10)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_applied')
     
     def __str__(self):
         return self.user.username
