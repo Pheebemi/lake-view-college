@@ -225,4 +225,19 @@ class ApplicantScreeningForm(ModelForm):
     class Meta:
         model = ScreeningForm
         fields = '__all__'
-        exclude = ['applicant', 'created_at' 'courses']
+        exclude = [
+            'applicant',
+            'created_at',
+            'courses',
+            # Exclude verification fields (admin-only)
+            'waec_result_status',
+            'waec_result_comment',
+            'jamb_result_slip_status',
+            'jamb_result_slip_comment',
+            'passport_photo_status',
+            'passport_photo_comment',
+            'birth_certificate_status',
+            'birth_certificate_comment',
+            'verified_by',
+            'verified_at',
+        ]

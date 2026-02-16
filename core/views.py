@@ -377,6 +377,21 @@ def screening_form(request):
             try:
                 screening = form.save(commit=False)
                 screening.applicant = applicant
+
+                # Check if documents were re-uploaded and reset their verification status to pending
+                if 'waec_result' in request.FILES:
+                    screening.waec_result_status = 'pending'
+                    screening.waec_result_comment = None
+                if 'jamb_result_slip' in request.FILES:
+                    screening.jamb_result_slip_status = 'pending'
+                    screening.jamb_result_slip_comment = None
+                if 'passport_photo' in request.FILES:
+                    screening.passport_photo_status = 'pending'
+                    screening.passport_photo_comment = None
+                if 'birth_certificate' in request.FILES:
+                    screening.birth_certificate_status = 'pending'
+                    screening.birth_certificate_comment = None
+
                 screening.save()
 
                 # Process academic subjects
