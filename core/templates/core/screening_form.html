@@ -429,16 +429,19 @@
 
                         <!-- Academic Subjects Section -->
                         <div class="mt-8 bg-gray-50 rounded-xl p-6">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-                                <h4 class="text-lg font-semibold text-gray-900 mb-4 sm:mb-0">Academic Subjects & Grades</h4>
-                                <div class="flex flex-col sm:flex-row gap-3">
-                                    <button type="button" id="addFirstSitting" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2">
-                                        <i class="ti ti-plus text-sm"></i>
-                                        <span>Add First Sitting</span>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-900">Academic Subjects & Grades</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Click the buttons below to add your subject and grade for each sitting</p>
+                                </div>
+                                <div class="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-0">
+                                    <button type="button" id="addFirstSitting" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2 shadow-md">
+                                        <i class="fas fa-plus-circle text-sm"></i>
+                                        <span>Add First Sitting Subject</span>
                                     </button>
-                                    <button type="button" id="addSecondSitting" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center justify-center space-x-2">
-                                        <i class="ti ti-plus text-sm"></i>
-                                        <span>Add Second Sitting</span>
+                                    <button type="button" id="addSecondSitting" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center justify-center space-x-2 shadow-md">
+                                        <i class="fas fa-plus-circle text-sm"></i>
+                                        <span>Add Second Sitting Subject</span>
                                     </button>
                                 </div>
                             </div>
@@ -448,9 +451,15 @@
                                 <h5 class="text-md font-medium text-gray-800 mb-4 flex items-center">
                                     <span class="w-3 h-3 bg-blue-500 rounded-full mr-3"></span>
                                     First Sitting Subjects
+                                    <span class="text-red-500 ml-2 text-sm">*</span>
                                 </h5>
-                                <div id="firstSittingSubjects" class="space-y-4">
-                                    <!-- Dynamic subjects will be added here -->
+                                <div id="firstSittingSubjects" class="space-y-4 min-h-[60px]">
+                                    <!-- Placeholder when no subjects added -->
+                                    <div class="firstSittingPlaceholder bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg p-6 text-center">
+                                        <i class="fas fa-arrow-up text-blue-400 text-2xl mb-2"></i>
+                                        <p class="text-blue-700 font-medium">Click "Add First Sitting Subject" button above to add your subjects</p>
+                                        <p class="text-blue-600 text-sm mt-1">Each subject field will appear here</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -459,9 +468,15 @@
                                 <h5 class="text-md font-medium text-gray-800 mb-4 flex items-center">
                                     <span class="w-3 h-3 bg-green-500 rounded-full mr-3"></span>
                                     Second Sitting Subjects
+                                    <span class="text-gray-500 ml-2 text-sm">(Optional)</span>
                                 </h5>
-                                <div id="secondSittingSubjects" class="space-y-4">
-                                    <!-- Dynamic subjects will be added here -->
+                                <div id="secondSittingSubjects" class="space-y-4 min-h-[60px]">
+                                    <!-- Placeholder when no subjects added -->
+                                    <div class="secondSittingPlaceholder bg-green-50 border-2 border-dashed border-green-300 rounded-lg p-6 text-center">
+                                        <i class="fas fa-arrow-up text-green-400 text-2xl mb-2"></i>
+                                        <p class="text-green-700 font-medium">Click "Add Second Sitting Subject" button above to add your subjects</p>
+                                        <p class="text-green-600 text-sm mt-1">Each subject field will appear here (if applicable)</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1285,30 +1300,44 @@ document.addEventListener('DOMContentLoaded', function() {
     function createSubjectCard(sitting, subjectId) {
         const isFirstSitting = sitting === 'first';
         const colorClass = isFirstSitting ? 'blue' : 'green';
+        const borderColor = isFirstSitting ? 'border-blue-300' : 'border-green-300';
+        const bgColor = isFirstSitting ? 'bg-blue-50' : 'bg-green-50';
         const containerId = isFirstSitting ? 'firstSittingSubjects' : 'secondSittingSubjects';
-        
+
         const card = document.createElement('div');
-        card.className = `bg-white border border-${colorClass}-200 rounded-lg p-4 shadow-sm`;
+        card.className = `bg-white border-2 ${borderColor} rounded-lg p-4 shadow-md transition-all duration-300`;
         card.id = `subject-card-${sitting}-${subjectId}`;
-        
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(-10px)';
+
         card.innerHTML = `
-            <div class="flex items-center justify-between mb-4">
-                <h6 class="text-sm font-semibold text-gray-800">Subject ${subjectId}</h6>
-                <button type="button" onclick="removeSubject('${sitting}', ${subjectId})" class="text-red-500 hover:text-red-700 transition-colors duration-200">
-                    <i class="ti ti-trash text-sm"></i>
+            <div class="flex items-center justify-between mb-4 ${bgColor} p-2 rounded-lg">
+                <h6 class="text-sm font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-book-open text-${colorClass}-600 mr-2"></i>
+                    Subject ${subjectId}
+                </h6>
+                <button type="button" onclick="removeSubject('${sitting}', ${subjectId})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs font-semibold transition-colors duration-200 flex items-center space-x-1">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Remove</span>
                 </button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Subject</label>
-                    <select name="academic_subjects[${sitting}][${subjectId}][subject]" class="subject-select w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-${colorClass}-500 focus:border-${colorClass}-500" required>
+                    <label class="block text-xs font-bold text-gray-700 mb-2">
+                        <i class="fas fa-graduation-cap text-${colorClass}-600 mr-1"></i>
+                        Subject <span class="text-red-500">*</span>
+                    </label>
+                    <select name="academic_subjects[${sitting}][${subjectId}][subject]" class="subject-select w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-${colorClass}-500 focus:border-${colorClass}-500" required>
                         <option value="">Select Subject</option>
                         ${subjectChoices.map(subject => `<option value="${subject.value}">${subject.label}</option>`).join('')}
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Grade</label>
-                    <select name="academic_subjects[${sitting}][${subjectId}][grade]" class="grade-select w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-${colorClass}-500 focus:border-${colorClass}-500" required>
+                    <label class="block text-xs font-bold text-gray-700 mb-2">
+                        <i class="fas fa-award text-${colorClass}-600 mr-1"></i>
+                        Grade <span class="text-red-500">*</span>
+                    </label>
+                    <select name="academic_subjects[${sitting}][${subjectId}][grade]" class="grade-select w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-${colorClass}-500 focus:border-${colorClass}-500" required>
                         <option value="">Select Grade</option>
                         ${gradeChoices.map(grade => `<option value="${grade.value}">${grade.label}</option>`).join('')}
                     </select>
@@ -1338,28 +1367,56 @@ document.addEventListener('DOMContentLoaded', function() {
         return card;
     }
 
-    function addSubject(sitting) {
+    function addSubject(sitting, silent = false) {
         const subjects = academicSubjects[sitting === 'first' ? 'firstSitting' : 'secondSitting'];
         const subjectId = subjects.length + 1;
 
         if (subjectId > 9) {
-            showAlert('Maximum 9 subjects allowed per sitting', 'warning');
+            if (!silent) {
+                showAlert('Maximum 9 subjects allowed per sitting', 'warning');
+            }
             return;
         }
-        
+
         subjects.push({id: subjectId, subject: '', grade: ''});
         const card = createSubjectCard(sitting, subjectId);
-        
+
         const container = document.getElementById(sitting === 'first' ? 'firstSittingSubjects' : 'secondSittingSubjects');
+
+        // Remove placeholder if this is the first subject
+        if (subjectId === 1) {
+            const placeholder = container.querySelector(`.${sitting}SittingPlaceholder`);
+            if (placeholder) {
+                placeholder.remove();
+            }
+        }
+
         container.appendChild(card);
-        
+
+        // Animate card in
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 10);
+
+        // Scroll to the newly added card (only if not silent)
+        if (!silent) {
+            setTimeout(() => {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+
+            // Show success alert
+            const sittingName = sitting === 'first' ? 'First' : 'Second';
+            showAlert(`Subject field added for ${sittingName} Sitting! Fill in the details below.`, 'success');
+        }
+
         updateSummary(sitting);
     }
 
     function removeSubject(sitting, subjectId) {
         const subjects = academicSubjects[sitting === 'first' ? 'firstSitting' : 'secondSitting'];
         const index = subjects.findIndex(s => s.id === subjectId);
-        
+
         if (index > -1) {
             subjects.splice(index, 1);
             // Reorder remaining subjects
@@ -1367,15 +1424,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 subject.id = idx + 1;
             });
         }
-        
+
         const card = document.getElementById(`subject-card-${sitting}-${subjectId}`);
         if (card) {
-            card.remove();
+            // Animate out
+            card.style.opacity = '0';
+            card.style.transform = 'translateX(-20px)';
+            setTimeout(() => {
+                card.remove();
+
+                // Recreate cards with new IDs
+                recreateSubjectCards(sitting);
+
+                // Show placeholder if no subjects left
+                const container = document.getElementById(sitting === 'first' ? 'firstSittingSubjects' : 'secondSittingSubjects');
+                if (subjects.length === 0) {
+                    const placeholderClass = sitting === 'first' ? 'firstSittingPlaceholder' : 'secondSittingPlaceholder';
+                    const colorClass = sitting === 'first' ? 'blue' : 'green';
+                    const placeholder = document.createElement('div');
+                    placeholder.className = `${placeholderClass} bg-${colorClass}-50 border-2 border-dashed border-${colorClass}-300 rounded-lg p-6 text-center`;
+                    placeholder.innerHTML = `
+                        <i class="fas fa-arrow-up text-${colorClass}-400 text-2xl mb-2"></i>
+                        <p class="text-${colorClass}-700 font-medium">Click "Add ${sitting === 'first' ? 'First' : 'Second'} Sitting Subject" button above to add your subjects</p>
+                        <p class="text-${colorClass}-600 text-sm mt-1">Each subject field will appear here${sitting === 'second' ? ' (if applicable)' : ''}</p>
+                    `;
+                    container.appendChild(placeholder);
+                }
+
+                updateSummary(sitting);
+            }, 300);
         }
-        
-        // Recreate cards with new IDs
-        recreateSubjectCards(sitting);
-        updateSummary(sitting);
+
+        // Show info alert
+        const sittingName = sitting === 'first' ? 'First' : 'Second';
+        showAlert(`Subject removed from ${sittingName} Sitting`, 'info');
     }
 
     function recreateSubjectCards(sitting) {
@@ -1438,7 +1520,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Load first sitting subjects
         if (existingSubjectsData.first && existingSubjectsData.first.length > 0) {
             existingSubjectsData.first.forEach((subjectData, index) => {
-                addSubject('first');
+                addSubject('first', true); // true = silent mode, no alerts
                 const card = document.querySelector(`#subject-card-first-${index + 1}`);
                 if (card) {
                     const subjectSelect = card.querySelector('select[name*="[subject]"]');
@@ -1461,7 +1543,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Load second sitting subjects
         if (existingSubjectsData.second && existingSubjectsData.second.length > 0) {
             existingSubjectsData.second.forEach((subjectData, index) => {
-                addSubject('second');
+                addSubject('second', true); // true = silent mode, no alerts
                 const card = document.querySelector(`#subject-card-second-${index + 1}`);
                 if (card) {
                     const subjectSelect = card.querySelector('select[name*="[subject]"]');
