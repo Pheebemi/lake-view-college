@@ -178,7 +178,8 @@ def edit_student_profile(request):
     context = {
         'profile': profile,
         'user': request.user,
-        'states': NIGERIA_STATES_AND_LGAS.keys()
+        'states': list(NIGERIA_STATES_AND_LGAS.keys()),
+        'states_lgas': json.dumps(NIGERIA_STATES_AND_LGAS)
     }
     return render(request, 'accounts/edit_student_profile.html', context)
 

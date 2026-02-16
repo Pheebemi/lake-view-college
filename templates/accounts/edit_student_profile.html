@@ -130,9 +130,9 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Local Government</label>
-                            <input type="text" name="local_government" value="{{ profile.local_government|default:'' }}"
-                                placeholder="Your LGA"
-                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <select name="local_government" id="lga" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white">
+                                <option value="">Select LGA</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Permanent Address</label>
@@ -157,4 +157,52 @@
         </div>
     </main>
 </div>
+
+<script>
+    // State and LGA dynamic dropdown functionality
+    const stateSelect = document.getElementById('state');
+    const lgaSelect = document.getElementById('lga');
+
+    // Get the states data from the context (safely parse the JSON)
+    let statesData = {};
+    try {
+        statesData = JSON.parse('{{ states_lgas|escapejs }}');
+    } catch (e) {
+        console.error('Error parsing states data:', e);
+    }
+
+    // Function to populate LGA dropdown
+    function updateLGAs(selectedState) {
+        if (!lgaSelect) return; // Guard clause if element not found
+
+        lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+
+        if (selectedState && statesData[selectedState]) {
+            statesData[selectedState].forEach(lga => {
+                const option = document.createElement('option');
+                option.value = lga;
+                option.textContent = lga;
+                lgaSelect.appendChild(option);
+            });
+        }
+
+        // Restore previously selected LGA if it exists
+        const previousLGA = '{{ profile.local_government|default:""|escapejs }}';
+        if (previousLGA && lgaSelect.querySelector(`option[value="${previousLGA}"]`)) {
+            lgaSelect.value = previousLGA;
+        }
+    }
+
+    // State select change handler
+    if (stateSelect) {
+        stateSelect.addEventListener('change', function() {
+            updateLGAs(this.value);
+        });
+    }
+
+    // Initialize LGAs if state is pre-selected
+    if (stateSelect && stateSelect.value) {
+        updateLGAs(stateSelect.value);
+    }
+</script>
 {% endblock %}
