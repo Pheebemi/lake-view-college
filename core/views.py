@@ -129,25 +129,30 @@ def applicant_dashboard(request):
     if request.user.user_type != 'applicant':
         messages.error(request, "Access denied. Applicants only.")
         return redirect('core:landing_page')
-    
+
     try:
         applicant = Applicant.objects.get(user=request.user)
         has_submitted_form = ScreeningForm.objects.filter(applicant=applicant).exists()
-        
+
         # Check if applicant has paid for screening form
         has_paid_screening_fee = ScreeningPayment.objects.filter(
-            applicant=applicant, 
+            applicant=applicant,
             status='success'
         ).exists()
-        
+
         # Get the screening fee based on the applicant's program
         screening_fee = applicant.programs.screening_fee
-        
+
+        # Get recent unread notifications (context processor provides unread_count globally)
+        from dashboard.models import Notification
+        recent_notifications = Notification.objects.filter(user=request.user, is_read=False).order_by('-created_at')[:5]
+
         context = {
             'applicant': applicant,
             'has_submitted_form': has_submitted_form,
             'has_paid_screening_fee': has_paid_screening_fee,
-            'screening_fee': screening_fee
+            'screening_fee': screening_fee,
+            'notifications': recent_notifications,
         }
         return render(request, 'dashboard/applicant-dashboard.html', context)
     except Applicant.DoesNotExist:

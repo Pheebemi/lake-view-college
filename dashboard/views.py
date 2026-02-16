@@ -153,12 +153,13 @@ def support(request):
 
 @login_required
 def notifications(request):
-    notifications = Notification.objects.filter(user=request.user, is_read=False)
-    count = notifications.count()
-    context = {
-        'notifications': notifications,
-        'count': count, 
+    # Get all notifications (both read and unread), sorted by unread first, then by date
+    all_notifications = Notification.objects.filter(user=request.user).order_by('is_read', '-created_at')
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
 
+    context = {
+        'notifications': all_notifications,
+        'count': unread_count,
     }
     return render(request, 'dashboard/notifications.html', context)
 

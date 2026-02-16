@@ -1,5 +1,8 @@
 from django.contrib import admin
+from django.shortcuts import render, redirect
+from django.contrib import messages as django_messages
 from .models import ContactSubmission, Applicant, Program, ProgramChoice, ScreeningForm, AcademicSubject, ExaminationDetail, ScreeningPayment
+from dashboard.models import Notification
 
 # Register Program only
 admin.site.register([Program])
@@ -154,3 +157,64 @@ class ApplicantAdmin(admin.ModelAdmin):
     list_filter = ('status',)
     list_editable = ('status',)
     search_fields = ('user__username', 'user__email', 'phone_number')
+    actions = ['send_notification_to_applicants']
+
+    def send_notification_to_applicants(self, request, queryset):
+        """Admin action to send notifications to selected applicants"""
+        if request.POST.get('notification_message'):
+            # Process the form submission
+            message = request.POST.get('notification_message')
+
+            # Create notifications for all selected applicants
+            notification_count = 0
+            for applicant in queryset:
+                Notification.objects.create(
+                    user=applicant.user,
+                    message=message
+                )
+                notification_count += 1
+
+            django_messages.success(request, f'Successfully sent notification to {notification_count} applicant(s).')
+            return redirect(request.get_full_path())
+
+        # Show the form to enter the notification message
+        return render(request, 'admin/send_notification_form.html', {
+            'applicants': queryset,
+            'action_name': 'send_notification_to_applicants'
+        })
+
+    send_notification_to_applicants.short_description = "Send notification to selected applicants"
+
+    def save_model(self, request, obj, form, change):
+        """Send notification when applicant status changes"""
+        if change:  # If this is an edit (not a new applicant)
+            # Get the old status before saving
+            try:
+                old_status = Applicant.objects.get(pk=obj.pk).status
+            except Applicant.DoesNotExist:
+                old_status = None
+
+            # Save the model first
+            super().save_model(request, obj, form, change)
+
+            # Check if status changed
+            if old_status and old_status != obj.status:
+                # Create status change notification messages
+                status_messages = {
+                    'approved': 'Congratulations! Your application has been approved. Check your email for next steps.',
+                    'rejected': 'Your application status has been updated. Please contact the admissions office for more information.',
+                    'pending_review': 'Your application is now under review. We will notify you once a decision is made.',
+                }
+
+                notification_message = status_messages.get(
+                    obj.status,
+                    f'Your application status has been updated to: {obj.get_status_display()}'
+                )
+
+                # Create notification
+                Notification.objects.create(
+                    user=obj.user,
+                    message=notification_message
+                )
+        else:
+            super().save_model(request, obj, form, change)

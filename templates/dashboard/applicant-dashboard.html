@@ -171,9 +171,62 @@
                     </button>
                 {% endif %}
             </div>
+
+            <!-- Recent Notifications Section -->
+            {% if notifications %}
+            <div class="mt-8 bg-white shadow-lg overflow-hidden rounded-xl">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="bg-purple-100 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-bell text-purple-600"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900">Recent Notifications</h3>
+                        </div>
+                        <a href="{% url 'dashboard:notifications' %}"
+                           class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                            View All
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="divide-y divide-gray-200">
+                    {% for notification in notifications %}
+                        <div class="px-4 py-4 sm:px-6 hover:bg-gray-50 transition-colors duration-150">
+                            <div class="flex items-start">
+                                <div class="bg-blue-100 p-2 rounded-full mr-3 mt-1">
+                                    {% if notification.support_request %}
+                                        <i class="fas fa-reply text-blue-600"></i>
+                                    {% else %}
+                                        <i class="fas fa-info-circle text-blue-600"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 mb-1">
+                                        {{ notification.message }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        {{ notification.created_at|timesince }} ago
+                                    </p>
+                                </div>
+                                {% if notification.support_request %}
+                                    <a href="{% url 'dashboard:support_request_detail' notification.support_request.id %}"
+                                       class="ml-4 text-sm text-blue-600 hover:text-blue-800 font-medium whitespace-nowrap">
+                                        View
+                                        <i class="fas fa-chevron-right ml-1"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
-    
+
     <script>
         // Custom Alert Function
         function showAlert(message, type = 'error') {
