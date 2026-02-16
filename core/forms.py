@@ -75,7 +75,41 @@ class ApplicantScreeningForm(ModelForm):
         required=True,
         widget=forms.TextInput(attrs={'class': 'w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'})
     )
-    
+
+    # School Information Fields
+    primary_school = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Enter primary school name'
+        })
+    )
+    primary_school_dates = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'placeholder': '2012-2018'
+        })
+    )
+    secondary_school = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Enter secondary school name'
+        })
+    )
+    secondary_school_dates = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'placeholder': '2018-2024'
+        })
+    )
+
     first_choice = forms.ModelChoiceField(
         queryset=None,  # Will be set dynamically
         required=True,
@@ -115,7 +149,7 @@ class ApplicantScreeningForm(ModelForm):
     def __init__(self, *args, **kwargs):
         applicant = kwargs.pop('applicant', None)
         super().__init__(*args, **kwargs)
-        
+
         # Populate LGA choices based on the selected state
         if 'state_of_origin' in self.data:
             state = self.data.get('state_of_origin')
@@ -125,7 +159,7 @@ class ApplicantScreeningForm(ModelForm):
             state = self.instance.state_of_origin
             if state in NIGERIA_STATES_AND_LGAS:
                 self.fields['local_government'].choices = [(lga, lga) for lga in NIGERIA_STATES_AND_LGAS[state]]
-        
+
         # Set dynamic program choices based on applicant's program type
         if applicant:
             program_type = applicant.programs.program_type
@@ -133,7 +167,7 @@ class ApplicantScreeningForm(ModelForm):
                 program_type=program_type,
                 is_active=True
             )
-            
+
             self.fields['first_choice'].queryset = choices_queryset
             self.fields['second_choice'].queryset = choices_queryset
             self.fields['third_choice'].queryset = choices_queryset
@@ -143,6 +177,25 @@ class ApplicantScreeningForm(ModelForm):
             self.fields['first_choice'].queryset = empty_queryset
             self.fields['second_choice'].queryset = empty_queryset
             self.fields['third_choice'].queryset = empty_queryset
+
+        # Make file fields not required if editing existing form with files already uploaded
+        if self.instance and self.instance.pk:
+            if self.instance.waec_result:
+                self.fields['waec_result'].required = False
+            if self.instance.jamb_result_slip:
+                self.fields['jamb_result_slip'].required = False
+            if self.instance.passport_photo:
+                self.fields['passport_photo'].required = False
+
+            # Clear 'N/A' default values to show placeholder text
+            if self.instance.primary_school == 'N/A':
+                self.initial['primary_school'] = ''
+            if self.instance.primary_school_dates == 'N/A':
+                self.initial['primary_school_dates'] = ''
+            if self.instance.secondary_school == 'N/A':
+                self.initial['secondary_school'] = ''
+            if self.instance.secondary_school_dates == 'N/A':
+                self.initial['secondary_school_dates'] = ''
 
     def clean(self):
         cleaned_data = super().clean()

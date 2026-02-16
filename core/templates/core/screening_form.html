@@ -289,31 +289,27 @@
                                     <div>
                                         <label class="block text-base font-bold text-gray-800 mb-3">
                                             <i class="fas fa-school text-blue-600 mr-2"></i>
-                                            Primary School Attended
+                                            Primary School Attended <span class="text-red-500">*</span>
                                         </label>
-                                        <div class="relative">
-                                            {{ form.primary_school }}
-                                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                                <i class="fas fa-building text-blue-400"></i>
-                                            </div>
-                                        </div>
+                                        {{ form.primary_school }}
+                                        {% if form.primary_school.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ form.primary_school.errors.0 }}</p>
+                                        {% endif %}
                                     </div>
                                     <div>
                                         <label class="block text-base font-bold text-gray-800 mb-3">
                                             <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
-                                            School Dates
+                                            School Dates <span class="text-red-500">*</span>
                                         </label>
-                                        <div class="relative">
-                                            {{ form.primary_school_dates }}
-                                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                                <i class="fas fa-clock text-blue-400"></i>
-                                            </div>
-                                        </div>
+                                        {{ form.primary_school_dates }}
                                         <p class="text-sm text-blue-600 mt-2 font-medium">Format: 2012-2018</p>
+                                        {% if form.primary_school_dates.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ form.primary_school_dates.errors.0 }}</p>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Secondary School Section -->
                             <div class="bg-white rounded-xl p-5 mb-6 border border-indigo-100 shadow-sm">
                                 <div class="flex items-center mb-4">
@@ -324,27 +320,23 @@
                                     <div>
                                         <label class="block text-base font-bold text-gray-800 mb-3">
                                             <i class="fas fa-university text-indigo-600 mr-2"></i>
-                                            Secondary School Attended
+                                            Secondary School Attended <span class="text-red-500">*</span>
                                         </label>
-                                        <div class="relative">
-                                            {{ form.secondary_school }}
-                                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                                <i class="fas fa-building text-indigo-400"></i>
-                                            </div>
-                                        </div>
+                                        {{ form.secondary_school }}
+                                        {% if form.secondary_school.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ form.secondary_school.errors.0 }}</p>
+                                        {% endif %}
                                     </div>
                                     <div>
                                         <label class="block text-base font-bold text-gray-800 mb-3">
                                             <i class="fas fa-calendar-alt text-indigo-600 mr-2"></i>
-                                            School Dates
+                                            School Dates <span class="text-red-500">*</span>
                                         </label>
-                                        <div class="relative">
-                                            {{ form.secondary_school_dates }}
-                                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                                <i class="fas fa-clock text-indigo-400"></i>
-                                            </div>
-                                        </div>
+                                        {{ form.secondary_school_dates }}
                                         <p class="text-sm text-indigo-600 mt-2 font-medium">Format: 2018-2024</p>
+                                        {% if form.secondary_school_dates.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ form.secondary_school_dates.errors.0 }}</p>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -527,22 +519,93 @@
                         </h3>
                         <p class="text-red-700 text-sm">Upload all required documents for your application</p>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">WAEC/NECO/NABTEP Result</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                WAEC/NECO/NABTEP Result
+                                {% if not existing_form or not existing_form.waec_result %}
+                                <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                            {% if existing_form and existing_form.waec_result %}
+                                <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center text-green-700">
+                                            <i class="fas fa-check-circle mr-2"></i>
+                                            <span class="text-sm font-medium">Already uploaded:</span>
+                                        </div>
+                                    </div>
+                                    <a href="{{ existing_form.waec_result.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block">
+                                        {{ existing_form.waec_result.name|slice:"20:" }}
+                                    </a>
+                                    <p class="text-xs text-gray-600 mt-1">Upload a new file only if you want to replace the current one</p>
+                                </div>
+                            {% endif %}
                             {{ form.waec_result }}
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">JAMB Result Slip (if Applicable)</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                JAMB Result Slip (if Applicable)
+                                {% if not existing_form or not existing_form.jamb_result_slip %}
+                                <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                            {% if existing_form and existing_form.jamb_result_slip %}
+                                <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center text-green-700">
+                                            <i class="fas fa-check-circle mr-2"></i>
+                                            <span class="text-sm font-medium">Already uploaded:</span>
+                                        </div>
+                                    </div>
+                                    <a href="{{ existing_form.jamb_result_slip.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block">
+                                        {{ existing_form.jamb_result_slip.name|slice:"20:" }}
+                                    </a>
+                                    <p class="text-xs text-gray-600 mt-1">Upload a new file only if you want to replace the current one</p>
+                                </div>
+                            {% endif %}
                             {{ form.jamb_result_slip }}
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Birth Certificate</label>
+                            {% if existing_form and existing_form.birth_certificate %}
+                                <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center text-green-700">
+                                            <i class="fas fa-check-circle mr-2"></i>
+                                            <span class="text-sm font-medium">Already uploaded:</span>
+                                        </div>
+                                    </div>
+                                    <a href="{{ existing_form.birth_certificate.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block">
+                                        {{ existing_form.birth_certificate.name|slice:"20:" }}
+                                    </a>
+                                    <p class="text-xs text-gray-600 mt-1">Upload a new file only if you want to replace the current one</p>
+                                </div>
+                            {% endif %}
                             {{ form.birth_certificate }}
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Passport Photograph</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Passport Photograph
+                                {% if not existing_form or not existing_form.passport_photo %}
+                                <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                            {% if existing_form and existing_form.passport_photo %}
+                                <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center text-green-700">
+                                            <i class="fas fa-check-circle mr-2"></i>
+                                            <span class="text-sm font-medium">Already uploaded:</span>
+                                        </div>
+                                    </div>
+                                    <a href="{{ existing_form.passport_photo.url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 underline mt-1 block">
+                                        {{ existing_form.passport_photo.name|slice:"20:" }}
+                                    </a>
+                                    <p class="text-xs text-gray-600 mt-1">Upload a new file only if you want to replace the current one</p>
+                                </div>
+                            {% endif %}
                             {{ form.passport_photo }}
                         </div>
                     </div>
@@ -606,6 +669,60 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Custom Alert Function
+    function showAlert(message, type = 'error') {
+        // Create alert container if it doesn't exist
+        let alertContainer = document.querySelector('.custom-alert-container');
+        if (!alertContainer) {
+            alertContainer = document.createElement('div');
+            alertContainer.className = 'custom-alert-container fixed top-4 right-4 z-50 space-y-2 max-w-sm';
+            document.body.appendChild(alertContainer);
+        }
+
+        // Create alert element
+        const alert = document.createElement('div');
+        alert.className = `px-4 py-3 rounded-lg shadow-lg text-white font-medium text-sm transform transition-all duration-300 ease-in-out ${
+            type === 'success' ? 'bg-green-500' :
+            type === 'warning' ? 'bg-yellow-500' :
+            type === 'info' ? 'bg-blue-500' :
+            'bg-red-500'
+        }`;
+        alert.style.opacity = '0';
+        alert.style.transform = 'translateX(100%)';
+        alert.innerHTML = `
+            <div class="flex items-start">
+                <i class="fas ${
+                    type === 'success' ? 'fa-check-circle' :
+                    type === 'warning' ? 'fa-exclamation-triangle' :
+                    type === 'info' ? 'fa-info-circle' :
+                    'fa-exclamation-circle'
+                } mr-2 mt-0.5"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+        alertContainer.appendChild(alert);
+
+        // Animate in
+        setTimeout(() => {
+            alert.style.opacity = '1';
+            alert.style.transform = 'translateX(0)';
+        }, 10);
+
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+            alert.style.opacity = '0';
+            alert.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                alert.remove();
+                // Remove container if no more alerts
+                if (alertContainer.children.length === 0) {
+                    alertContainer.remove();
+                }
+            }, 300);
+        }, 5000);
+    }
+
     // Multi-step form variables
     let currentStep = 1;
     const totalSteps = 6;
@@ -952,13 +1069,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         } else if (stepNumber === 5) {
-            // Documents - validate required fields
+            // Documents - validate required fields only if not already uploaded
             const requiredFields = ['waec_result', 'jamb_result_slip', 'passport_photo'];
             requiredFields.forEach(fieldName => {
                 const input = currentStepDiv.querySelector(`[name="${fieldName}"]`);
-                if (input && (!input.files || input.files.length === 0)) {
-                    isValid = false;
-                    input.classList.add('error');
+                if (input) {
+                    // Check if there's an existing file (green box indicating file already uploaded)
+                    const hasExistingFile = input.parentElement.querySelector('.bg-green-50');
+
+                    // Only validate if no existing file and no new file selected
+                    if (!hasExistingFile && (!input.files || input.files.length === 0)) {
+                        isValid = false;
+                        input.classList.add('error');
+                    }
                 }
             });
         } else if (stepNumber === 6) {
@@ -982,7 +1105,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentStep = Math.min(currentStep + 1, totalSteps);
                 showStep(currentStep);
             } else {
-                alert('Please fill in all required fields.');
+                showAlert('Please fill in all required fields.', 'error');
             }
         });
     }
@@ -1011,9 +1134,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     break;
                 }
             }
-            
+
             if (!allStepsValid) {
-                alert('Please complete all required fields before submitting the form.');
+                showAlert('Please complete all required fields before submitting the form.', 'error');
                 return;
             }
 
@@ -1071,12 +1194,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     window.location.href = data.redirect_url;
                 } else {
-                    alert(data.message || 'An error occurred.');
+                    showAlert(data.message || 'An error occurred.', 'error');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred while submitting the form.');
+                showAlert('An error occurred while submitting the form.', 'error');
             });
         });
     }
@@ -1218,9 +1341,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function addSubject(sitting) {
         const subjects = academicSubjects[sitting === 'first' ? 'firstSitting' : 'secondSitting'];
         const subjectId = subjects.length + 1;
-        
+
         if (subjectId > 9) {
-            alert('Maximum 9 subjects allowed per sitting');
+            showAlert('Maximum 9 subjects allowed per sitting', 'warning');
             return;
         }
         
