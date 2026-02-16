@@ -22,6 +22,7 @@ urlpatterns = [
     path('applicant/screening/payment/initiate/', views.initiate_screening_payment, name='initiate_screening_payment'),
     path('applicant/screening/payment/verify/<str:reference>/', views.verify_screening_payment, name='verify_screening_payment'),
     path('applicant/screening/', views.screening_form, name='screening_form'),
+    path('applicant/payment/receipt/', views.applicant_payment_receipt, name='applicant_payment_receipt'),
     path('screening-form/data/', views.get_screening_form_data, name='get_screening_form_data'),
     path('api/program-choices/<str:program_type>/', views.get_program_choices, name='get_program_choices'),
     path('student-profile/data/', views.get_student_profile_data, name='get_student_profile_data'),

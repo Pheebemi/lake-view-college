@@ -749,3 +749,71 @@ def generate_pdf(request, user_id):
     response['Content-Disposition'] = f'inline; filename=student_profile_{user.username}.pdf'
     html.write_pdf(response)
     return response
+
+def number_to_words(num):
+    """Convert number to words for Nigerian currency"""
+    ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine']
+    tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
+    teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']
+
+    def convert_hundreds(n):
+        if n == 0:
+            return ''
+        elif n < 10:
+            return ones[n]
+        elif n < 20:
+            return teens[n - 10]
+        elif n < 100:
+            return tens[n // 10] + (' ' + ones[n % 10] if n % 10 != 0 else '')
+        else:
+            return ones[n // 100] + ' Hundred' + (' and ' + convert_hundreds(n % 100) if n % 100 != 0 else '')
+
+    num = int(num)
+    if num == 0:
+        return 'Zero'
+
+    if num >= 1000000:
+        millions = num // 1000000
+        remainder = num % 1000000
+        result = convert_hundreds(millions) + ' Million'
+        if remainder > 0:
+            result += ' ' + number_to_words(remainder)
+        return result
+    elif num >= 1000:
+        thousands = num // 1000
+        remainder = num % 1000
+        result = convert_hundreds(thousands) + ' Thousand'
+        if remainder > 0:
+            result += ' ' + convert_hundreds(remainder)
+        return result
+    else:
+        return convert_hundreds(num)
+
+@login_required
+def applicant_payment_receipt(request):
+    """Display printable payment receipt for applicant"""
+    try:
+        applicant = Applicant.objects.get(user=request.user)
+        # Get the most recent successful payment
+        payment = ScreeningPayment.objects.filter(
+            applicant=applicant,
+            status='success'
+        ).order_by('-payment_date').first()
+
+        if not payment:
+            messages.error(request, 'No payment record found.')
+            return redirect('applicant_dashboard')
+
+        # Convert amount to words
+        amount_in_words = number_to_words(payment.amount)
+
+        context = {
+            'payment': payment,
+            'amount_in_words': amount_in_words
+        }
+
+        return render(request, 'core/applicant_payment_receipt.html', context)
+
+    except Applicant.DoesNotExist:
+        messages.error(request, 'Applicant profile not found.')
+        return redirect('applicant_dashboard')
