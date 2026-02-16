@@ -143,6 +143,9 @@ def applicant_dashboard(request):
         # Get the screening fee based on the applicant's program
         screening_fee = applicant.programs.screening_fee
 
+        # Get screening form if submitted
+        screening_form = ScreeningForm.objects.filter(applicant=applicant).first()
+
         # Get recent unread notifications (context processor provides unread_count globally)
         from dashboard.models import Notification
         recent_notifications = Notification.objects.filter(user=request.user, is_read=False).order_by('-created_at')[:5]
@@ -152,6 +155,7 @@ def applicant_dashboard(request):
             'has_submitted_form': has_submitted_form,
             'has_paid_screening_fee': has_paid_screening_fee,
             'screening_fee': screening_fee,
+            'screening_form': screening_form,
             'notifications': recent_notifications,
         }
         return render(request, 'dashboard/applicant-dashboard.html', context)

@@ -237,9 +237,79 @@ class ScreeningForm(models.Model):
     jamb_result_slip = models.FileField(upload_to='jamb/', default='test.docx')
     birth_certificate = models.FileField(upload_to='birth_certificate/', blank=True, null=True, default='test.docx')
     passport_photo = models.FileField(upload_to='passport/', default ='test.docx')
-    
+
+    # Document Verification Status Fields
+    VERIFICATION_STATUS_CHOICES = [
+        ('pending', 'Pending Verification'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    ]
+
+    waec_result_status = models.CharField(
+        max_length=20,
+        choices=VERIFICATION_STATUS_CHOICES,
+        default='pending',
+        help_text='Verification status for WAEC/NECO result'
+    )
+    waec_result_comment = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Comment if document is rejected'
+    )
+
+    jamb_result_slip_status = models.CharField(
+        max_length=20,
+        choices=VERIFICATION_STATUS_CHOICES,
+        default='pending',
+        help_text='Verification status for JAMB result slip'
+    )
+    jamb_result_slip_comment = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Comment if document is rejected'
+    )
+
+    passport_photo_status = models.CharField(
+        max_length=20,
+        choices=VERIFICATION_STATUS_CHOICES,
+        default='pending',
+        help_text='Verification status for passport photo'
+    )
+    passport_photo_comment = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Comment if document is rejected'
+    )
+
+    birth_certificate_status = models.CharField(
+        max_length=20,
+        choices=VERIFICATION_STATUS_CHOICES,
+        default='pending',
+        help_text='Verification status for birth certificate'
+    )
+    birth_certificate_comment = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Comment if document is rejected'
+    )
+
+    # Verification metadata
+    verified_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='verified_forms',
+        help_text='Admin who verified/rejected documents'
+    )
+    verified_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='When documents were last verified/rejected'
+    )
+
     declaration = models.BooleanField(default=False)
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -281,3 +351,47 @@ class ScreeningForm(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+    def get_document_verification_summary(self):
+        """Get a summary of document verification statuses"""
+        documents = {
+            'WAEC/NECO Result': self.waec_result_status,
+            'JAMB Result Slip': self.jamb_result_slip_status,
+            'Passport Photo': self.passport_photo_status,
+        }
+        if self.birth_certificate:
+            documents['Birth Certificate'] = self.birth_certificate_status
+
+        verified = sum(1 for status in documents.values() if status == 'verified')
+        rejected = sum(1 for status in documents.values() if status == 'rejected')
+        pending = sum(1 for status in documents.values() if status == 'pending')
+
+        return {
+            'total': len(documents),
+            'verified': verified,
+            'rejected': rejected,
+            'pending': pending,
+            'all_verified': verified == len(documents),
+            'has_rejected': rejected > 0,
+        }
+
+    def has_rejected_documents(self):
+        """Check if any documents are rejected"""
+        return any([
+            self.waec_result_status == 'rejected',
+            self.jamb_result_slip_status == 'rejected',
+            self.passport_photo_status == 'rejected',
+            self.birth_certificate_status == 'rejected' if self.birth_certificate else False,
+        ])
+
+    def all_documents_verified(self):
+        """Check if all required documents are verified"""
+        required_verified = all([
+            self.waec_result_status == 'verified',
+            self.jamb_result_slip_status == 'verified',
+            self.passport_photo_status == 'verified',
+        ])
+        # Check birth certificate only if uploaded
+        if self.birth_certificate:
+            return required_verified and self.birth_certificate_status == 'verified'
+        return required_verified

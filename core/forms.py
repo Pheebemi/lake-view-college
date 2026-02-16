@@ -178,13 +178,15 @@ class ApplicantScreeningForm(ModelForm):
             self.fields['second_choice'].queryset = empty_queryset
             self.fields['third_choice'].queryset = empty_queryset
 
-        # Make file fields not required if editing existing form with files already uploaded
+        # Make file fields not required based on verification status
         if self.instance and self.instance.pk:
-            if self.instance.waec_result:
+            # Only require re-upload for rejected documents
+            # Verified or pending documents don't need re-upload
+            if self.instance.waec_result and self.instance.waec_result_status != 'rejected':
                 self.fields['waec_result'].required = False
-            if self.instance.jamb_result_slip:
+            if self.instance.jamb_result_slip and self.instance.jamb_result_slip_status != 'rejected':
                 self.fields['jamb_result_slip'].required = False
-            if self.instance.passport_photo:
+            if self.instance.passport_photo and self.instance.passport_photo_status != 'rejected':
                 self.fields['passport_photo'].required = False
 
             # Clear 'N/A' default values to show placeholder text
