@@ -121,9 +121,17 @@ def staff_login(request):
 
 
 def logout_user(request):
+    user_type = request.user.user_type if request.user.is_authenticated else 'student'
     logout(request)
-    messages.info(request, 'Your session has expired Login to continue 😔')
-    return redirect('accounts:student_login')
+    messages.info(request, 'You have been logged out successfully.')
+    if user_type == 'staff':
+        return redirect('accounts:staff_login')
+    elif user_type == 'applicant':
+        return redirect('core:applicant_login')
+    elif user_type == 'application_manager':
+        return redirect('accounts:app_manager_login')
+    else:
+        return redirect('accounts:student_login')
 
 @login_required
 def student_profile(request):
