@@ -9,10 +9,11 @@ class User(AbstractUser):
         ('student', 'Student'),
         ('staff', 'Staff'),
         ('admin', 'Admin'),
-        ('applicant', 'Applicant')
+        ('applicant', 'Applicant'),
+        ('application_manager', 'Application Manager')
     )
 
-    user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES)
+    user_type = models.CharField(max_length=25, choices=USER_TYPE_CHOICES)
     is_verified = models.BooleanField(default=False)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
@@ -379,7 +380,48 @@ class PaymentTransaction(models.Model):
     
     def __str__(self):
         return f"{self.student.user.get_full_name()} - {self.payment_type} - {self.session}"
-    
+
     class Meta:
         ordering = ['-payment_date']
+
+
+class ApplicationActivity(models.Model):
+    """Track all actions performed on applicant records by application managers"""
+    ACTION_CHOICES = (
+        ('status_changed', 'Status Changed'),
+        ('document_verified', 'Document Verified'),
+        ('document_rejected', 'Document Rejected'),
+        ('note_added', 'Note Added'),
+        ('notification_sent', 'Notification Sent'),
+        ('admission_offered', 'Admission Offered'),
+        ('admission_rejected', 'Admission Rejected'),
+    )
+
+    applicant = models.ForeignKey('core.Applicant', on_delete=models.CASCADE, related_name='activities')
+    manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='managed_activities')
+    action = models.CharField(max_length=30, choices=ACTION_CHOICES)
+    details = models.TextField(help_text="Description of the action taken")
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name_plural = 'Application Activities'
+
+    def __str__(self):
+        return f"{self.action} - {self.applicant.user.get_full_name()} by {self.manager.get_full_name() if self.manager else 'System'}"
+
+
+class ApplicationNote(models.Model):
+    """Internal notes/comments on applicant records by application managers"""
+    applicant = models.ForeignKey('core.Applicant', on_delete=models.CASCADE, related_name='notes')
+    manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='application_notes')
+    note = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Note by {self.manager.get_full_name() if self.manager else 'Unknown'} on {self.applicant.user.get_full_name()}"
 

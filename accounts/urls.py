@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, course_views
+from . import views, course_views, app_manager_views
 
 
 app_name = 'accounts'
@@ -26,4 +26,13 @@ urlpatterns = [
     #path('student-dashboard/', views.student_dashboard, name='student_dashboard'),
     path('student-attendance/', views.student_attendance, name='student_attendance'),
     # path('login/', views, name='login'),
+
+    # Application Manager URLs
+    path('app-manager/login/', app_manager_views.app_manager_login, name='app_manager_login'),
+    path('app-manager/dashboard/', app_manager_views.app_manager_dashboard, name='app_manager_dashboard'),
+    path('app-manager/applicants/', app_manager_views.applicants_list, name='app_manager_applicants_list'),
+    path('app-manager/applicants/<int:applicant_id>/', app_manager_views.applicant_detail, name='app_manager_applicant_detail'),
+    path('app-manager/documents/', app_manager_views.app_manager_documents, name='app_manager_documents'),
+    path('app-manager/merit-list/', app_manager_views.app_manager_merit_list, name='app_manager_merit_list'),
+    path('app-manager/communicate/', app_manager_views.app_manager_communicate, name='app_manager_communicate'),
 ]
