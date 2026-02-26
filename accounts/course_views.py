@@ -74,7 +74,25 @@ def manage_courses(request):
     department = request.user.staffprofile.department
     course_offerings = CourseOffering.objects.filter(
         department=department
-    ).select_related('course', 'level').order_by('course__code', 'level__order')
+    ).select_related('course', 'course__academic_session', 'level').order_by('course__code', 'level__order')
+
+    # Read filter query params
+    filter_semester = request.GET.get('semester', '')
+    filter_level = request.GET.get('level', '')
+    filter_session = request.GET.get('session', '')
+    filter_status = request.GET.get('status', '')
+
+    # Apply filters to queryset
+    if filter_semester:
+        course_offerings = course_offerings.filter(course__semester=filter_semester)
+    if filter_level:
+        course_offerings = course_offerings.filter(level__id=filter_level)
+    if filter_session:
+        course_offerings = course_offerings.filter(course__academic_session__id=filter_session)
+    if filter_status == 'active':
+        course_offerings = course_offerings.filter(course__is_active=True)
+    elif filter_status == 'inactive':
+        course_offerings = course_offerings.filter(course__is_active=False)
 
     # Build flat list: each row is a (course, level) for template compatibility
     courses = []
@@ -87,12 +105,29 @@ def manage_courses(request):
             courses.append({'course': c, 'level': offering.level, 'offering': offering})
 
     total_credits = sum(row['course'].credits for row in courses)
+
+    # Get filter options for dropdowns
+    available_levels = Level.objects.filter(
+        course_offerings__department=department
+    ).distinct().order_by('order')
+    available_sessions = AcademicSession.objects.filter(
+        courses__offerings__department=department
+    ).distinct().order_by('-start_year')
+
     context = {
         'courses': courses,
         'department': department,
         'total_courses': len(courses),
         'active_courses': sum(1 for r in courses if r['course'].is_active),
         'total_credits': total_credits,
+        # Filter options
+        'available_levels': available_levels,
+        'available_sessions': available_sessions,
+        # Current filter selections (to preserve state)
+        'filter_semester': filter_semester,
+        'filter_level': filter_level,
+        'filter_session': filter_session,
+        'filter_status': filter_status,
     }
     return render(request, 'accounts/courses/manage_courses.html', context)
 
