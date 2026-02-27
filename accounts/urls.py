@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, course_views, app_manager_views
+from . import views, course_views, app_manager_views, exam_officer_views
 
 
 app_name = 'accounts'
@@ -35,4 +35,10 @@ urlpatterns = [
     path('app-manager/documents/', app_manager_views.app_manager_documents, name='app_manager_documents'),
     path('app-manager/merit-list/', app_manager_views.app_manager_merit_list, name='app_manager_merit_list'),
     path('app-manager/communicate/', app_manager_views.app_manager_communicate, name='app_manager_communicate'),
+
+    # Exam Officer URLs
+    path('exam-officer/login/', exam_officer_views.exam_officer_login, name='exam_officer_login'),
+    path('exam-officer/dashboard/', exam_officer_views.exam_officer_dashboard, name='exam_officer_dashboard'),
+    path('exam-officer/select-course/', exam_officer_views.select_course, name='exam_officer_select_course'),
+    path('exam-officer/upload-results/<int:course_id>/', exam_officer_views.upload_results, name='exam_officer_upload_results'),
 ]

@@ -130,6 +130,8 @@ def logout_user(request):
         return redirect('core:applicant_login')
     elif user_type == 'application_manager':
         return redirect('accounts:app_manager_login')
+    elif user_type == 'exam_officer':
+        return redirect('accounts:exam_officer_login')
     else:
         return redirect('accounts:student_login')
 

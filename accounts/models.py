@@ -9,6 +9,7 @@ class User(AbstractUser):
         ('student', 'Student'),
         ('staff', 'Staff'),
         ('admin', 'Admin'),
+        ('exam_officer', 'Exam Officer'),
         ('applicant', 'Applicant'),
         ('application_manager', 'Application Manager')
     )
@@ -425,3 +426,159 @@ class ApplicationNote(models.Model):
     def __str__(self):
         return f"Note by {self.manager.get_full_name() if self.manager else 'Unknown'} on {self.applicant.user.get_full_name()}"
 
+
+class ExamOfficerProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='examofficerprofile')
+    staff_id = models.CharField(max_length=20, unique=True)
+    # Programme types this exam officer can manage
+    can_manage_degree = models.BooleanField(default=False, help_text='Can upload results for Degree programmes')
+    can_manage_nd = models.BooleanField(default=False, help_text='Can upload results for ND (Diploma) programmes')
+    can_manage_nce = models.BooleanField(default=False, help_text='Can upload results for NCE programmes')
+    date_assigned = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'Exam Officer Profile'
+        verbose_name_plural = 'Exam Officer Profiles'
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.staff_id}"
+
+    @property
+    def assigned_programme_types(self):
+        """Return a list of programme types this officer can manage"""
+        types = []
+        if self.can_manage_degree:
+            types.append('degree')
+        if self.can_manage_nd:
+            types.append('nd')
+        if self.can_manage_nce:
+            types.append('nce')
+        return types
+
+
+GRADE_SCALE = (
+    ('A', 'A (70-100)'),
+    ('B', 'B (60-69)'),
+    ('C', 'C (50-59)'),
+    ('D', 'D (45-49)'),
+    ('E', 'E (40-44)'),
+    ('F', 'F (0-39)'),
+)
+
+
+class Result(models.Model):
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='results')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='results')
+    academic_session = models.ForeignKey(AcademicSession, on_delete=models.CASCADE, related_name='results')
+    semester = models.CharField(max_length=10, choices=(('first', 'First Semester'), ('second', 'Second Semester')))
+    level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='results',
+                              help_text='Level at the time of this result (frozen, does not change after promotion)')
+    # Scores: Test = 30 marks, Exam = 70 marks
+    test_score = models.DecimalField(max_digits=4, decimal_places=1, help_text='Test score out of 30')
+    exam_score = models.DecimalField(max_digits=4, decimal_places=1, help_text='Exam score out of 70')
+    total_score = models.DecimalField(max_digits=5, decimal_places=1, editable=False, help_text='Auto-calculated: test + exam')
+    grade = models.CharField(max_length=1, choices=GRADE_SCALE, editable=False)
+    grade_point = models.DecimalField(max_digits=2, decimal_places=1, editable=False)
+    # Audit trail
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='uploaded_results')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('student', 'course', 'academic_session')
+        ordering = ['academic_session', 'level__order', 'semester', 'course__code']
+        verbose_name = 'Student Result'
+        verbose_name_plural = 'Student Results'
+
+    def __str__(self):
+        return f"{self.student.user.get_full_name()} - {self.course.code} - {self.grade} ({self.total_score})"
+
+    @staticmethod
+    def calculate_grade(total_score):
+        """Calculate grade and grade point from total score"""
+        if total_score >= 70:
+            return 'A', 5.0
+        elif total_score >= 60:
+            return 'B', 4.0
+        elif total_score >= 50:
+            return 'C', 3.0
+        elif total_score >= 45:
+            return 'D', 2.0
+        elif total_score >= 40:
+            return 'E', 1.0
+        else:
+            return 'F', 0.0
+
+    def clean(self):
+        if self.test_score is not None and (self.test_score < 0 or self.test_score > 30):
+            raise ValidationError('Test score must be between 0 and 30.')
+        if self.exam_score is not None and (self.exam_score < 0 or self.exam_score > 70):
+            raise ValidationError('Exam score must be between 0 and 70.')
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        # Auto-calculate total, grade, and grade point
+        self.total_score = (self.test_score or 0) + (self.exam_score or 0)
+        self.grade, self.grade_point = self.calculate_grade(float(self.total_score))
+        super().save(*args, **kwargs)
+
+
+class SemesterGPA(models.Model):
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='semester_gpas')
+    academic_session = models.ForeignKey(AcademicSession, on_delete=models.CASCADE, related_name='semester_gpas')
+    semester = models.CharField(max_length=10, choices=(('first', 'First Semester'), ('second', 'Second Semester')))
+    level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='semester_gpas',
+                              help_text='Level at the time (frozen)')
+    gpa = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    total_credits = models.PositiveIntegerField(default=0)
+    total_quality_points = models.DecimalField(max_digits=6, decimal_places=2, default=0.00,
+                                                help_text='Sum of (grade_point x credits) for all courses')
+    cgpa = models.DecimalField(max_digits=3, decimal_places=2, default=0.00,
+                               help_text='Cumulative GPA up to and including this semester')
+    is_finalized = models.BooleanField(default=False, help_text='Set to True when all results are confirmed')
+    finalized_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('student', 'academic_session', 'semester')
+        ordering = ['academic_session', 'semester']
+        verbose_name = 'Semester GPA'
+        verbose_name_plural = 'Semester GPAs'
+
+    def __str__(self):
+        return f"{self.student.user.get_full_name()} - {self.academic_session.name} {self.semester} - GPA: {self.gpa}"
+
+    def calculate_gpa(self):
+        """Calculate GPA from all results for this student/session/semester"""
+        results = Result.objects.filter(
+            student=self.student,
+            academic_session=self.academic_session,
+            semester=self.semester
+        ).select_related('course')
+
+        total_credits = 0
+        total_quality_points = 0
+        for result in results:
+            credits = result.course.credits
+            total_credits += credits
+            total_quality_points += float(result.grade_point) * credits
+
+        self.total_credits = total_credits
+        self.total_quality_points = total_quality_points
+        self.gpa = round(total_quality_points / total_credits, 2) if total_credits > 0 else 0.00
+
+    def calculate_cgpa(self):
+        """Calculate cumulative GPA from all finalized semesters up to this one"""
+        all_gpas = SemesterGPA.objects.filter(
+            student=self.student,
+            is_finalized=True
+        ).exclude(pk=self.pk)
+
+        total_credits = self.total_credits
+        total_quality_points = float(self.total_quality_points)
+
+        for gpa_record in all_gpas:
+            total_credits += gpa_record.total_credits
+            total_quality_points += float(gpa_record.total_quality_points)
+
+        self.cgpa = round(total_quality_points / total_credits, 2) if total_credits > 0 else 0.00

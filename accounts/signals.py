@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
-from .models import StudentProfile, StaffProfile, Faculty, Department, Level
+from .models import StudentProfile, StaffProfile, ExamOfficerProfile, Faculty, Department, Level
 import random
 import string
 import logging
@@ -21,6 +21,9 @@ def generate_unique_id(prefix, length=10):
                 return full_id
         elif prefix.startswith('SF'):
             if not StaffProfile.objects.filter(staff_id=full_id).exists():
+                return full_id
+        elif prefix.startswith('EO'):
+            if not ExamOfficerProfile.objects.filter(staff_id=full_id).exists():
                 return full_id
 
 
@@ -95,6 +98,21 @@ def create_user_profile(sender, instance, created, **kwargs):
                     qualification='',
                     date_employed=None,
                     is_head_of_department=False
+                )
+
+            elif instance.user_type == 'exam_officer':
+                # Skip if profile already exists
+                if ExamOfficerProfile.objects.filter(user=instance).exists():
+                    return
+
+                officer_id = generate_unique_id('EO')
+                ExamOfficerProfile.objects.create(
+                    user=instance,
+                    staff_id=officer_id,
+                    can_manage_degree=False,
+                    can_manage_nd=False,
+                    can_manage_nce=False,
+                    is_active=True
                 )
 
         except Exception as e:
