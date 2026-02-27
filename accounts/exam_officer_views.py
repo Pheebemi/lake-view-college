@@ -221,11 +221,11 @@ def upload_results(request, course_id):
                 test_val = float(test_score) if test_score else 0
                 exam_val = float(exam_score) if exam_score else 0
 
-                if test_val < 0 or test_val > 30:
-                    errors.append(f"{student.user.get_full_name()}: Test score must be 0-30")
+                if test_val < 0 or test_val > 40:
+                    errors.append(f"{student.user.get_full_name()}: Test score must be 0-40")
                     continue
-                if exam_val < 0 or exam_val > 70:
-                    errors.append(f"{student.user.get_full_name()}: Exam score must be 0-70")
+                if exam_val < 0 or exam_val > 60:
+                    errors.append(f"{student.user.get_full_name()}: Exam score must be 0-60")
                     continue
 
                 # Get the level from the course offering for this student

@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DefaultUserAdmin
-from .models import User, StaffProfile, StudentProfile, AcademicRecord, PaymentTransaction, Faculty, Department, Course, CourseOffering, CourseRegistration, Enrollment, Verification, AcademicSession, Level, FeeStructure
+from .models import (User, StaffProfile, StudentProfile, AcademicRecord, PaymentTransaction,
+    Faculty, Department, Course, CourseOffering, CourseRegistration, Enrollment,
+    Verification, AcademicSession, Level, FeeStructure,
+    ExamOfficerProfile, Result, SemesterGPA)
 
 # Customizing the User Admin
 @admin.register(User)
@@ -167,3 +170,31 @@ class FeeStructureAdmin(admin.ModelAdmin):
     search_fields = ('academic_session__name', 'department__name', 'level__display_name')
     ordering = ('academic_session', 'department', 'level')
     list_editable = ('amount',)
+
+
+# Exam Officer Profile Admin
+@admin.register(ExamOfficerProfile)
+class ExamOfficerProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'staff_id', 'can_manage_degree', 'can_manage_nd', 'can_manage_nce')
+    list_filter = ('can_manage_degree', 'can_manage_nd', 'can_manage_nce')
+    search_fields = ('user__username', 'user__email', 'staff_id')
+    list_editable = ('can_manage_degree', 'can_manage_nd', 'can_manage_nce')
+
+
+# Result Admin
+@admin.register(Result)
+class ResultAdmin(admin.ModelAdmin):
+    list_display = ('student', 'course', 'test_score', 'exam_score', 'total_score', 'grade', 'grade_point', 'academic_session', 'semester', 'level', 'uploaded_by')
+    list_filter = ('academic_session', 'semester', 'grade', 'level')
+    search_fields = ('student__user__username', 'student__user__matriculation_number', 'course__code', 'course__title')
+    readonly_fields = ('total_score', 'grade', 'grade_point', 'uploaded_at')
+    ordering = ('-uploaded_at',)
+
+
+# SemesterGPA Admin
+@admin.register(SemesterGPA)
+class SemesterGPAAdmin(admin.ModelAdmin):
+    list_display = ('student', 'academic_session', 'semester', 'level', 'gpa', 'cgpa', 'total_credits')
+    list_filter = ('academic_session', 'semester', 'level')
+    search_fields = ('student__user__username', 'student__user__matriculation_number')
+    ordering = ('-academic_session__start_year', 'student__user__username')

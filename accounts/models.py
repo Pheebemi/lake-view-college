@@ -474,9 +474,9 @@ class Result(models.Model):
     semester = models.CharField(max_length=10, choices=(('first', 'First Semester'), ('second', 'Second Semester')))
     level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='results',
                               help_text='Level at the time of this result (frozen, does not change after promotion)')
-    # Scores: Test = 30 marks, Exam = 70 marks
-    test_score = models.DecimalField(max_digits=4, decimal_places=1, help_text='Test score out of 30')
-    exam_score = models.DecimalField(max_digits=4, decimal_places=1, help_text='Exam score out of 70')
+    # Scores: Test = 40 marks, Exam = 60 marks
+    test_score = models.DecimalField(max_digits=4, decimal_places=1, help_text='Test score out of 40')
+    exam_score = models.DecimalField(max_digits=4, decimal_places=1, help_text='Exam score out of 60')
     total_score = models.DecimalField(max_digits=5, decimal_places=1, editable=False, help_text='Auto-calculated: test + exam')
     grade = models.CharField(max_length=1, choices=GRADE_SCALE, editable=False)
     grade_point = models.DecimalField(max_digits=2, decimal_places=1, editable=False)
@@ -511,10 +511,10 @@ class Result(models.Model):
             return 'F', 0.0
 
     def clean(self):
-        if self.test_score is not None and (self.test_score < 0 or self.test_score > 30):
-            raise ValidationError('Test score must be between 0 and 30.')
-        if self.exam_score is not None and (self.exam_score < 0 or self.exam_score > 70):
-            raise ValidationError('Exam score must be between 0 and 70.')
+        if self.test_score is not None and (self.test_score < 0 or self.test_score > 40):
+            raise ValidationError('Test score must be between 0 and 40.')
+        if self.exam_score is not None and (self.exam_score < 0 or self.exam_score > 60):
+            raise ValidationError('Exam score must be between 0 and 60.')
 
     def save(self, *args, **kwargs):
         self.clean()
