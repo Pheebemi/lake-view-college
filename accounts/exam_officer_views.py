@@ -181,7 +181,7 @@ def select_course(request):
 @login_required
 @user_passes_test(is_exam_officer)
 def upload_results(request, course_id):
-    """Step 2: View registered students and enter/edit scores"""
+    """Step 2: View all department students and enter/edit scores"""
     officer = request.user.examofficerprofile
     assigned_types = officer.assigned_programme_types
 
@@ -189,25 +189,39 @@ def upload_results(request, course_id):
     current_session = AcademicSession.objects.filter(is_active=True).first()
 
     # Verify this course belongs to officer's assigned programme types
-    valid_offering = CourseOffering.objects.filter(
+    valid_offerings = CourseOffering.objects.filter(
         course=course,
         department__faculty__programme_type__in=assigned_types
-    ).exists()
-    if not valid_offering:
+    )
+    if not valid_offerings.exists():
         messages.error(request, "You are not authorized to upload results for this course.")
         return redirect('accounts:exam_officer_select_course')
 
-    # Get all registered students for this course
-    registrations = CourseRegistration.objects.filter(
-        course=course,
-        status='registered'
-    ).select_related('student__user', 'student__current_level')
+    # Get all departments and levels that offer this course
+    offering_dept_levels = valid_offerings.values_list('department_id', 'level_id')
+
+    # Build query to get ALL students in those departments at those levels
+    from django.db.models import Q
+    student_q = Q()
+    for dept_id, level_id in offering_dept_levels:
+        student_q |= Q(department_id=dept_id, current_level_id=level_id)
+
+    all_students = StudentProfile.objects.filter(
+        student_q
+    ).select_related('user', 'current_level', 'department').order_by('user__first_name', 'user__last_name')
+
+    # Get set of registered student IDs for this course
+    registered_student_ids = set(
+        CourseRegistration.objects.filter(
+            course=course,
+            status='registered'
+        ).values_list('student_id', flat=True)
+    )
 
     if request.method == 'POST':
         saved_count = 0
         errors = []
-        for reg in registrations:
-            student = reg.student
+        for student in all_students:
             test_key = f"test_{student.id}"
             exam_key = f"exam_{student.id}"
 
@@ -268,12 +282,13 @@ def upload_results(request, course_id):
     for r in existing_results:
         student_results[r.student_id] = r
 
-    # Build student list with existing results
+    # Build student list with existing results and registration status
     students_data = []
-    for reg in registrations:
-        existing = student_results.get(reg.student_id)
+    for student in all_students:
+        existing = student_results.get(student.id)
         students_data.append({
-            'student': reg.student,
+            'student': student,
+            'is_registered': student.id in registered_student_ids,
             'test_score': existing.test_score if existing else '',
             'exam_score': existing.exam_score if existing else '',
             'total_score': existing.total_score if existing else '',
@@ -285,6 +300,7 @@ def upload_results(request, course_id):
         'course': course,
         'students_data': students_data,
         'total_students': len(students_data),
+        'registered_count': len(registered_student_ids),
         'results_completed': sum(1 for s in students_data if s['has_result']),
         'current_session': current_session,
     }
