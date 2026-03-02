@@ -41,7 +41,7 @@
                         </div>
                         {% endif %}
                         <h2 class="mt-4 text-xl font-bold">{{ student.user.get_full_name }}</h2>
-                        <p class="text-gray-600">{{ student.user.matriculation_number }}</p>
+                        <p class="text-gray-600">{{ student.user.id_number }}</p>
                         <span class="mt-2 px-3 py-1 text-sm font-semibold rounded-full 
                             {% if student.user.is_active %}bg-green-100 text-green-800
                             {% else %}bg-red-100 text-red-800{% endif %}">

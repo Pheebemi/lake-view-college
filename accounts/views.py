@@ -28,15 +28,15 @@ def student_login(request):
         # Check if this is a JSON request from API
         if request.content_type == 'application/x-www-form-urlencoded':
             # Get credentials from form data (API request)
-            matriculation_number = request.POST.get('username')
+            id_number = request.POST.get('username')
             password = request.POST.get('password')
         else:
             # Regular form request
-            matriculation_number = request.POST.get('username')
+            id_number = request.POST.get('username')
             password = request.POST.get('password')
 
         # Authenticate the user
-        user = authenticate(request, username=matriculation_number, password=password)
+        user = authenticate(request, username=id_number, password=password)
 
         if user is not None:
             if user.is_verified:  # Ensure the student is verified
@@ -63,9 +63,9 @@ def student_login(request):
                     messages.error(request, "Your account is not verified. Contact the admin.")
         else:
             if request.content_type == 'application/x-www-form-urlencoded':
-                return JsonResponse({'error': 'Invalid matriculation number or password.'}, status=400)
+                return JsonResponse({'error': 'Invalid ID number or password.'}, status=400)
             else:
-                messages.error(request, "Invalid matriculation number or password.")
+                messages.error(request, "Invalid ID number or password.")
 
     return render(request, 'accounts/student_login.html')
 
@@ -809,3 +809,157 @@ def student_courses(request):
     except StudentProfile.DoesNotExist:
         messages.error(request, "Student profile not found. Please contact the administrator.")
         return redirect('dashboard:student_dashboard')
+
+
+@login_required
+def create_student(request):
+    """Allow staff to create a new student under their department"""
+    if request.user.user_type != 'staff':
+        messages.error(request, "Access denied. Staff only.")
+        return redirect('dashboard:student_dashboard')
+
+    try:
+        staff_profile = request.user.staffprofile
+    except StaffProfile.DoesNotExist:
+        messages.error(request, "Staff profile not found.")
+        return redirect('dashboard:staff_dashboard')
+
+    if request.method == 'POST':
+        # Get form data
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        id_number = request.POST.get('id_number', '').strip()
+        password = request.POST.get('password', '').strip()
+        password_confirm = request.POST.get('password_confirm', '').strip()
+        gender = request.POST.get('gender', '')
+        department_id = request.POST.get('department')
+        faculty_id = request.POST.get('faculty')
+        level_id = request.POST.get('level')
+        programme_type = request.POST.get('programme_type', 'degree')
+        admission_year = request.POST.get('admission_year', '2024')
+        session_id = request.POST.get('session')
+
+        # Validation
+        errors = []
+        if not first_name:
+            errors.append("First name is required.")
+        if not last_name:
+            errors.append("Last name is required.")
+        if not id_number:
+            errors.append("Student ID number is required.")
+        if not password:
+            errors.append("Password is required.")
+        if password != password_confirm:
+            errors.append("Passwords do not match.")
+        if len(password) < 6:
+            errors.append("Password must be at least 6 characters.")
+
+        # Check if ID number already exists
+        if User.objects.filter(id_number=id_number).exists():
+            errors.append(f"A user with ID number '{id_number}' already exists.")
+
+        # Check if email already exists (if provided)
+        if email and User.objects.filter(email=email).exists():
+            errors.append(f"A user with email '{email}' already exists.")
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            try:
+                # Create username from id_number (replace / with _)
+                username = id_number.replace('/', '_').lower()
+
+                # Ensure username is unique
+                base_username = username
+                counter = 1
+                while User.objects.filter(username=username).exists():
+                    username = f"{base_username}_{counter}"
+                    counter += 1
+
+                # Get related objects
+                department = Department.objects.get(id=department_id)
+                from accounts.models import Faculty
+                faculty = Faculty.objects.get(id=faculty_id)
+                level = Level.objects.get(id=level_id)
+
+                # Get academic session
+                session = None
+                if session_id:
+                    session = AcademicSession.objects.get(id=session_id)
+
+                # Create user
+                user = User(
+                    username=username,
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    user_type='student',
+                    id_number=id_number,
+                    is_verified=True,  # Staff-created students are auto-verified
+                )
+                user.set_password(password)
+                user.save()
+
+                # Update the student profile that was auto-created by the signal
+                try:
+                    student_profile = StudentProfile.objects.get(user=user)
+                    student_profile.faculty = faculty
+                    student_profile.department = department
+                    student_profile.current_level = level
+                    student_profile.programme_type = programme_type
+                    student_profile.admission_year = admission_year
+                    student_profile.gender = gender
+                    if session:
+                        student_profile.current_session = session
+                    student_profile.save()
+                except StudentProfile.DoesNotExist:
+                    # If signal didn't create it, create manually
+                    StudentProfile.objects.create(
+                        user=user,
+                        faculty=faculty,
+                        department=department,
+                        current_level=level,
+                        programme_type=programme_type,
+                        admission_year=admission_year,
+                        gender=gender,
+                        program='BSc',
+                        permanent_address='',
+                        local_government='',
+                        state_of_origin='',
+                        cgpa=0.00,
+                        current_session=session,
+                    )
+
+                messages.success(request, f"Student '{first_name} {last_name}' created successfully with ID: {id_number}")
+                return redirect('accounts:department_students')
+
+            except Department.DoesNotExist:
+                messages.error(request, "Selected department not found.")
+            except Level.DoesNotExist:
+                messages.error(request, "Selected level not found.")
+            except Exception as e:
+                messages.error(request, f"Error creating student: {str(e)}")
+
+    # GET request - show form
+    from accounts.models import Faculty
+    faculties = Faculty.objects.all()
+    departments = Department.objects.all()
+    levels = Level.objects.all().order_by('order')
+    sessions = AcademicSession.objects.all().order_by('-start_year')
+    active_session = AcademicSession.objects.filter(is_active=True).first()
+    current_year = timezone.now().year
+
+    context = {
+        'faculties': faculties,
+        'departments': departments,
+        'levels': levels,
+        'sessions': sessions,
+        'active_session': active_session,
+        'staff_department': staff_profile.department,
+        'staff_faculty': staff_profile.faculty,
+        'admission_years': [str(year) for year in range(current_year - 5, current_year + 2)],
+        'current_year': str(current_year),
+    }
+    return render(request, 'accounts/create_student.html', context)

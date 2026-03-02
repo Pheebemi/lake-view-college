@@ -3,15 +3,15 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class MatriculationNumberAuthBackend(BaseBackend):
+class StudentIDAuthBackend(BaseBackend):
     """
     Custom authentication backend that allows students to log in 
-    using their matriculation number and password.
+    using their ID number (e.g., LCE/DIP/CMP/24/0001) and password.
     """
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:
-            # Attempt to fetch a user by matriculation number
-            user = User.objects.get(matriculation_number=username)
+            # Attempt to fetch a user by ID number
+            user = User.objects.get(id_number=username)
             if user.check_password(password) and user.user_type == 'student':
                 return user
         except User.DoesNotExist:

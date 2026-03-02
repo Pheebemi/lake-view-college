@@ -18,6 +18,7 @@ urlpatterns = [
     path('registered-courses/', course_views.view_registered_courses, name='view_registered_courses'),
     path('student/courses/', views.student_courses, name='student_courses'),  # Ensure this line is present
     path('department-students/', views.department_students, name='department_students'),
+    path('create-student/', views.create_student, name='create_student'),
     path('student/<int:student_id>/', views.student_detail, name='student_detail'),
     path('school-fees/', views.school_fees, name='school_fees'),
     path('initiate-payment/', views.initiate_payment, name='initiate_payment'),

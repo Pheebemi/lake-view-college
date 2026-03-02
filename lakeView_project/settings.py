@@ -185,8 +185,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
 AUTHENTICATION_BACKENDS = [
-    # 'accounts.backends.VerifiedUserBackend',  # Path to VerifiedUserBackend
-    'accounts.authentication.MatriculationNumberAuthBackend',  # Optional: Path to MatricNumberBackend
+    'accounts.authentication.StudentIDAuthBackend',  # Students log in with ID number
     'django.contrib.auth.backends.ModelBackend',  # Keep default for admin/staff logins
 ]
 

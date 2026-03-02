@@ -654,7 +654,7 @@ def get_student_profile_data(request):
         data = {
             'personal_info': {
                 'full_name': request.user.get_full_name(),
-                'matriculation_number': request.user.matriculation_number,
+                'id_number': request.user.id_number,
                 'email': request.user.email,
                 'phone_number': request.user.phone_number or 'Not provided',
                 'date_of_birth': student_profile.date_of_birth.strftime('%B %d, %Y') if student_profile.date_of_birth else 'Not provided',
@@ -717,7 +717,7 @@ def get_student_course_data(request):
         data = {
             'student_info': {
                 'name': request.user.get_full_name(),
-                'matriculation_number': request.user.matriculation_number,
+                'id_number': request.user.id_number,
                 'department': student_profile.department.name,
                 'level': student_profile.current_level.display_name,
                 'semester': student_profile.get_current_semester_display(),

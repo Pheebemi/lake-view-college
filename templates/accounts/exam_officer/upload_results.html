@@ -97,7 +97,7 @@
                                 <tr class="hover:bg-indigo-50/30 transition {% if item.has_result %}bg-green-50/30{% endif %}">
                                     <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">{{ forloop.counter }}</td>
                                     <td class="px-6 py-3 whitespace-nowrap">
-                                        <span class="text-sm font-medium text-gray-900">{{ item.student.user.matriculation_number }}</span>
+                                        <span class="text-sm font-medium text-gray-900">{{ item.student.user.id_number }}</span>
                                     </td>
                                     <td class="px-6 py-3 whitespace-nowrap">
                                         <span class="text-sm text-gray-800">{{ item.student.user.get_full_name }}</span>

@@ -24,7 +24,7 @@
                     </div>
                     <div class="flex-1">
                         <h1 class="text-2xl md:text-3xl font-bold mb-1">{{ user.get_full_name }}</h1>
-                        <p class="text-white/90 text-lg mb-2">{{ user.matriculation_number }}</p>
+                        <p class="text-white/90 text-lg mb-2">{{ user.id_number }}</p>
                         <p class="text-white/80">{{ profile.department.name }} • {{ profile.current_level.display_name }} Level</p>
                         <div class="mt-4 flex flex-wrap gap-3">
                             <a href="{% url 'accounts:edit_student_profile' %}" class="inline-flex items-center px-4 py-2 bg-white text-purple-600 rounded-lg font-medium hover:bg-white/90 transition shadow-lg">
@@ -226,7 +226,7 @@
                                 <td class="label">Name</td>
                                 <td class="value">${data.personal_info.full_name.toUpperCase()}</td>
                                 <td class="label">Matric Number</td>
-                                <td class="value">${data.personal_info.matriculation_number}</td>
+                                <td class="value">${data.personal_info.id_number}</td>
                             </tr>
                             <tr>
                                 <td class="label">Email</td>

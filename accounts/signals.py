@@ -17,7 +17,7 @@ def generate_unique_id(prefix, length=10):
         random_part = ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
         full_id = f"{prefix}{random_part}"
         if prefix.startswith('ST'):
-            if not User.objects.filter(matriculation_number=full_id).exists():
+            if not User.objects.filter(id_number=full_id).exists():
                 return full_id
         elif prefix.startswith('SF'):
             if not StaffProfile.objects.filter(staff_id=full_id).exists():
@@ -36,10 +36,7 @@ def create_user_profile(sender, instance, created, **kwargs):
                 if StudentProfile.objects.filter(user=instance).exists():
                     return
 
-                # Generate matriculation number if not set
-                if not instance.matriculation_number:
-                    instance.matriculation_number = generate_unique_id('ST')
-                    instance.save()
+                # ID number is now manually assigned by staff, not auto-generated
 
                 # Assign default faculty and department
                 default_faculty = Faculty.objects.first()

@@ -18,21 +18,21 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
-    matriculation_number = models.CharField(
-        max_length=20,
+    id_number = models.CharField(
+        max_length=30,
         unique=True,
         blank=True,
         null=True,
-        help_text="Only applicable for students and staff."
+        help_text="Student ID number (e.g., LCE/DIP/CMP/24/0001) or Staff ID. Manually assigned."
     )
     
 
     def clean(self):
         """
-        Custom validation to ensure matriculation_number is only set for students or staff.
+        Custom validation to ensure id_number is only set for students or staff.
         """
-        if self.user_type not in ['student', 'staff'] and self.matriculation_number:
-            raise ValidationError("Matriculation number can only be set for students or staff.")
+        if self.user_type not in ['student', 'staff'] and self.id_number:
+            raise ValidationError("ID number can only be set for students or staff.")
 
     def save(self, *args, **kwargs):
         self.clean()  # Call the clean method for validation
@@ -220,7 +220,7 @@ class StudentProfile(models.Model):
     cgpa = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
 
     def __str__(self):
-        return f"{self.user.username} - {self.user.matriculation_number}"
+        return f"{self.user.username} - {self.user.id_number}"
 
 class AcademicRecord(models.Model):
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)

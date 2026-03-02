@@ -10,14 +10,14 @@ from .models import (User, StaffProfile, StudentProfile, AcademicRecord, Payment
 class UserAdmin(DefaultUserAdmin):
     model = User
     # Fields to display in the user list view
-    list_display = ('username', 'email', 'user_type', 'matriculation_number', 'is_verified')
+    list_display = ('username', 'email', 'user_type', 'id_number', 'is_verified')
     list_filter = ('user_type', 'is_verified')
-    search_fields = ('username', 'email', 'matriculation_number')
+    search_fields = ('username', 'email', 'id_number')
 
     # Sections for editing a user
     fieldsets = (
         (None, {
-            'fields': ('username', 'password', 'email', 'user_type', 'is_verified')
+            'fields': ('username', 'password', 'email', 'user_type', 'id_number', 'is_verified')
         }),
         ('Personal Info', {
             'fields': ('first_name', 'last_name', 'phone_number', 'profile_picture')
@@ -34,7 +34,7 @@ class UserAdmin(DefaultUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'user_type', 'password1', 'password2')
+            'fields': ('username', 'email', 'user_type', 'id_number', 'password1', 'password2')
         }),
     )
 
@@ -44,7 +44,7 @@ class UserAdmin(DefaultUserAdmin):
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'programme_type', 'faculty', 'department', 'current_level', 'current_semester', 'current_session', 'cgpa']
-    search_fields = ['user__username', 'user__matriculation_number', 'user__email']
+    search_fields = ['user__username', 'user__id_number', 'user__email']
     list_filter = ('programme_type', 'faculty', 'department', 'current_level', 'current_semester', 'current_session', 'state_of_origin')
     ordering = ('user__username',)
     list_editable = ('current_level', 'current_semester', 'current_session', 'cgpa')
@@ -120,7 +120,7 @@ class CourseRegistrationAdmin(admin.ModelAdmin):
 class AcademicRecordAdmin(admin.ModelAdmin):
     list_display = ('student', 'semester', 'year', 'semester_gpa')
     list_filter = ('semester', 'year')
-    search_fields = ('student__user__username', 'student__matriculation_number')
+    search_fields = ('student__user__username', 'student__user__id_number')
 
 # Enrollment Admin
 @admin.register(Enrollment)
@@ -139,7 +139,7 @@ class VerificationAdmin(admin.ModelAdmin):
 @admin.register(PaymentTransaction)
 class PaymentTransactionAdmin(admin.ModelAdmin):
     list_display = ['student', 'payment_type', 'amount', 'reference', 'status', 'session']
-    search_fields = ('student__user__username', 'student__user__matriculation_number', 'session', 'semester')
+    search_fields = ('student__user__username', 'student__user__id_number', 'session', 'semester')
     list_filter = ('status', 'session', 'semester', 'payment_type')
     list_editable = ('status',)
 
@@ -186,7 +186,7 @@ class ExamOfficerProfileAdmin(admin.ModelAdmin):
 class ResultAdmin(admin.ModelAdmin):
     list_display = ('student', 'course', 'test_score', 'exam_score', 'total_score', 'grade', 'grade_point', 'academic_session', 'semester', 'level', 'uploaded_by')
     list_filter = ('academic_session', 'semester', 'grade', 'level')
-    search_fields = ('student__user__username', 'student__user__matriculation_number', 'course__code', 'course__title')
+    search_fields = ('student__user__username', 'student__user__id_number', 'course__code', 'course__title')
     readonly_fields = ('total_score', 'grade', 'grade_point', 'uploaded_at')
     ordering = ('-uploaded_at',)
 
@@ -196,5 +196,5 @@ class ResultAdmin(admin.ModelAdmin):
 class SemesterGPAAdmin(admin.ModelAdmin):
     list_display = ('student', 'academic_session', 'semester', 'level', 'gpa', 'cgpa', 'total_credits')
     list_filter = ('academic_session', 'semester', 'level')
-    search_fields = ('student__user__username', 'student__user__matriculation_number')
+    search_fields = ('student__user__username', 'student__user__id_number')
     ordering = ('-academic_session__start_year', 'student__user__username')
