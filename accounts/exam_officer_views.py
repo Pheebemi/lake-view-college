@@ -142,19 +142,37 @@ def select_course(request):
         ).distinct()
 
     # Build course data with registration counts and result status
+    from django.db.models import Q
     course_data = []
     for course in courses:
+        # Get offerings to find eligible students
+        course_offerings = CourseOffering.objects.filter(course=course)
+        
+        # Build query for eligible students
+        student_q = Q()
+        for offering in course_offerings:
+            student_q |= Q(department=offering.department, current_level=offering.level)
+        
+        total_eligible = StudentProfile.objects.filter(student_q).count() if course_offerings.exists() else 0
+        
         registered = CourseRegistration.objects.filter(
             course=course, status='registered'
         ).count()
+        
         results_done = Result.objects.filter(
             course=course, academic_session=selected_session
         ).count()
+        
+        # Use total_eligible as the baseline for completion if it's greater than registered
+        # This handles cases where results are uploaded for non-registered students
+        denominator = max(registered, total_eligible)
+        
         course_data.append({
             'course': course,
             'registered': registered,
+            'total_eligible': total_eligible,
             'results_done': results_done,
-            'is_complete': results_done >= registered and registered > 0,
+            'is_complete': results_done >= denominator and denominator > 0,
         })
 
     # Get available filters

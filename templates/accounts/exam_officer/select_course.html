@@ -103,8 +103,12 @@
                                     <span class="text-sm text-gray-700">{{ item.course.title }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ item.course.get_semester_display }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">{{ item.registered }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">{{ item.results_done }}/{{ item.registered }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">
+                                    {{ item.registered }} <span class="text-gray-400 font-normal">/ {{ item.total_eligible }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">
+                                    {{ item.results_done }} <span class="text-gray-400 font-normal">/ {{ item.total_eligible }}</span>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     {% if item.is_complete %}
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Complete</span>
@@ -115,13 +119,13 @@
                                     {% endif %}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    {% if item.registered > 0 %}
+                                    {% if item.total_eligible > 0 %}
                                     <a href="{% url 'accounts:exam_officer_upload_results' item.course.id %}" class="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 transition">
                                         <i class="ti ti-edit mr-1"></i>
                                         {% if item.is_complete %}Edit{% elif item.results_done > 0 %}Continue{% else %}Upload{% endif %}
                                     </a>
                                     {% else %}
-                                    <span class="text-xs text-gray-400">No students</span>
+                                    <span class="text-xs text-gray-400 italic">No eligible students</span>
                                     {% endif %}
                                 </td>
                             </tr>
