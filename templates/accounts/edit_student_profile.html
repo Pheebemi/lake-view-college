@@ -40,7 +40,7 @@
                     <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
                         <h2 class="text-lg font-semibold text-gray-800 flex items-center">
                             <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            Profile Photo
+                            Profile Photo <span class="text-red-500 ml-1">*</span>
                         </h2>
                     </div>
                     <div class="p-6 flex flex-col sm:flex-row sm:items-center gap-6">
@@ -56,10 +56,10 @@
                         <div class="flex-1">
                             <label class="block">
                                 <span class="sr-only">Choose profile photo</span>
-                                <input type="file" name="profile_picture" accept="image/*"
+                                <input type="file" name="profile_picture" accept="image/*" {% if not user.profile_picture %}required{% endif %}
                                     class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 file:cursor-pointer"/>
                             </label>
-                            <p class="mt-2 text-sm text-gray-500">JPG, PNG or GIF. Max size 2MB.</p>
+                            <p class="mt-2 text-sm text-gray-500">JPG, PNG or GIF. Max size 1MB.</p>
                         </div>
                     </div>
                 </div>
@@ -74,34 +74,35 @@
                     </div>
                     <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                            <input type="text" name="first_name" value="{{ user.first_name }}"
+                            <label class="block text-sm font-medium text-gray-700 mb-2">First Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="first_name" value="{{ user.first_name }}" required
                                 class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                            <input type="text" name="last_name" value="{{ user.last_name }}"
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Last Name <span class="text-red-500">*</span></label>
+                            <input type="text" name="last_name" value="{{ user.last_name }}" required
                                 class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                            <input type="email" name="email" value="{{ user.email }}"
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email <span class="text-red-500">*</span></label>
+                            <input type="email" name="email" value="{{ user.email }}" required
                                 class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                            <input type="tel" name="phone_number" value="{{ user.phone_number|default:'' }}"
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number <span class="text-red-500">*</span></label>
+                            <input type="tel" name="phone_number" value="{{ user.phone_number|default:'' }}" required
                                 placeholder="e.g. 08012345678"
                                 class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-                            <input type="date" name="date_of_birth" value="{{ profile.date_of_birth|date:'Y-m-d' }}"
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth <span class="text-red-500">*</span></label>
+                            <input type="date" name="date_of_birth" value="{{ profile.date_of_birth|date:'Y-m-d' }}" required
                                 class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                            <select name="gender" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Gender <span class="text-red-500">*</span></label>
+                            <select name="gender" required class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white">
+                                <option value="">Select Gender</option>
                                 <option value="M" {% if profile.gender == 'M' %}selected{% endif %}>Male</option>
                                 <option value="F" {% if profile.gender == 'F' %}selected{% endif %}>Female</option>
                                 <option value="O" {% if profile.gender == 'O' %}selected{% endif %}>Other</option>
@@ -120,8 +121,8 @@
                     </div>
                     <div class="p-6 space-y-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">State of Origin</label>
-                            <select name="state_of_origin" id="state" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">State of Origin <span class="text-red-500">*</span></label>
+                            <select name="state_of_origin" id="state" required class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white">
                                 <option value="">Select State</option>
                                 {% for state in states %}
                                 <option value="{{ state }}" {% if profile.state_of_origin == state %}selected{% endif %}>{{ state }}</option>
@@ -129,14 +130,14 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Local Government</label>
-                            <select name="local_government" id="lga" class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Local Government <span class="text-red-500">*</span></label>
+                            <select name="local_government" id="lga" required class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition bg-white">
                                 <option value="">Select LGA</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Permanent Address</label>
-                            <textarea name="permanent_address" rows="3" placeholder="Full address"
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Permanent Address <span class="text-red-500">*</span></label>
+                            <textarea name="permanent_address" rows="3" placeholder="Full address" required
                                 class="w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition resize-y">{{ profile.permanent_address|default:'' }}</textarea>
                         </div>
                     </div>

@@ -161,24 +161,49 @@ def edit_student_profile(request):
     
     if request.method == 'POST':
         # Get form data
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        phone_number = request.POST.get('phone_number')
+        date_of_birth = request.POST.get('date_of_birth')
+        gender = request.POST.get('gender')
+        state_of_origin = request.POST.get('state_of_origin')
+        local_government = request.POST.get('local_government')
+        permanent_address = request.POST.get('permanent_address')
+
+        profile_picture = request.FILES.get('profile_picture')
+
+        # Validate required fields
+        if not all([first_name, last_name, email, phone_number, date_of_birth, gender, state_of_origin, local_government, permanent_address]):
+            messages.error(request, 'All fields are required. Please fill in all information.')
+            return redirect('accounts:edit_student_profile')
+
+        # Validate profile picture (mandatory)
         user = request.user
-        user.first_name = request.POST.get('first_name')
-        user.last_name = request.POST.get('last_name')
-        user.email = request.POST.get('email')
-        user.phone_number = request.POST.get('phone_number')
+        if not user.profile_picture and not profile_picture:
+            messages.error(request, 'Profile picture is required.')
+            return redirect('accounts:edit_student_profile')
+
+        # Validate profile picture size (max 1MB)
+        if profile_picture:
+            if profile_picture.size > 1 * 1024 * 1024:  # 1MB in bytes
+                messages.error(request, 'Profile picture size must be 1MB or less.')
+                return redirect('accounts:edit_student_profile')
+            user.profile_picture = profile_picture
         
-        # Handle profile picture upload
-        if request.FILES.get('profile_picture'):
-            user.profile_picture = request.FILES['profile_picture']
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email
+        user.phone_number = phone_number
         
         user.save()
         
         # Update profile fields
-        profile.date_of_birth = request.POST.get('date_of_birth')
-        profile.gender = request.POST.get('gender')
-        profile.state_of_origin = request.POST.get('state_of_origin')
-        profile.local_government = request.POST.get('local_government')
-        profile.permanent_address = request.POST.get('permanent_address')
+        profile.date_of_birth = date_of_birth
+        profile.gender = gender
+        profile.state_of_origin = state_of_origin
+        profile.local_government = local_government
+        profile.permanent_address = permanent_address
         
         profile.save()
         

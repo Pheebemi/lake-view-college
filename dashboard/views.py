@@ -11,6 +11,11 @@ from django.contrib.auth.decorators import login_required
 @student_required
 def student_dashboard(request):
     profile = StudentProfile.objects.get(user=request.user)
+    
+    # Check if profile is complete
+    if not profile.is_profile_complete:
+        messages.warning(request, "Please update your profile information to continue to your dashboard.")
+        return redirect('accounts:edit_student_profile')
 
     # Get current academic session
     current_session = profile.current_session

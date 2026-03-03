@@ -219,6 +219,23 @@ class StudentProfile(models.Model):
     local_government = models.CharField(max_length=100, verbose_name="Local Government")
     cgpa = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
 
+    @property
+    def is_profile_complete(self):
+        """Check if all required profile fields are filled"""
+        required_fields = [
+            self.user.first_name,
+            self.user.last_name,
+            self.user.email,
+            self.user.phone_number,
+            self.user.profile_picture,
+            self.date_of_birth,
+            self.gender,
+            self.state_of_origin,
+            self.local_government,
+            self.permanent_address
+        ]
+        return all(field for field in required_fields)
+
     def __str__(self):
         return f"{self.user.username} - {self.user.id_number}"
 
