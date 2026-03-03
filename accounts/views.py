@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from .models import User, StaffProfile, StudentProfile, Course, CourseOffering, CourseRegistration, Department, PaymentTransaction, AcademicSession, Level
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth import password_validation
+from django.core.exceptions import ValidationError
 from .state import NIGERIA_STATES_AND_LGAS
 import json
 import requests
@@ -217,6 +219,48 @@ def edit_student_profile(request):
         'states_lgas': json.dumps(NIGERIA_STATES_AND_LGAS)
     }
     return render(request, 'accounts/edit_student_profile.html', context)
+
+@login_required
+def change_password(request):
+    """
+    Handle password changes for students
+    """
+    if request.method == 'POST':
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        # 1. Basic matching check
+        if new_password != confirm_password:
+            messages.error(request, 'New passwords do not match.')
+            return redirect('accounts:change_password')
+
+        user = request.user
+
+        # 2. Verify old password
+        if not user.check_password(old_password):
+            messages.error(request, 'Incorrect old password.')
+            return redirect('accounts:change_password')
+
+        # 3. Apply Django password validation
+        try:
+            password_validation.validate_password(new_password, user)
+        except ValidationError as e:
+            for error in e.messages:
+                messages.error(request, error)
+            return redirect('accounts:change_password')
+
+        # 4. Save new password
+        user.set_password(new_password)
+        user.save()
+        
+        # 5. Keep user logged in
+        update_session_auth_hash(request, user)
+        
+        messages.success(request, 'Your password has been changed successfully!')
+        return redirect('dashboard:student_dashboard')
+
+    return render(request, 'accounts/change_password.html')
 
 @login_required
 def staff_profile(request):
