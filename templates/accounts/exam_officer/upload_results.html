@@ -15,10 +15,16 @@
                         <h1 class="text-2xl md:text-3xl font-bold mb-1">{{ course.code }} — {{ course.title }}</h1>
                         <p class="text-indigo-200 text-lg">{{ course.get_semester_display }} • {{ course.credits }} Credits • {{ current_session.name }}</p>
                     </div>
-                    <a href="{% url 'accounts:exam_officer_select_course' %}" class="inline-flex items-center px-5 py-2.5 bg-white/20 backdrop-blur-sm text-white rounded-xl font-semibold hover:bg-white/30 transition">
-                        <i class="ti ti-arrow-left mr-2"></i>
-                        Back to Courses
-                    </a>
+                    <div class="flex items-center gap-3">
+                        <button onclick="printCourseResults()" class="inline-flex items-center px-5 py-2.5 bg-white text-indigo-700 rounded-xl font-semibold hover:bg-white/90 transition shadow-lg">
+                            <i class="ti ti-printer mr-2"></i>
+                            Print Results
+                        </button>
+                        <a href="{% url 'accounts:exam_officer_select_course' %}" class="inline-flex items-center px-5 py-2.5 bg-white/20 backdrop-blur-sm text-white rounded-xl font-semibold hover:bg-white/30 transition">
+                            <i class="ti ti-arrow-left mr-2"></i>
+                            Back to Courses
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -228,5 +234,189 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+function printCourseResults() {
+    const rows = document.querySelectorAll('tbody tr');
+    let rowsHTML = '';
+    let sn = 1;
+
+    rows.forEach(row => {
+        const idNumber = row.querySelector('td:nth-child(2) span').textContent.trim();
+        const testScore = row.querySelector('[data-type="test"]').value || '0';
+        const examScore = row.querySelector('[data-type="exam"]').value || '0';
+        const totalScore = row.querySelector('td:nth-child(8) span').textContent.trim();
+        
+        // Only include if a score exists or total is calculated
+        if (totalScore && totalScore !== '—' && totalScore !== '0.0') {
+            rowsHTML += `
+                <tr>
+                    <td>${sn++}</td>
+                    <td>${idNumber}</td>
+                    <td style="text-align: center;">${testScore}</td>
+                    <td style="text-align: center;">${examScore}</td>
+                    <td style="text-align: center; font-weight: bold;">${totalScore}</td>
+                </tr>
+            `;
+        }
+    });
+
+    if (sn === 1) {
+        alert('No results found to print.');
+        return;
+    }
+
+    const courseCode = "{{ course.code }}";
+    const courseTitle = "{{ course.title }}";
+    const academicSession = "{{ current_session.name }}";
+    const semester = "{{ course.get_semester_display }}";
+    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    
+    const printContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Course Result List - ${courseCode}</title>
+            <style>
+                @page { size: A4; margin: 15mm 18mm; }
+                @media print {
+                    html, body { width: 210mm; margin: 0; padding: 0; }
+                    .no-print { display: none !important; }
+                }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: 'Times New Roman', Times, serif;
+                    font-size: 13px;
+                    line-height: 1.4;
+                    color: #000;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background: white;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 20px;
+                    border-bottom: 3px double #000;
+                    padding-bottom: 15px;
+                }
+                .header img {
+                    width: 70px;
+                    height: 70px;
+                    object-fit: cover;
+                    margin-bottom: 8px;
+                }
+                .header h1 {
+                    font-size: 22px;
+                    font-style: italic;
+                    margin-bottom: 4px;
+                    text-transform: uppercase;
+                }
+                .header h2 {
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin-bottom: 2px;
+                    text-transform: uppercase;
+                }
+                .sub-header {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                .sub-header h3 {
+                    font-size: 15px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    text-decoration: underline;
+                    margin-bottom: 6px;
+                }
+                .sub-header p {
+                    font-size: 12px;
+                    color: #444;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+                th, td {
+                    border: 1px solid #333;
+                    padding: 8px 12px;
+                    text-align: left;
+                    font-size: 12px;
+                }
+                th {
+                    background: #e8e8e8;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
+                .footer {
+                    margin-top: 40px;
+                    padding-top: 15px;
+                    border-top: 1px solid #ccc;
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 11px;
+                    color: #666;
+                }
+                .print-btn {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 10px 20px;
+                    background: #4f46e5;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    font-size: 14px;
+                    cursor: pointer;
+                    z-index: 1000;
+                }
+            </style>
+        </head>
+        <body>
+            <button class="print-btn no-print" onclick="window.print()">Print List</button>
+
+            <div class="header">
+                <img src="{% static 'assets/images/logos/lakeview.jpg' %}" alt="Logo">
+                <h1>LakeView College of Education</h1>
+                <h2>Course Result Sheet</h2>
+                <p>${courseCode}: ${courseTitle}</p>
+            </div>
+
+            <div class="sub-header">
+                <h3>Students Result List</h3>
+                <p>Academic Session: <strong>${academicSession}</strong> | Semester: <strong>${semester}</strong> | Date: <strong>${today}</strong></p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">S/N</th>
+                        <th>MATRIC NUMBER</th>
+                        <th style="width: 100px; text-align: center;">TEST</th>
+                        <th style="width: 100px; text-align: center;">EXAM</th>
+                        <th style="width: 120px; text-align: center;">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHTML}
+                </tbody>
+            </table>
+
+            <div class="footer">
+                <span>Result generated by Exam Officer</span>
+                <span>Date: ${today}</span>
+                <span>Total: ${sn-1} record(s)</span>
+            </div>
+        </body>
+        </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+}
 </script>
 {% endblock %}
