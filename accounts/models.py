@@ -331,6 +331,7 @@ class CourseOffering(models.Model):
 class CourseRegistration(models.Model):
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='registrations')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='registrations')
+    academic_session = models.ForeignKey(AcademicSession, on_delete=models.CASCADE, related_name='registrations', null=True, blank=True)
     registration_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
         max_length=20,
@@ -346,7 +347,7 @@ class CourseRegistration(models.Model):
         return f"{self.student.user.get_full_name()} - {self.course.title}"
 
     class Meta:
-        unique_together = ('student', 'course')  # Prevent duplicate registrations
+        unique_together = ('student', 'course', 'academic_session')  # Prevent duplicate registrations in same session
 
 class Enrollment(models.Model):
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)

@@ -8,12 +8,34 @@
     <c-navbar.navbar />
 
     <main class="h-full overflow-y-auto w-full md:w-[90%] px-3 mx-auto py-4 bg-gradient-to-br rounded-md from-gray-200 to-gray-100">
-        <div class="mb-6 flex justify-between items-center">
-            <h1 class="font-semibold text-xl"><span class="text-slate-400">Courses /</span> Registered Courses</h1>
-            <a href="{% url 'accounts:register_courses' %}" 
-               class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Register New Courses
-            </a>
+        <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="font-semibold text-xl"><span class="text-slate-400">Courses /</span> Registered Courses</h1>
+                <p class="text-sm text-gray-500 mt-1">View and print your course registration records</p>
+            </div>
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <form method="GET" id="sessionFilterForm" class="flex-1 md:flex-none">
+                    <select name="session" onchange="this.form.submit()" 
+                            class="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                        {% for session in available_sessions %}
+                            <option value="{{ session.id }}" {% if session.id == selected_session_id %}selected{% endif %}>
+                                {{ session.name }} Session
+                            </option>
+                        {% empty %}
+                            <option value="">No history found</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <button onclick="printCourseForm()" 
+                        class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
+                    <i class="ti ti-printer text-lg"></i>
+                    Print Form
+                </button>
+                <a href="{% url 'accounts:register_courses' %}" 
+                   class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition shadow-sm">
+                    Register New
+                </a>
+            </div>
         </div>
 
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -148,4 +170,226 @@
         </div>
     </main>
 </div>
+
+<script>
+function printCourseForm() {
+    const registrations = [];
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 3) {
+            registrations.push({
+                code: cells[0].textContent.trim(),
+                title: cells[1].textContent.trim(),
+                credits: cells[2].textContent.trim(),
+                semester: row.closest('div').querySelector('h3').textContent.includes('First') ? '1st' : '2nd'
+            });
+        }
+    });
+
+    if (registrations.length === 0) {
+        alert('No registered courses found for this session.');
+        return;
+    }
+
+    const studentName = "{{ request.user.get_full_name|escapejs }}";
+    const matricNo = "{{ request.user.id_number|escapejs }}";
+    const department = "{{ request.user.studentprofile.department.name|escapejs }}";
+    const faculty = "{{ request.user.studentprofile.faculty.name|escapejs }}";
+    const sessionName = "{{ academic_session.name|escapejs }}";
+    const level = registrations[0] ? "{{ request.user.studentprofile.current_level.display_name|escapejs }}" : "N/A";
+    const logoUrl = "{% static 'assets/images/logos/lakeview.jpg' %}";
+    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const printWindow = window.open('', '_blank', 'width=900,height=800');
+    
+    const printContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Course Registration Form - ${matricNo}</title>
+            <style>
+                @page { size: A4; margin: 20mm; }
+                @media print { .no-print { display: none !important; } }
+                body {
+                    font-family: 'Times New Roman', Times, serif;
+                    font-size: 13px;
+                    line-height: 1.5;
+                    color: #000;
+                    padding: 0;
+                    margin: 0;
+                }
+                .header {
+                    text-align: center;
+                    border-bottom: 2px solid #000;
+                    margin-bottom: 20px;
+                    padding-bottom: 10px;
+                }
+                .header img {
+                    width: 80px;
+                    height: 80px;
+                    margin-bottom: 5px;
+                }
+                .header h1 { font-size: 20px; text-transform: uppercase; margin: 0; }
+                .header h2 { font-size: 16px; margin: 5px 0; }
+                
+                .form-title {
+                    text-align: center;
+                    text-transform: uppercase;
+                    font-weight: bold;
+                    font-size: 16px;
+                    text-decoration: underline;
+                    margin-bottom: 20px;
+                }
+
+                .student-info {
+                    width: 100%;
+                    margin-bottom: 20px;
+                }
+                .student-info td {
+                    padding: 5px 0;
+                    vertical-align: top;
+                }
+                .label { font-weight: bold; width: 140px; }
+                .value { border-bottom: 1px dotted #000; padding-left: 10px; }
+
+                table.courses {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 30px;
+                }
+                table.courses th, table.courses td {
+                    border: 1px solid #000;
+                    padding: 8px;
+                    text-align: left;
+                }
+                table.courses th { background-color: #f2f2f2; text-transform: uppercase; font-size: 11px; }
+                
+                .semester-header {
+                    background-color: #e8e8e8;
+                    font-weight: bold;
+                    text-align: center !important;
+                }
+
+                .signatures {
+                    margin-top: 50px;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 50px;
+                }
+                .sig-box {
+                    text-align: center;
+                }
+                .sig-line {
+                    border-top: 1px solid #000;
+                    margin-top: 40px;
+                    padding-top: 5px;
+                    font-size: 11px;
+                }
+
+                .footer {
+                    margin-top: 40px;
+                    font-size: 10px;
+                    color: #555;
+                    text-align: center;
+                }
+                .print-btn {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 10px 20px;
+                    background: #4f46e5;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+                }
+            </style>
+        </head>
+        <body>
+            <button class="print-btn no-print" onclick="window.print()">Print Form</button>
+
+            <div class="header">
+                <img src="${logoUrl}" alt="Logo">
+                <h1>LakeView College of Education</h1>
+                <h2>Official Course Registration Form</h2>
+                <p>Academic Session: ${sessionName}</p>
+            </div>
+
+            <div class="form-title">STUDENT REGISTRATION SLIP</div>
+
+            <table class="student-info">
+                <tr>
+                    <td class="label">FULL NAME:</td>
+                    <td class="value">${studentName}</td>
+                    <td class="label" style="text-align: right; padding-right: 15px;">MATRIC NO:</td>
+                    <td class="value">${matricNo}</td>
+                </tr>
+                <tr>
+                    <td class="label">FACULTY:</td>
+                    <td class="value" colspan="3">${faculty}</td>
+                </tr>
+                <tr>
+                    <td class="label">DEPARTMENT:</td>
+                    <td class="value">${department}</td>
+                    <td class="label" style="text-align: right; padding-right: 15px;">LEVEL:</td>
+                    <td class="value">${level}</td>
+                </tr>
+            </table>
+
+            <table class="courses">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">S/N</th>
+                        <th style="width: 100px;">CODE</th>
+                        <th>COURSE TITLE</th>
+                        <th style="width: 80px; text-align: center;">CREDITS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${registrations.map((r, i) => `
+                        <tr>
+                            <td style="text-align: center;">${i + 1}</td>
+                            <td>${r.code}</td>
+                            <td>${r.title}</td>
+                            <td style="text-align: center;">${r.credits}</td>
+                        </tr>
+                    `).join('')}
+                    <tr style="font-weight: bold;">
+                        <td colspan="3" style="text-align: right;">TOTAL REGISTERED CREDITS:</td>
+                        <td style="text-align: center;">{{ total_credits }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="signatures">
+                <div class="sig-box">
+                    <div class="sig-line">STUDENT'S SIGNATURE & DATE</div>
+                </div>
+                <div class="sig-box">
+                    <div class="sig-line">LEVEL COORDINATOR'S SIGNATURE & DATE</div>
+                </div>
+                <div class="sig-box">
+                    <div class="sig-line">ACADEMIC ADVISOR'S SIGNATURE & DATE</div>
+                </div>
+                <div class="sig-box">
+                    <div class="sig-line">REGISTRAR'S SIGNATURE & DATE</div>
+                </div>
+            </div>
+
+            <div class="footer">
+                Printed on ${today} | Form ID: LVC-REG-${matricNo}-${Date.now().toString().slice(-6)}
+            </div>
+        </body>
+        </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+}
+</script>
 {% endblock %} 

@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
+from django.db.models import Q
 from .models import Course, CourseOffering, CourseRegistration, Department, StudentProfile, PaymentTransaction, AcademicSession, Level
 
 def is_staff(user):
@@ -151,16 +152,18 @@ def register_courses(request):
         selected_course_ids = request.POST.getlist('courses')
         student = request.user.studentprofile
 
-        # Get the selected courses to determine which semesters to clear
+        # Get the selected courses to determine which semesters and levels to clear
         selected_courses = Course.objects.filter(id__in=selected_course_ids)
         affected_semesters = set(selected_courses.values_list('semester', flat=True))
 
-        # Clear existing registrations for affected semesters only
+        # Clear existing registrations ONLY for the current session affected by this semester
+        # We do NOT touch historical registrations from previous sessions
         for semester in affected_semesters:
             CourseRegistration.objects.filter(
                 student=student,
                 course__semester=semester,
-                course__academic_session=student.current_session
+                academic_session=student.current_session,
+                status='registered'
             ).delete()
 
         # Allow current level + carry-over (any level up to current), same programme type only
@@ -175,16 +178,19 @@ def register_courses(request):
         for course_id in selected_course_ids:
             try:
                 course = Course.objects.get(id=course_id)
-                if CourseOffering.objects.filter(
+                offering_exists = CourseOffering.objects.filter(
                     course=course,
                     department=student.department,
                     level__in=available_levels,
                     is_active=True
-                ).exists():
-                    CourseRegistration.objects.create(
+                ).exists()
+
+                if offering_exists:
+                    CourseRegistration.objects.update_or_create(
                         student=student,
                         course=course,
-                        status='registered'
+                        academic_session=student.current_session,
+                        defaults={'status': 'registered'}
                     )
                     registered_count += 1
             except Course.DoesNotExist:
@@ -203,13 +209,16 @@ def register_courses(request):
         order__lte=current_level_order
     ).order_by('order')
 
+    # Broaden query to allow students to see:
+    # 1. Current level courses in current session.
+    # 2. Previous level courses from ANY session (to allow Carry-over selection).
     course_offerings = CourseOffering.objects.filter(
+        Q(level=student.current_level, course__academic_session=student.current_session) |
+        Q(level__order__lt=student.current_level.order),
         department=student.department,
-        level__in=available_levels,
-        course__academic_session=student.current_session,
         course__is_active=True,
         is_active=True
-    ).select_related('course', 'level').order_by('level__order', 'course__semester', 'course__code')
+    ).select_related('course', 'level', 'course__academic_session').order_by('level__order', 'course__semester', 'course__code')
 
     current_level_courses = {'first': [], 'second': []}
     carry_over_courses = {'first': [], 'second': []}
@@ -231,10 +240,11 @@ def register_courses(request):
             elif offering.course.semester == 'second':
                 carry_over_courses['second'].append(course_data)
 
+    # Get registered courses for the current academic session ONLY
     registered_courses = CourseRegistration.objects.filter(
         student=student,
-        course__academic_session=student.current_session
-    ).select_related('course')
+        academic_session=student.current_session
+    ).select_related('course', 'academic_session', 'course__academic_session')
 
     registered_course_ids = set(reg.course.id for reg in registered_courses)
     has_carry_over_courses = len(carry_over_courses['first']) > 0 or len(carry_over_courses['second']) > 0
@@ -253,18 +263,43 @@ def register_courses(request):
 @login_required
 def view_registered_courses(request):
     student = request.user.studentprofile
-    base_filter = {'student': student}
-    if student.current_session_id:
-        base_filter['course__academic_session'] = student.current_session
+
+    # Get all academic sessions the student has registrations in
+    session_ids = CourseRegistration.objects.filter(
+        student=student
+    ).values_list('academic_session', flat=True).distinct()
+    available_sessions = AcademicSession.objects.filter(id__in=session_ids).order_by('-start_year')
+
+    # Get selected session from query params or default to student's current session
+    selected_session_id = request.GET.get('session')
+    if selected_session_id:
+        selected_session = get_object_or_404(AcademicSession, id=selected_session_id)
+    else:
+        selected_session = student.current_session
+
+    # Get all registrations for the selected academic session
     registrations = CourseRegistration.objects.filter(
-        **base_filter
+        student=student,
+        academic_session=selected_session
     ).select_related('course').order_by('course__semester', 'course__code')
 
-    first_semester_regs = [r for r in registrations if r.course.semester == 'first']
-    second_semester_regs = [r for r in registrations if r.course.semester == 'second']
-    first_semester_credits = sum(r.course.credits for r in first_semester_regs)
-    second_semester_credits = sum(r.course.credits for r in second_semester_regs)
-    total_credits = first_semester_credits + second_semester_credits
+    # Attach level information to each registration for the template
+    # This helps distinguish carry-overs
+    for reg in registrations:
+        offering = CourseOffering.objects.filter(
+            course=reg.course, 
+            department=student.department
+        ).select_related('level').first()
+        reg.level_display = offering.level.display_name if offering else "N/A"
+
+    # Separate by semester for better organization
+    first_semester_regs = registrations.filter(course__semester='first')
+    second_semester_regs = registrations.filter(course__semester='second')
+
+    # Calculate totals
+    total_credits = sum(reg.course.credits for reg in registrations)
+    first_semester_credits = sum(reg.course.credits for reg in first_semester_regs)
+    second_semester_credits = sum(reg.course.credits for reg in second_semester_regs)
 
     context = {
         'registrations': registrations,
@@ -273,7 +308,9 @@ def view_registered_courses(request):
         'total_credits': total_credits,
         'first_semester_credits': first_semester_credits,
         'second_semester_credits': second_semester_credits,
-        'academic_session': student.current_session,
+        'academic_session': selected_session,
+        'available_sessions': available_sessions,
+        'selected_session_id': int(selected_session_id) if selected_session_id else (selected_session.id if selected_session else None)
     }
     return render(request, 'accounts/courses/registered_courses.html', context)
 
@@ -304,7 +341,7 @@ def student_courses(request):
         # Get registered courses with course details
         registered_courses_queryset = CourseRegistration.objects.filter(
             student=student,
-            course__academic_session=student.current_session
+            academic_session=student.current_session
         ).select_related('course')
 
         # Calculate total credits
