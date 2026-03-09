@@ -63,7 +63,7 @@
 
             <!-- First Semester Courses -->
             {% if first_semester_regs %}
-            <div class="p-6 border-b">
+            <div class="p-6 border-b" id="first-sem-section">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-blue-900">First Semester Courses</h3>
                     <span class="text-sm text-gray-600">{{ first_semester_regs|length }} courses • {{ first_semester_credits }} credits</span>
@@ -112,7 +112,7 @@
 
             <!-- Second Semester Courses -->
             {% if second_semester_regs %}
-            <div class="p-6">
+            <div class="p-6" id="second-sem-section">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-green-900">Second Semester Courses</h3>
                     <span class="text-sm text-gray-600">{{ second_semester_regs|length }} courses • {{ second_semester_credits }} credits</span>
@@ -173,223 +173,138 @@
 
 <script>
 function printCourseForm() {
-    const registrations = [];
-    const rows = document.querySelectorAll('tbody tr');
-    
-    rows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length >= 3) {
-            registrations.push({
-                code: cells[0].textContent.trim(),
-                title: cells[1].textContent.trim(),
-                credits: cells[2].textContent.trim(),
-                semester: row.closest('div').querySelector('h3').textContent.includes('First') ? '1st' : '2nd'
-            });
+    // Gather first semester courses
+    var firstSemCourses = [];
+    var firstSemSection = document.getElementById('first-sem-section');
+    if (firstSemSection) {
+        var firstSemRows = firstSemSection.querySelectorAll('tbody tr');
+        for (var i = 0; i < firstSemRows.length; i++) {
+            var cells = firstSemRows[i].querySelectorAll('td');
+            if (cells.length >= 3) {
+                firstSemCourses.push({
+                    code: cells[0].textContent.trim(),
+                    title: cells[1].textContent.trim(),
+                    credits: parseInt(cells[2].textContent.trim()) || 0
+                });
+            }
         }
-    });
+    }
 
-    if (registrations.length === 0) {
+    // Gather second semester courses
+    var secondSemCourses = [];
+    var secondSemSection = document.getElementById('second-sem-section');
+    if (secondSemSection) {
+        var secondSemRows = secondSemSection.querySelectorAll('tbody tr');
+        for (var j = 0; j < secondSemRows.length; j++) {
+            var cells2 = secondSemRows[j].querySelectorAll('td');
+            if (cells2.length >= 3) {
+                secondSemCourses.push({
+                    code: cells2[0].textContent.trim(),
+                    title: cells2[1].textContent.trim(),
+                    credits: parseInt(cells2[2].textContent.trim()) || 0
+                });
+            }
+        }
+    }
+
+    if (firstSemCourses.length === 0 && secondSemCourses.length === 0) {
         alert('No registered courses found for this session.');
         return;
     }
 
-    const studentName = "{{ request.user.get_full_name|escapejs }}";
-    const matricNo = "{{ request.user.id_number|escapejs }}";
-    const department = "{{ request.user.studentprofile.department.name|escapejs }}";
-    const faculty = "{{ request.user.studentprofile.faculty.name|escapejs }}";
-    const sessionName = "{{ academic_session.name|escapejs }}";
-    const level = registrations[0] ? "{{ request.user.studentprofile.current_level.display_name|escapejs }}" : "N/A";
-    const logoUrl = "{% static 'assets/images/logos/lakeview.jpg' %}";
-    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    var studentName = "{{ request.user.get_full_name|escapejs }}";
+    var idNumber = "{{ request.user.id_number|escapejs }}";
+    var department = "{{ request.user.studentprofile.department.name|escapejs }}";
+    var faculty = "{{ request.user.studentprofile.faculty.name|escapejs }}";
+    var sessionName = "{% if academic_session %}{{ academic_session.name|escapejs }}{% else %}N/A{% endif %}";
+    var level = "{{ request.user.studentprofile.current_level.display_name|escapejs }}";
+    var logoUrl = "{% static 'assets/images/logos/lakeview.jpg' %}";
 
-    const printWindow = window.open('', '_blank', 'width=900,height=800');
-    
-    const printContent = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>Course Registration Form - ${matricNo}</title>
-            <style>
-                @page { size: A4; margin: 20mm; }
-                @media print { .no-print { display: none !important; } }
-                body {
-                    font-family: 'Times New Roman', Times, serif;
-                    font-size: 13px;
-                    line-height: 1.5;
-                    color: #000;
-                    padding: 0;
-                    margin: 0;
-                }
-                .header {
-                    text-align: center;
-                    border-bottom: 2px solid #000;
-                    margin-bottom: 20px;
-                    padding-bottom: 10px;
-                }
-                .header img {
-                    width: 80px;
-                    height: 80px;
-                    margin-bottom: 5px;
-                }
-                .header h1 { font-size: 20px; text-transform: uppercase; margin: 0; }
-                .header h2 { font-size: 16px; margin: 5px 0; }
-                
-                .form-title {
-                    text-align: center;
-                    text-transform: uppercase;
-                    font-weight: bold;
-                    font-size: 16px;
-                    text-decoration: underline;
-                    margin-bottom: 20px;
-                }
+    var firstSemCredits = 0;
+    for (var a = 0; a < firstSemCourses.length; a++) { firstSemCredits += firstSemCourses[a].credits; }
+    var secondSemCredits = 0;
+    for (var b = 0; b < secondSemCourses.length; b++) { secondSemCredits += secondSemCourses[b].credits; }
 
-                .student-info {
-                    width: 100%;
-                    margin-bottom: 20px;
-                }
-                .student-info td {
-                    padding: 5px 0;
-                    vertical-align: top;
-                }
-                .label { font-weight: bold; width: 140px; }
-                .value { border-bottom: 1px dotted #000; padding-left: 10px; }
+    // Build semester table HTML
+    function buildSemesterTable(title, courses, totalCredits) {
+        if (courses.length === 0) return '';
+        var html = '<div class="semester-heading">' + title + '</div>';
+        html += '<table><thead><tr>';
+        html += '<th style="width:40px;">SN</th>';
+        html += '<th style="width:90px;">CODE</th>';
+        html += '<th>TITLE</th>';
+        html += '<th style="width:50px;">UNIT</th>';
+        html += '</tr></thead><tbody>';
+        for (var k = 0; k < courses.length; k++) {
+            html += '<tr>';
+            html += '<td class="center">' + (k + 1) + '</td>';
+            html += '<td>' + courses[k].code + '</td>';
+            html += '<td>' + courses[k].title + '</td>';
+            html += '<td class="center">' + courses[k].credits + '</td>';
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        html += '<div class="total-line">Total Unit of ' + title + ' is ' + totalCredits + '</div>';
+        return html;
+    }
 
-                table.courses {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-bottom: 30px;
-                }
-                table.courses th, table.courses td {
-                    border: 1px solid #000;
-                    padding: 8px;
-                    text-align: left;
-                }
-                table.courses th { background-color: #f2f2f2; text-transform: uppercase; font-size: 11px; }
-                
-                .semester-header {
-                    background-color: #e8e8e8;
-                    font-weight: bold;
-                    text-align: center !important;
-                }
+    var firstSemHtml = buildSemesterTable('FIRST SEMESTER', firstSemCourses, firstSemCredits);
+    var secondSemHtml = buildSemesterTable('SECOND SEMESTER', secondSemCourses, secondSemCredits);
 
-                .signatures {
-                    margin-top: 50px;
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 50px;
-                }
-                .sig-box {
-                    text-align: center;
-                }
-                .sig-line {
-                    border-top: 1px solid #000;
-                    margin-top: 40px;
-                    padding-top: 5px;
-                    font-size: 11px;
-                }
+    var printWindow = window.open('', '_blank', 'width=900,height=700');
 
-                .footer {
-                    margin-top: 40px;
-                    font-size: 10px;
-                    color: #555;
-                    text-align: center;
-                }
-                .print-btn {
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 10px 20px;
-                    background: #4f46e5;
-                    color: white;
-                    border: none;
-                    border-radius: 6px;
-                    font-weight: bold;
-                    cursor: pointer;
-                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-                }
-            </style>
-        </head>
-        <body>
-            <button class="print-btn no-print" onclick="window.print()">Print Form</button>
+    var styles = '@page { size: A4; margin: 10mm 15mm; }'
+        + ' @media print { html, body { width: 210mm; height: 297mm; margin: 0; padding: 0; overflow: hidden; } .no-print { display: none !important; } }'
+        + ' * { margin: 0; padding: 0; box-sizing: border-box; }'
+        + ' body { font-family: "Times New Roman", Times, serif; font-size: 13px; line-height: 1.4; color: #000; max-width: 800px; margin: 0 auto; padding: 20px; background: white; }'
+        + ' .header { text-align: center; margin-bottom: 15px; }'
+        + ' .header img { width: 70px; height: 70px; display: block; margin: 0 auto 8px; }'
+        + ' .school-name { font-size: 22px; font-weight: bold; text-transform: uppercase; }'
+        + ' .faculty-name { font-size: 16px; margin-top: 2px; }'
+        + ' .dept-name { font-size: 14px; margin-top: 2px; }'
+        + ' .form-title { font-size: 14px; font-weight: bold; margin-top: 8px; }'
+        + ' .student-info { margin-bottom: 10px; border-top: 1px solid #000; padding-top: 8px; }'
+        + ' .info-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 13px; }'
+        + ' .semester-heading { text-align: center; font-weight: bold; font-size: 14px; margin: 12px 0 4px; }'
+        + ' table { width: 100%; border-collapse: collapse; font-size: 12px; }'
+        + ' table th, table td { border: 1px solid #000; padding: 4px 8px; text-align: left; }'
+        + ' table th { font-weight: bold; background: #f5f5f5; text-align: center; font-size: 12px; }'
+        + ' td.center { text-align: center; }'
+        + ' .total-line { margin: 6px 0 0; font-size: 13px; }'
+        + ' .signatures { margin-top: 25px; font-size: 13px; }'
+        + ' .sig-line { margin-bottom: 12px; }'
+        + ' .sig-line span { font-weight: bold; }'
+        + ' .print-btn { position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: #059669; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; z-index: 1000; }'
+        + ' .print-btn:hover { background: #047857; }';
 
-            <div class="header">
-                <img src="${logoUrl}" alt="Logo">
-                <h1>LakeView College of Education</h1>
-                <h2>Official Course Registration Form</h2>
-                <p>Academic Session: ${sessionName}</p>
-            </div>
+    var bodyHtml = '<button class="print-btn no-print" onclick="window.print()">Print Course Form</button>'
+        + '<div class="header">'
+        + '<img src="' + logoUrl + '" alt="Logo">'
+        + '<div class="school-name">LakeView College of Education</div>'
+        + '<div class="faculty-name">' + faculty + '</div>'
+        + '<div class="dept-name">(Department of ' + department + ')</div>'
+        + '<div class="form-title">STUDENT REGISTERED COURSES</div>'
+        + '</div>'
+        + '<div class="student-info">'
+        + '<div class="info-row"><div>SESSION: ' + sessionName + '</div><div>LEVEL: ' + level + '</div></div>'
+        + '<div class="info-row"><div>NAME: ' + studentName.toUpperCase() + '</div><div>ID NO: ' + idNumber + '</div></div>'
+        + '</div>'
+        + firstSemHtml
+        + secondSemHtml
+        + '<div class="signatures">'
+        + '<div class="sig-line"><span>STUDENT\'S SIGNATURE:</span> .......................................................................................................................................................................................................</div>'
+        + '<div class="sig-line"><span>HOD\'S SIGNATURE:</span> ............................................................................................................................................................................................................</div>'
+        + '<div class="sig-line"><span>REGISTRAR\'S SIGNATURE:</span> .............................................................................................................................................................................................</div>'
+        + '</div>';
 
-            <div class="form-title">STUDENT REGISTRATION SLIP</div>
+    var fullHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Course Form - ' + studentName + '</title><style>' + styles + '</style></head><body>' + bodyHtml + '</body></html>';
 
-            <table class="student-info">
-                <tr>
-                    <td class="label">FULL NAME:</td>
-                    <td class="value">${studentName}</td>
-                    <td class="label" style="text-align: right; padding-right: 15px;">MATRIC NO:</td>
-                    <td class="value">${matricNo}</td>
-                </tr>
-                <tr>
-                    <td class="label">FACULTY:</td>
-                    <td class="value" colspan="3">${faculty}</td>
-                </tr>
-                <tr>
-                    <td class="label">DEPARTMENT:</td>
-                    <td class="value">${department}</td>
-                    <td class="label" style="text-align: right; padding-right: 15px;">LEVEL:</td>
-                    <td class="value">${level}</td>
-                </tr>
-            </table>
-
-            <table class="courses">
-                <thead>
-                    <tr>
-                        <th style="width: 50px;">S/N</th>
-                        <th style="width: 100px;">CODE</th>
-                        <th>COURSE TITLE</th>
-                        <th style="width: 80px; text-align: center;">CREDITS</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${registrations.map((r, i) => `
-                        <tr>
-                            <td style="text-align: center;">${i + 1}</td>
-                            <td>${r.code}</td>
-                            <td>${r.title}</td>
-                            <td style="text-align: center;">${r.credits}</td>
-                        </tr>
-                    `).join('')}
-                    <tr style="font-weight: bold;">
-                        <td colspan="3" style="text-align: right;">TOTAL REGISTERED CREDITS:</td>
-                        <td style="text-align: center;">{{ total_credits }}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="signatures">
-                <div class="sig-box">
-                    <div class="sig-line">STUDENT'S SIGNATURE & DATE</div>
-                </div>
-                <div class="sig-box">
-                    <div class="sig-line">LEVEL COORDINATOR'S SIGNATURE & DATE</div>
-                </div>
-                <div class="sig-box">
-                    <div class="sig-line">ACADEMIC ADVISOR'S SIGNATURE & DATE</div>
-                </div>
-                <div class="sig-box">
-                    <div class="sig-line">REGISTRAR'S SIGNATURE & DATE</div>
-                </div>
-            </div>
-
-            <div class="footer">
-                Printed on ${today} | Form ID: LVC-REG-${matricNo}-${Date.now().toString().slice(-6)}
-            </div>
-        </body>
-        </html>
-    `;
-
-    printWindow.document.write(printContent);
+    printWindow.document.write(fullHtml);
     printWindow.document.close();
+
+    printWindow.onload = function() {
+        printWindow.focus();
+    };
 }
 </script>
-{% endblock %} 
+{% endblock %}
