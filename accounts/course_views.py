@@ -301,6 +301,24 @@ def view_registered_courses(request):
     first_semester_credits = sum(reg.course.credits for reg in first_semester_regs)
     second_semester_credits = sum(reg.course.credits for reg in second_semester_regs)
 
+    # Determine the level the student was at during this session
+    # by finding the most common level across all course offerings
+    from collections import Counter
+    level_counts = Counter()
+    for reg in registrations:
+        offering = CourseOffering.objects.filter(
+            course=reg.course,
+            department=student.department
+        ).select_related('level').first()
+        if offering and offering.level:
+            level_counts[offering.level.display_name] = level_counts.get(offering.level.display_name, 0) + 1
+
+    if level_counts:
+        # Use the most common level (the one with the most courses)
+        registration_level = level_counts.most_common(1)[0][0]
+    else:
+        registration_level = student.current_level.display_name if student.current_level else 'N/A'
+
     context = {
         'registrations': registrations,
         'first_semester_regs': first_semester_regs,
@@ -310,6 +328,7 @@ def view_registered_courses(request):
         'second_semester_credits': second_semester_credits,
         'academic_session': selected_session,
         'available_sessions': available_sessions,
+        'registration_level': registration_level,
         'selected_session_id': int(selected_session_id) if selected_session_id else (selected_session.id if selected_session else None)
     }
     return render(request, 'accounts/courses/registered_courses.html', context)
