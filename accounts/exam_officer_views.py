@@ -210,7 +210,13 @@ def upload_results(request, course_id):
     assigned_types = officer.assigned_programme_types
 
     course = get_object_or_404(Course, id=course_id)
-    current_session = AcademicSession.objects.filter(is_active=True).first()
+    
+    # Get the session from the URL parameter, default to active session
+    session_id = request.GET.get('session')
+    if session_id:
+        current_session = get_object_or_404(AcademicSession, id=session_id)
+    else:
+        current_session = AcademicSession.objects.filter(is_active=True).first()
 
     # Verify this course belongs to officer's assigned programme types
     valid_offerings = CourseOffering.objects.filter(
