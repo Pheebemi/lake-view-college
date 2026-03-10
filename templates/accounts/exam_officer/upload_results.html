@@ -245,6 +245,7 @@ function printCourseResults() {
         const testScore = row.querySelector('[data-type="test"]').value || '0';
         const examScore = row.querySelector('[data-type="exam"]').value || '0';
         const totalScore = row.querySelector('td:nth-child(8) span').textContent.trim();
+        const grade = row.querySelector('td:nth-child(9) span').textContent.trim();
         
         // Only include if a score exists or total is calculated
         if (totalScore && totalScore !== '—' && totalScore !== '0.0') {
@@ -255,6 +256,7 @@ function printCourseResults() {
                     <td style="text-align: center;">${testScore}</td>
                     <td style="text-align: center;">${examScore}</td>
                     <td style="text-align: center; font-weight: bold;">${totalScore}</td>
+                    <td style="text-align: center; font-weight: bold;">${grade}</td>
                 </tr>
             `;
         }
@@ -396,9 +398,10 @@ function printCourseResults() {
                     <tr>
                         <th style="width: 60px;">S/N</th>
                         <th>MATRIC NUMBER</th>
-                        <th style="width: 100px; text-align: center;">TEST</th>
-                        <th style="width: 100px; text-align: center;">EXAM</th>
-                        <th style="width: 120px; text-align: center;">TOTAL</th>
+                        <th style="width: 80px; text-align: center;">TEST</th>
+                        <th style="width: 80px; text-align: center;">EXAM</th>
+                        <th style="width: 100px; text-align: center;">TOTAL</th>
+                        <th style="width: 80px; text-align: center;">GRADE</th>
                     </tr>
                 </thead>
                 <tbody>
