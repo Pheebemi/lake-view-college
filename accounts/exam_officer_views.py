@@ -121,8 +121,10 @@ def select_course(request):
     else:
         selected_session = current_session
 
-    # Only fetch courses if a specific structural filter is applied
     course_data = []
+    
+    active_session = AcademicSession.objects.filter(is_active=True).first()
+    is_historical = selected_session != active_session
     
     # Check if user has actively searched using specific filters (not just session)
     has_specific_filter = bool(filter_semester or filter_programme or filter_level)
@@ -154,31 +156,34 @@ def select_course(request):
             # Get offerings to find eligible students
             course_offerings = CourseOffering.objects.filter(course=course)
             
-            # Build query for eligible students
-            student_q = Q()
-            for offering in course_offerings:
-                student_q |= Q(department=offering.department, current_level=offering.level)
-            
-            total_eligible = StudentProfile.objects.filter(student_q).count() if course_offerings.exists() else 0
+            if not is_historical:
+                # Active session: calculate potential eligible from current level
+                student_q = Q()
+                for offering in course_offerings:
+                    student_q |= Q(department=offering.department, current_level=offering.level)
+                
+                cohort_size = StudentProfile.objects.filter(student_q).count() if course_offerings.exists() else 0
+            else:
+                # Historical session: cohort_size based on current level is meaningless
+                cohort_size = 0
             
             registered = CourseRegistration.objects.filter(
-                course=course, status='registered'
+                course=course, status='registered', academic_session=selected_session
             ).count()
             
             results_done = Result.objects.filter(
                 course=course, academic_session=selected_session
             ).count()
             
-            # Use total_eligible as the baseline for completion if it's greater than registered
-            # This handles cases where results are uploaded for non-registered students
-            denominator = max(registered, total_eligible)
+            # Use max to get the realistic denominator
+            total_eligible = max(registered, results_done, cohort_size)
             
             course_data.append({
                 'course': course,
                 'registered': registered,
                 'total_eligible': total_eligible,
                 'results_done': results_done,
-                'is_complete': results_done >= denominator and denominator > 0,
+                'is_complete': results_done >= total_eligible and total_eligible > 0,
             })
 
     # Get available filters
@@ -227,18 +232,36 @@ def upload_results(request, course_id):
         messages.error(request, "You are not authorized to upload results for this course.")
         return redirect('accounts:exam_officer_select_course')
 
+    # Determine if this is a historical session
+    active_session = AcademicSession.objects.filter(is_active=True).first()
+    is_historical = current_session != active_session
+
     # Get all departments and levels that offer this course
     offering_dept_levels = valid_offerings.values_list('department_id', 'level_id')
 
-    # Build query to get ALL students in those departments at those levels
+    # Build query to get the correct students
     from django.db.models import Q
     student_q = Q()
-    for dept_id, level_id in offering_dept_levels:
-        student_q |= Q(department_id=dept_id, current_level_id=level_id)
+    
+    if not is_historical:
+        # For the active session, pull everyone currently in the level to allow uploading for unregistered students
+        for dept_id, level_id in offering_dept_levels:
+            student_q |= Q(department_id=dept_id, current_level_id=level_id)
+            
+    # Always include students who actually registered or already have results for this course/session
+    student_q |= Q(
+        registrations__course=course, 
+        registrations__academic_session=current_session,
+        registrations__status='registered'
+    )
+    student_q |= Q(
+        results__course=course,
+        results__academic_session=current_session
+    )
 
     all_students = StudentProfile.objects.filter(
         student_q
-    ).select_related('user', 'current_level', 'department').order_by('user__first_name', 'user__last_name')
+    ).distinct().select_related('user', 'current_level', 'department').order_by('user__id_number')
 
     # Get set of registered student IDs for this course
     registered_student_ids = set(
