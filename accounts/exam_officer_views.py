@@ -121,59 +121,65 @@ def select_course(request):
     else:
         selected_session = current_session
 
-    # Get courses for assigned programme types
-    courses = Course.objects.filter(
-        offerings__department__faculty__programme_type__in=assigned_types,
-        academic_session=selected_session,
-        is_active=True
-    ).distinct().order_by('code')
-
-    if filter_semester:
-        courses = courses.filter(semester=filter_semester)
-
-    if filter_programme and filter_programme in assigned_types:
-        courses = courses.filter(
-            offerings__department__faculty__programme_type=filter_programme
-        ).distinct()
-
-    if filter_level:
-        courses = courses.filter(
-            offerings__level__id=filter_level
-        ).distinct()
-
-    # Build course data with registration counts and result status
-    from django.db.models import Q
+    # Only fetch courses if a specific structural filter is applied
     course_data = []
-    for course in courses:
-        # Get offerings to find eligible students
-        course_offerings = CourseOffering.objects.filter(course=course)
-        
-        # Build query for eligible students
-        student_q = Q()
-        for offering in course_offerings:
-            student_q |= Q(department=offering.department, current_level=offering.level)
-        
-        total_eligible = StudentProfile.objects.filter(student_q).count() if course_offerings.exists() else 0
-        
-        registered = CourseRegistration.objects.filter(
-            course=course, status='registered'
-        ).count()
-        
-        results_done = Result.objects.filter(
-            course=course, academic_session=selected_session
-        ).count()
-        
-        # Use total_eligible as the baseline for completion if it's greater than registered
-        # This handles cases where results are uploaded for non-registered students
-        denominator = max(registered, total_eligible)
-        
-        course_data.append({
-            'course': course,
-            'registered': registered,
-            'total_eligible': total_eligible,
-            'results_done': results_done,
-            'is_complete': results_done >= denominator and denominator > 0,
-        })
+    
+    # Check if user has actively searched using specific filters (not just session)
+    has_specific_filter = bool(filter_semester or filter_programme or filter_level)
+    
+    if has_specific_filter:
+        # Get courses for assigned programme types
+        courses = Course.objects.filter(
+            offerings__department__faculty__programme_type__in=assigned_types,
+            academic_session=selected_session,
+            is_active=True
+        ).distinct().order_by('code')
+
+        if filter_semester:
+            courses = courses.filter(semester=filter_semester)
+
+        if filter_programme and filter_programme in assigned_types:
+            courses = courses.filter(
+                offerings__department__faculty__programme_type=filter_programme
+            ).distinct()
+
+        if filter_level:
+            courses = courses.filter(
+                offerings__level__id=filter_level
+            ).distinct()
+
+        # Build course data with registration counts and result status
+        from django.db.models import Q
+        for course in courses:
+            # Get offerings to find eligible students
+            course_offerings = CourseOffering.objects.filter(course=course)
+            
+            # Build query for eligible students
+            student_q = Q()
+            for offering in course_offerings:
+                student_q |= Q(department=offering.department, current_level=offering.level)
+            
+            total_eligible = StudentProfile.objects.filter(student_q).count() if course_offerings.exists() else 0
+            
+            registered = CourseRegistration.objects.filter(
+                course=course, status='registered'
+            ).count()
+            
+            results_done = Result.objects.filter(
+                course=course, academic_session=selected_session
+            ).count()
+            
+            # Use total_eligible as the baseline for completion if it's greater than registered
+            # This handles cases where results are uploaded for non-registered students
+            denominator = max(registered, total_eligible)
+            
+            course_data.append({
+                'course': course,
+                'registered': registered,
+                'total_eligible': total_eligible,
+                'results_done': results_done,
+                'is_complete': results_done >= denominator and denominator > 0,
+            })
 
     # Get available filters
     available_sessions = AcademicSession.objects.all().order_by('-start_year')
@@ -279,6 +285,12 @@ def upload_results(request, course_id):
                         'uploaded_by': request.user,
                     }
                 )
+                
+                # IMPORTANT: update_or_create doesn't always trigger custom save() logic 
+                # (like calculate_grade) if fields don't seem to change in the way Django expects,
+                # or it might use bulk updates. We must call save() explicitly to force recalculation.
+                result.save()
+                
                 saved_count += 1
             except (ValueError, TypeError) as e:
                 errors.append(f"{student.user.get_full_name()}: Invalid score value")
@@ -288,6 +300,38 @@ def upload_results(request, course_id):
                 messages.warning(request, err)
         if saved_count > 0:
             messages.success(request, f"Successfully saved {saved_count} result(s) for {course.code}!")
+
+            # Auto-calculate GPA/CGPA for all students who got results
+            students_with_results = Result.objects.filter(
+                course=course,
+                academic_session=current_session
+            ).values_list('student_id', flat=True).distinct()
+
+            gpa_updated = 0
+            for student_id in students_with_results:
+                try:
+                    student_profile = StudentProfile.objects.get(id=student_id)
+                    # Get or create SemesterGPA for this student/session/semester
+                    semester_gpa, created = SemesterGPA.objects.get_or_create(
+                        student=student_profile,
+                        academic_session=current_session,
+                        semester=course.semester,
+                        defaults={
+                            'level': student_profile.current_level,
+                        }
+                    )
+                    # Calculate GPA for this semester
+                    semester_gpa.calculate_gpa()
+                    # Calculate cumulative GPA
+                    semester_gpa.calculate_cgpa()
+                    semester_gpa.save()
+
+                    gpa_updated += 1
+                except Exception as e:
+                    print(f"Error calculating GPA for student {student_id}: {e}")
+
+            if gpa_updated > 0:
+                messages.info(request, f"GPA/CGPA updated for {gpa_updated} student(s).")
 
         return redirect('accounts:exam_officer_upload_results', course_id=course.id)
 
@@ -323,3 +367,81 @@ def upload_results(request, course_id):
         'current_session': current_session,
     }
     return render(request, 'accounts/exam_officer/upload_results.html', context)
+
+
+@login_required
+@user_passes_test(is_exam_officer)
+def view_student_gpas(request):
+    """View student GPA/CGPA records"""
+    officer = request.user.examofficerprofile
+    assigned_types = officer.assigned_programme_types
+
+    # Get filter params
+    filter_session = request.GET.get('session', '')
+    filter_level = request.GET.get('level', '')
+    filter_department = request.GET.get('department', '')
+
+    current_session = AcademicSession.objects.filter(is_active=True).first()
+
+    # Use selected session or current
+    if filter_session:
+        selected_session = get_object_or_404(AcademicSession, id=filter_session)
+    else:
+        selected_session = current_session
+
+    # Get all SemesterGPA records for the selected session
+    gpa_records = SemesterGPA.objects.filter(
+        academic_session=selected_session,
+        student__programme_type__in=assigned_types
+    ).select_related(
+        'student__user', 'student__department', 'student__current_level',
+        'level', 'academic_session'
+    ).order_by('student__department__name', 'student__user__last_name')
+
+    if filter_level:
+        gpa_records = gpa_records.filter(level_id=filter_level)
+
+    if filter_department:
+        gpa_records = gpa_records.filter(student__department_id=filter_department)
+
+    # Group by student for display
+    from collections import OrderedDict
+    student_gpas = OrderedDict()
+    for record in gpa_records:
+        student_id = record.student_id
+        if student_id not in student_gpas:
+            student_gpas[student_id] = {
+                'student': record.student,
+                'first_semester': None,
+                'second_semester': None,
+                'cgpa': 0.00,
+            }
+        if record.semester == 'first':
+            student_gpas[student_id]['first_semester'] = record
+        elif record.semester == 'second':
+            student_gpas[student_id]['second_semester'] = record
+        # Use the latest CGPA
+        if float(record.cgpa) > float(student_gpas[student_id]['cgpa']):
+            student_gpas[student_id]['cgpa'] = record.cgpa
+
+    # Get available filters
+    available_sessions = AcademicSession.objects.all().order_by('-start_year')
+    available_levels = Level.objects.filter(
+        programme_type__in=assigned_types
+    ).order_by('order')
+    available_departments = Department.objects.filter(
+        faculty__programme_type__in=assigned_types
+    ).order_by('name')
+
+    context = {
+        'student_gpas': student_gpas,
+        'available_sessions': available_sessions,
+        'available_levels': available_levels,
+        'available_departments': available_departments,
+        'selected_session': selected_session,
+        'filter_session': filter_session,
+        'filter_level': filter_level,
+        'filter_department': filter_department,
+        'total_records': len(student_gpas),
+    }
+    return render(request, 'accounts/exam_officer/student_gpas.html', context)

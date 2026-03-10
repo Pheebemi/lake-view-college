@@ -586,10 +586,9 @@ class SemesterGPA(models.Model):
         self.gpa = round(total_quality_points / total_credits, 2) if total_credits > 0 else 0.00
 
     def calculate_cgpa(self):
-        """Calculate cumulative GPA from all finalized semesters up to this one"""
+        """Calculate cumulative GPA from all semesters up to and including this one"""
         all_gpas = SemesterGPA.objects.filter(
             student=self.student,
-            is_finalized=True
         ).exclude(pk=self.pk)
 
         total_credits = self.total_credits
