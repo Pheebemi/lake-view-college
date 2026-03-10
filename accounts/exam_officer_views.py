@@ -146,9 +146,13 @@ def select_course(request):
             ).distinct()
 
         if filter_level:
-            courses = courses.filter(
-                offerings__level__id=filter_level
-            ).distinct()
+            try:
+                level_id = int(filter_level)
+                courses = courses.filter(
+                    offerings__level__id=level_id
+                ).distinct()
+            except ValueError:
+                pass
 
         # Build course data with registration counts and result status
         from django.db.models import Q
