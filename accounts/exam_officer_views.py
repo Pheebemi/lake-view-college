@@ -376,7 +376,7 @@ def upload_results(request, course_id):
         return redirect('accounts:exam_officer_upload_results', course_id=course.id)
 
     # Get existing results for pre-filling the form
-    student_results = {}
+    results_map = {}
     existing_results = Result.objects.filter(
         course=course,
         academic_session=current_session
