@@ -496,7 +496,7 @@ class Result(models.Model):
     test_score = models.DecimalField(max_digits=4, decimal_places=1, help_text='Test score out of 40')
     exam_score = models.DecimalField(max_digits=4, decimal_places=1, help_text='Exam score out of 60')
     total_score = models.DecimalField(max_digits=5, decimal_places=1, editable=False, help_text='Auto-calculated: test + exam')
-    grade = models.CharField(max_length=1, choices=GRADE_SCALE, editable=False)
+    grade = models.CharField(max_length=5, choices=GRADE_SCALE, editable=False)
     grade_point = models.DecimalField(max_digits=2, decimal_places=1, editable=False)
     # Audit trail
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='uploaded_results')
