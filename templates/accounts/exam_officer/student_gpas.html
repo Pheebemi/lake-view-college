@@ -108,7 +108,8 @@
                                 <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
                                 <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">1st Sem GPA</th>
                                 <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">2nd Sem GPA</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-indigo-700 uppercase tracking-wider bg-indigo-50 border-l border-r border-indigo-100">CGPA</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-indigo-700 uppercase tracking-wider bg-indigo-50 border-l border-indigo-100">CGPA</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-indigo-700 uppercase tracking-wider bg-indigo-50 border-r border-indigo-100">Class</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -151,14 +152,27 @@
                                         <span class="text-gray-400">—</span>
                                     {% endif %}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center bg-indigo-50/30 border-l border-r border-indigo-100">
+                                <td class="px-6 py-4 whitespace-nowrap text-center bg-indigo-50/30 border-l border-indigo-100">
                                     <span class="inline-flex px-3 py-1 text-sm font-bold rounded-full 
-                                        {% if data.cgpa >= 4.5 %}bg-green-100 text-green-800
-                                        {% elif data.cgpa >= 3.5 %}bg-blue-100 text-blue-800
-                                        {% elif data.cgpa >= 2.4 %}bg-yellow-100 text-yellow-800
-                                        {% elif data.cgpa >= 1.5 %}bg-orange-100 text-orange-800
-                                        {% else %}bg-red-100 text-red-800{% endif %}">
+                                        {% if data.student.programme_type == 'nd' %}
+                                            {% if data.cgpa >= 3.5 %}bg-green-100 text-green-800
+                                            {% elif data.cgpa >= 3.0 %}bg-blue-100 text-blue-800
+                                            {% elif data.cgpa >= 2.5 %}bg-yellow-100 text-yellow-800
+                                            {% elif data.cgpa >= 2.0 %}bg-orange-100 text-orange-800
+                                            {% else %}bg-red-100 text-red-800{% endif %}
+                                        {% else %}
+                                            {% if data.cgpa >= 4.5 %}bg-green-100 text-green-800
+                                            {% elif data.cgpa >= 3.5 %}bg-blue-100 text-blue-800
+                                            {% elif data.cgpa >= 2.4 %}bg-yellow-100 text-yellow-800
+                                            {% elif data.cgpa >= 1.5 %}bg-orange-100 text-orange-800
+                                            {% else %}bg-red-100 text-red-800{% endif %}
+                                        {% endif %}">
                                         {{ data.cgpa }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center bg-indigo-50/30 border-r border-indigo-100">
+                                    <span class="text-xs font-semibold text-indigo-700">
+                                        {{ data.latest_record.get_classification }}
                                     </span>
                                 </td>
                             </tr>

@@ -292,11 +292,18 @@ def upload_results(request, course_id):
                 test_val = float(test_score) if test_score else 0
                 exam_val = float(exam_score) if exam_score else 0
 
-                if test_val < 0 or test_val > 40:
-                    errors.append(f"{student.user.get_full_name()}: Test score must be 0-40")
+                # Get programme-specific limits
+                programme_type = student.programme_type
+                if programme_type == 'nd':
+                    max_test, max_exam = 40, 60
+                else: # hnd, degree, etc.
+                    max_test, max_exam = 30, 70
+
+                if test_val < 0 or test_val > max_test:
+                    errors.append(f"{student.user.get_full_name()} ({programme_type.upper()}): Test score must be 0-{max_test}")
                     continue
-                if exam_val < 0 or exam_val > 60:
-                    errors.append(f"{student.user.get_full_name()}: Exam score must be 0-60")
+                if exam_val < 0 or exam_val > max_exam:
+                    errors.append(f"{student.user.get_full_name()} ({programme_type.upper()}): Exam score must be 0-{max_exam}")
                     continue
 
                 # Get the level from the course offering for this student
@@ -375,29 +382,50 @@ def upload_results(request, course_id):
         academic_session=current_session
     )
     for r in existing_results:
-        student_results[r.student_id] = r
+        results_map[r.student_id] = r
 
-    # Build student list with existing results and registration status
+    # Build detailed context for each student
     students_data = []
     for student in all_students:
-        existing = student_results.get(student.id)
+        result = results_map.get(student.id)
+        
+        # Get student-specific limits
+        p_type = student.programme_type
+        if p_type == 'nd':
+            max_test, max_exam = 40, 60
+        else:
+            max_test, max_exam = 30, 70
+            
         students_data.append({
             'student': student,
             'is_registered': student.id in registered_student_ids,
-            'test_score': existing.test_score if existing else '',
-            'exam_score': existing.exam_score if existing else '',
-            'total_score': existing.total_score if existing else '',
-            'grade': existing.grade if existing else '',
-            'has_result': existing is not None,
+            'has_result': result is not None,
+            'test_score': result.test_score if result else '',
+            'exam_score': result.exam_score if result else '',
+            'total_score': result.total_score if result else None,
+            'grade': result.grade if result else None,
+            'programme_type': p_type,
+            'max_test': max_test,
+            'max_exam': max_exam,
         })
+
+    # Determine dominant programme type for UI hints
+    dominant_type = 'degree'
+    if all_students.exists():
+        from collections import Counter
+        type_counts = Counter(s.programme_type for s in all_students)
+        dominant_type = type_counts.most_common(1)[0][0]
 
     context = {
         'course': course,
-        'students_data': students_data,
-        'total_students': len(students_data),
-        'registered_count': len(registered_student_ids),
-        'results_completed': sum(1 for s in students_data if s['has_result']),
         'current_session': current_session,
+        'students_data': students_data,
+        'total_students': all_students.count(),
+        'registered_count': len(registered_student_ids),
+        'results_completed': len(results_map),
+        'dominant_type': dominant_type,
+        'max_test': 40 if dominant_type == 'nd' else 30,
+        'max_exam': 60 if dominant_type == 'nd' else 70,
     }
     return render(request, 'accounts/exam_officer/upload_results.html', context)
 
@@ -453,8 +481,10 @@ def view_student_gpas(request):
             student_gpas[student_id]['first_semester'] = record
         elif record.semester == 'second':
             student_gpas[student_id]['second_semester'] = record
-        # Use the latest CGPA
-        if float(record.cgpa) > float(student_gpas[student_id]['cgpa']):
+        
+        # Use the latest record to get the most up-to-date CGPA and classification
+        if not student_gpas[student_id].get('latest_record') or record.semester == 'second':
+            student_gpas[student_id]['latest_record'] = record
             student_gpas[student_id]['cgpa'] = record.cgpa
 
     # Get available filters

@@ -513,32 +513,62 @@ class Result(models.Model):
         return f"{self.student.user.get_full_name()} - {self.course.code} - {self.grade} ({self.total_score})"
 
     @staticmethod
-    def calculate_grade(total_score):
-        """Calculate grade and grade point from total score"""
-        if total_score >= 70:
-            return 'A', 5.0
-        elif total_score >= 60:
-            return 'B', 4.0
-        elif total_score >= 50:
-            return 'C', 3.0
-        elif total_score >= 45:
-            return 'D', 2.0
-        elif total_score >= 40:
-            return 'E', 1.0
+    def calculate_grade(total_score, programme_type='degree'):
+        """Calculate grade and grade point from total score based on programme type"""
+        score = float(total_score)
+        
+        if programme_type == 'nd':
+            # ND (Diploma) 4.0 Scale
+            if score >= 75:
+                return 'A', 4.0
+            elif score >= 70:
+                return 'AB', 3.5
+            elif score >= 65:
+                return 'B', 3.25
+            elif score >= 60:
+                return 'BC', 3.0
+            elif score >= 55:
+                return 'C', 2.75
+            elif score >= 50:
+                return 'CD', 2.5
+            elif score >= 45:
+                return 'D', 2.25
+            elif score >= 40:
+                return 'E', 2.0
+            else:
+                return 'F', 0.0
         else:
-            return 'F', 0.0
+            # NCE & Degree 5.0 Scale
+            if score >= 70:
+                return 'A', 5.0
+            elif score >= 60:
+                return 'B', 4.0
+            elif score >= 50:
+                return 'C', 3.0
+            elif score >= 45:
+                return 'D', 2.0
+            elif score >= 40:
+                return 'E', 1.0
+            else:
+                return 'F', 0.0
 
     def clean(self):
-        if self.test_score is not None and (self.test_score < 0 or self.test_score > 40):
-            raise ValidationError('Test score must be between 0 and 40.')
-        if self.exam_score is not None and (self.exam_score < 0 or self.exam_score > 60):
-            raise ValidationError('Exam score must be between 0 and 60.')
+        programme_type = self.student.programme_type
+        if programme_type == 'nd':
+            max_test, max_exam = 40, 60
+        else:
+            max_test, max_exam = 30, 70
+
+        if self.test_score is not None and (self.test_score < 0 or self.test_score > max_test):
+            raise ValidationError(f'Test score for {programme_type.upper()} must be between 0 and {max_test}.')
+        if self.exam_score is not None and (self.exam_score < 0 or self.exam_score > max_exam):
+            raise ValidationError(f'Exam score for {programme_type.upper()} must be between 0 and {max_exam}.')
 
     def save(self, *args, **kwargs):
         self.clean()
         # Auto-calculate total, grade, and grade point
         self.total_score = (self.test_score or 0) + (self.exam_score or 0)
-        self.grade, self.grade_point = self.calculate_grade(float(self.total_score))
+        self.grade, self.grade_point = self.calculate_grade(float(self.total_score), self.student.programme_type)
         super().save(*args, **kwargs)
 
 
@@ -599,3 +629,23 @@ class SemesterGPA(models.Model):
             total_quality_points += float(gpa_record.total_quality_points)
 
         self.cgpa = round(total_quality_points / total_credits, 2) if total_credits > 0 else 0.00
+
+    def get_classification(self):
+        """Return class classification based on CGPA and programme type"""
+        cgpa = float(self.cgpa)
+        p_type = self.student.programme_type
+        
+        if p_type == 'nd':
+            if cgpa >= 3.50: return "Distinction"
+            if cgpa >= 3.00: return "Upper Credit"
+            if cgpa >= 2.50: return "Lower Credit"
+            if cgpa >= 2.00: return "Pass"
+            return "Fail"
+        else:
+            # Degree/NCE 5.0 scale (standard)
+            if cgpa >= 4.50: return "First Class"
+            if cgpa >= 3.50: return "Second Class (Upper)"
+            if cgpa >= 2.40: return "Second Class (Lower)"
+            if cgpa >= 1.50: return "Third Class"
+            if cgpa >= 1.00: return "Pass"
+            return "Fail"
