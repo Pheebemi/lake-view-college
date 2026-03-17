@@ -4,7 +4,7 @@ from accounts.models import (
 )
 
 class Command(BaseCommand):
-    help = "Upload 300 Level Accounting courses for First and Second Semesters"
+    help = "Upload 400 Level Accounting courses for First and Second Semesters"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -43,25 +43,23 @@ class Command(BaseCommand):
 
         admin_user = User.objects.filter(is_superuser=True).first()
 
-        # 3. Define Course Data with Levels (Only 300 Level now)
+        # 3. Define Course Data with Levels (Only 400 Level now)
         courses_by_level = {
-            "300": [
+            "400": [
                 # First Semester
-                {"code": "ACS 301", "title": "Differential Equations for Actuarial Science", "units": 3, "semester": "first"},
-                {"code": "ACS 305", "title": "Actuarial Modeling", "units": 2, "semester": "first"},
-                {"code": "ACS 307", "title": "Numerical analysis", "units": 3, "semester": "first"},
-                {"code": "ACS 311", "title": "Entrepreneurship in Actuarial Profession", "units": 2, "semester": "first"},
-                {"code": "ACC 305", "title": "Taxation I", "units": 3, "semester": "first"},
-                {"code": "ACC 307", "title": "Auditing and Assurance I", "units": 3, "semester": "first"},
-                {"code": "LCE-ACC313", "title": "Research Methodology in Accounting", "units": 3, "semester": "first"},
+                {"code": "ACS 401", "title": "Further Life Contingencies", "units": 3, "semester": "first"},
+                {"code": "ACS 403", "title": "Mortality Analysis", "units": 3, "semester": "first"},
+                {"code": "ACS 405", "title": "Advanced Risk Management", "units": 3, "semester": "first"},
+                {"code": "ACC 499", "title": "Project", "units": 3, "semester": "first"},
+                {"code": "LCE--ACC407", "title": "Digital Accounting", "units": 2, "semester": "first"},
+                {"code": "LCE--ACC409", "title": "Sustainability and Green Accounting", "units": 2, "semester": "first"},
+                {"code": "LCE--ACC411", "title": "Human Resource Accounting", "units": 2, "semester": "first"},
                 # Second Semester
-                {"code": "GST 312", "title": "Peace and Conflict Resolution", "units": 2, "semester": "second"},
-                {"code": "ENT 312", "title": "Venture Creation", "units": 2, "semester": "second"},
-                {"code": "ACS 302", "title": "Life Contingencies", "units": 3, "semester": "second"},
-                {"code": "ACS 304", "title": "Financial Mathematics for Actuaries", "units": 2, "semester": "second"},
-                {"code": "ACS 306", "title": "Life and Health Insurance", "units": 2, "semester": "second"},
-                {"code": "ACS 308", "title": "Ratemaking and Insurance Pricing Models", "units": 3, "semester": "second"},
-                {"code": "ACS 310", "title": "Survival Models", "units": 2, "semester": "second"},
+                {"code": "ACS 402", "title": "Pension funds and Social Insurance", "units": 3, "semester": "second"},
+                {"code": "ACS 404", "title": "Actuarial Valuation", "units": 3, "semester": "second"},
+                {"code": "ACC 490", "title": "Project", "units": 3, "semester": "second"},
+                {"code": "LCE--ACC408", "title": "Mineral Resource Accounting", "units": 2, "semester": "second"},
+                {"code": "LCE--ACC412", "title": "Forensic Accounting & Fraud Examination", "units": 2, "semester": "second"},
             ]
         }
 
