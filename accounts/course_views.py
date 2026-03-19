@@ -213,7 +213,7 @@ def register_courses(request):
     # 1. Current level courses in current session.
     # 2. Previous level courses from ANY session (to allow Carry-over selection).
     course_offerings = CourseOffering.objects.filter(
-        Q(level=student.current_level, course__academic_session=student.current_session) |
+        Q(level=student.current_level) |
         Q(level__order__lt=student.current_level.order),
         department=student.department,
         course__is_active=True,
@@ -349,7 +349,6 @@ def student_courses(request):
         course_offerings = CourseOffering.objects.filter(
             department=student.department,
             level=student.current_level,
-            course__academic_session=student.current_session,
             course__is_active=True,
             is_active=True
         ).select_related('course').order_by('course__semester', 'course__code')

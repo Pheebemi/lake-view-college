@@ -133,7 +133,6 @@ def select_course(request):
         # Get courses for assigned programme types
         courses = Course.objects.filter(
             offerings__department__faculty__programme_type__in=assigned_types,
-            academic_session=selected_session,
             is_active=True
         ).distinct().order_by('code')
 
