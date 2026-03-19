@@ -87,8 +87,11 @@
 
             <!-- Courses List -->
             <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-800">Courses ({{ course_data|length }})</h2>
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-800">Courses ({{ paginator.count }})</h2>
+                    {% if paginator.num_pages > 1 %}
+                    <span class="text-sm text-gray-500">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+                    {% endif %}
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -104,7 +107,7 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            {% for item in course_data %}
+                            {% for item in page_obj %}
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="text-sm font-semibold text-gray-900">{{ item.course.code }}</span>
@@ -158,6 +161,49 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Pagination Controls -->
+                {% if paginator.num_pages > 1 %}
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <p class="text-sm text-gray-600">
+                        Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ paginator.count }} courses
+                    </p>
+                    <nav class="flex items-center gap-1">
+                        {% if page_obj.has_previous %}
+                        <a href="?page=1{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}"
+                           class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition" title="First page">
+                            <i class="ti ti-chevrons-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}"
+                           class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition" title="Previous page">
+                            <i class="ti ti-chevron-left"></i>
+                        </a>
+                        {% endif %}
+
+                        {% for num in paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <span class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg">{{ num }}</span>
+                            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                            <a href="?page={{ num }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}"
+                               class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                                {{ num }}
+                            </a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}"
+                           class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition" title="Next page">
+                            <i class="ti ti-chevron-right"></i>
+                        </a>
+                        <a href="?page={{ paginator.num_pages }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}"
+                           class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition" title="Last page">
+                            <i class="ti ti-chevrons-right"></i>
+                        </a>
+                        {% endif %}
+                    </nav>
+                </div>
+                {% endif %}
             </div>
 
         </div>

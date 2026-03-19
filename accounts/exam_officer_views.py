@@ -130,7 +130,7 @@ def select_course(request):
     has_specific_filter = bool(filter_semester or filter_programme or filter_level)
     
     if has_specific_filter:
-        # Get courses for assigned programme types
+        # Get courses for assigned programme types - always alphabetical by code
         courses = Course.objects.filter(
             offerings__department__faculty__programme_type__in=assigned_types,
             is_active=True
@@ -152,6 +152,9 @@ def select_course(request):
                 ).distinct()
             except ValueError:
                 pass
+
+        # Re-apply ordering after distinct() to guarantee alphabetical order
+        courses = courses.order_by('code')
 
         # Build course data with registration counts and result status
         from django.db.models import Q
@@ -189,6 +192,17 @@ def select_course(request):
                 'is_complete': results_done >= total_eligible and total_eligible > 0,
             })
 
+    # Pagination
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    page = request.GET.get('page', 1)
+    paginator = Paginator(course_data, 25)  # 25 courses per page
+    try:
+        page_obj = paginator.page(page)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
     # Get available filters
     available_sessions = AcademicSession.objects.all().order_by('-start_year')
     available_levels = Level.objects.filter(
@@ -196,7 +210,9 @@ def select_course(request):
     ).order_by('order')
 
     context = {
-        'course_data': course_data,
+        'course_data': page_obj,
+        'page_obj': page_obj,
+        'paginator': paginator,
         'available_sessions': available_sessions,
         'available_levels': available_levels,
         'assigned_types': assigned_types,
