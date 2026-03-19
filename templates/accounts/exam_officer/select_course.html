@@ -71,15 +71,20 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="flex justify-end gap-2 mt-2">
-                            {% if filter_semester or filter_programme or filter_level %}
+                        <!-- Search Bar -->
+                        <div class="flex items-end gap-2 mt-1">
+                            <div class="flex-1">
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Search by Code or Title</label>
+                                <input type="text" name="q" value="{{ search_query }}" placeholder="e.g. ECO 101 or Microeconomics..." class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" />
+                            </div>
+                            <button type="submit" class="inline-flex items-center px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition shadow-sm">
+                                <i class="ti ti-search mr-1.5"></i> Go
+                            </button>
+                            {% if filter_semester or filter_programme or filter_level or search_query %}
                             <a href="?session={{ selected_session.id }}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition">
-                                Clear
+                                <i class="ti ti-x mr-1"></i> Clear
                             </a>
                             {% endif %}
-                            <button type="submit" class="inline-flex items-center px-5 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition">
-                                <i class="ti ti-filter mr-1.5"></i> Apply Filters
-                            </button>
                         </div>
                     </div>
                 </form>
@@ -147,12 +152,12 @@
                                 <td colspan="7" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center text-gray-500">
                                         <i class="ti ti-filter text-4xl text-gray-300 mb-4"></i>
-                                        {% if filter_semester or filter_programme or filter_level %}
+                                        {% if filter_semester or filter_programme or filter_level or search_query %}
                                         <p class="font-medium text-gray-700 mb-1">No courses found</p>
-                                        <p class="text-sm">No courses match your selected filters for this session.</p>
+                                        <p class="text-sm">No courses match your selected filters or search.</p>
                                         {% else %}
-                                        <p class="font-medium text-gray-700 mb-1">Use filters to load courses</p>
-                                        <p class="text-sm">Please select a Semester, Programme, or Level above to view courses.</p>
+                                        <p class="font-medium text-gray-700 mb-1">Use filters or search to load courses</p>
+                                        <p class="text-sm">Select a Semester, Programme, or Level above, or search by course code/title.</p>
                                         {% endif %}
                                     </div>
                                 </td>
@@ -170,11 +175,11 @@
                     </p>
                     <nav class="flex items-center gap-1">
                         {% if page_obj.has_previous %}
-                        <a href="?page=1{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}"
+                        <a href="?page=1{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
                            class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition" title="First page">
                             <i class="ti ti-chevrons-left"></i>
                         </a>
-                        <a href="?page={{ page_obj.previous_page_number }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}"
+                        <a href="?page={{ page_obj.previous_page_number }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
                            class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition" title="Previous page">
                             <i class="ti ti-chevron-left"></i>
                         </a>
@@ -184,7 +189,7 @@
                             {% if page_obj.number == num %}
                             <span class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg">{{ num }}</span>
                             {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-                            <a href="?page={{ num }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}"
+                            <a href="?page={{ num }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
                                class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition">
                                 {{ num }}
                             </a>
@@ -192,11 +197,11 @@
                         {% endfor %}
 
                         {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}"
+                        <a href="?page={{ page_obj.next_page_number }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
                            class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition" title="Next page">
                             <i class="ti ti-chevron-right"></i>
                         </a>
-                        <a href="?page={{ paginator.num_pages }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}"
+                        <a href="?page={{ paginator.num_pages }}{% if filter_session %}&session={{ filter_session }}{% endif %}{% if filter_semester %}&semester={{ filter_semester }}{% endif %}{% if filter_programme %}&programme={{ filter_programme }}{% endif %}{% if filter_level %}&level={{ filter_level }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
                            class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition" title="Last page">
                             <i class="ti ti-chevrons-right"></i>
                         </a>

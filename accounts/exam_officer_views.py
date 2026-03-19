@@ -114,6 +114,7 @@ def select_course(request):
     filter_semester = request.GET.get('semester', '')
     filter_programme = request.GET.get('programme', '')
     filter_level = request.GET.get('level', '')
+    search_query = request.GET.get('q', '').strip()
 
     # Use selected session or current
     if filter_session:
@@ -127,7 +128,7 @@ def select_course(request):
     is_historical = selected_session != active_session
     
     # Check if user has actively searched using specific filters (not just session)
-    has_specific_filter = bool(filter_semester or filter_programme or filter_level)
+    has_specific_filter = bool(filter_semester or filter_programme or filter_level or search_query)
     
     if has_specific_filter:
         # Get courses for assigned programme types - always alphabetical by code
@@ -155,6 +156,13 @@ def select_course(request):
 
         # Re-apply ordering after distinct() to guarantee alphabetical order
         courses = courses.order_by('code')
+
+        # Apply search query
+        if search_query:
+            from django.db.models import Q as SearchQ
+            courses = courses.filter(
+                SearchQ(code__icontains=search_query) | SearchQ(title__icontains=search_query)
+            )
 
         # Build course data with registration counts and result status
         from django.db.models import Q
@@ -222,6 +230,7 @@ def select_course(request):
         'filter_semester': filter_semester,
         'filter_programme': filter_programme,
         'filter_level': filter_level,
+        'search_query': search_query,
     }
     return render(request, 'accounts/exam_officer/select_course.html', context)
 
