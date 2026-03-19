@@ -171,10 +171,10 @@ def select_course(request):
             course_offerings = CourseOffering.objects.filter(course=course)
             
             if not is_historical:
-                # Active session: calculate potential eligible from current level
+                # Active session: calculate potential eligible from current level AND session
                 student_q = Q()
                 for offering in course_offerings:
-                    student_q |= Q(department=offering.department, current_level=offering.level)
+                    student_q |= Q(department=offering.department, current_level=offering.level, current_session=selected_session)
                 
                 cohort_size = StudentProfile.objects.filter(student_q).count() if course_offerings.exists() else 0
             else:
@@ -272,9 +272,9 @@ def upload_results(request, course_id):
     student_q = Q()
     
     if not is_historical:
-        # For the active session, pull everyone currently in the level to allow uploading for unregistered students
+        # For the active session, pull everyone currently in the level AND session
         for dept_id, level_id in offering_dept_levels:
-            student_q |= Q(department_id=dept_id, current_level_id=level_id)
+            student_q |= Q(department_id=dept_id, current_level_id=level_id, current_session=current_session)
             
     # Always include students who actually registered or already have results for this course/session
     student_q |= Q(
