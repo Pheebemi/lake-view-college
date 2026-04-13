@@ -44,4 +44,5 @@ urlpatterns = [
     path('exam-officer/select-course/', exam_officer_views.select_course, name='exam_officer_select_course'),
     path('exam-officer/upload-results/<int:course_id>/', exam_officer_views.upload_results, name='exam_officer_upload_results'),
     path('exam-officer/student-gpas/', exam_officer_views.view_student_gpas, name='exam_officer_student_gpas'),
+    path('exam-officer/results-sheet/', exam_officer_views.department_results_sheet, name='exam_officer_results_sheet'),
 ]

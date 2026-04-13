@@ -532,3 +532,69 @@ def view_student_gpas(request):
         'total_records': len(student_gpas),
     }
     return render(request, 'accounts/exam_officer/student_gpas.html', context)
+
+
+@login_required
+@user_passes_test(is_exam_officer)
+def department_results_sheet(request):
+    officer = request.user.examofficerprofile
+    assigned_types = officer.assigned_programme_types
+
+    available_sessions = AcademicSession.objects.all().order_by('-start_year')
+    available_departments = Department.objects.filter(
+        faculty__programme_type__in=assigned_types
+    ).select_related('faculty').order_by('name')
+    available_levels = Level.objects.filter(
+        programme_type__in=assigned_types, is_active=True
+    ).order_by('order')
+
+    session_id = request.GET.get('session')
+    dept_id = request.GET.get('department')
+    level_id = request.GET.get('level')
+
+    selected_session = AcademicSession.objects.filter(is_active=True).first()
+    if session_id:
+        selected_session = AcademicSession.objects.filter(id=session_id).first() or selected_session
+
+    student_results = []
+    selected_department = None
+    selected_level = None
+
+    if dept_id and level_id:
+        selected_department = Department.objects.filter(id=dept_id).first()
+        selected_level = Level.objects.filter(id=level_id).first()
+
+        if selected_department and selected_level:
+            students = StudentProfile.objects.filter(
+                department=selected_department,
+                current_level=selected_level,
+                current_session=selected_session,
+            ).select_related('user').order_by('user__last_name', 'user__first_name')
+
+            for student in students:
+                results = Result.objects.filter(
+                    student=student,
+                    academic_session=selected_session,
+                ).select_related('course')
+
+                passed = [r.course.code for r in results if r.grade != 'F']
+                failed = [r.course.code for r in results if r.grade == 'F']
+
+                student_results.append({
+                    'student': student,
+                    'passed': ', '.join(passed) if passed else '—',
+                    'failed': ', '.join(failed) if failed else 'NIL',
+                })
+
+    return render(request, 'accounts/exam_officer/department_results_sheet.html', {
+        'available_sessions': available_sessions,
+        'available_departments': available_departments,
+        'available_levels': available_levels,
+        'selected_session': selected_session,
+        'selected_department': selected_department,
+        'selected_level': selected_level,
+        'filter_department': dept_id or '',
+        'filter_level': level_id or '',
+        'student_results': student_results,
+        'total_students': len(student_results),
+    })
