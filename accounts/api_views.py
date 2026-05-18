@@ -191,7 +191,7 @@ def dashboard_stats(request):
             stats = {
                 'user_type': 'student',
                 'cgpa': str(profile.cgpa),
-                'current_level': profile.current_level,
+                'current_level': profile.current_level.display_name,
                 'current_semester': profile.current_semester,
                 'registered_courses': CourseRegistration.objects.filter(
                     student=profile, status='registered'
