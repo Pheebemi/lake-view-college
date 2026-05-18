@@ -106,15 +106,17 @@ class CourseListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Course.objects.filter(is_active=True)
+        queryset = Course.objects.filter(is_active=True).prefetch_related(
+            'offerings__department__faculty', 'offerings__level', 'created_by', 'academic_session'
+        )
         department = self.request.query_params.get('department', None)
         level = self.request.query_params.get('level', None)
         semester = self.request.query_params.get('semester', None)
 
         if department:
-            queryset = queryset.filter(department_id=department)
+            queryset = queryset.filter(offerings__department_id=department)
         if level:
-            queryset = queryset.filter(level=level)
+            queryset = queryset.filter(offerings__level_id=level)
         if semester:
             queryset = queryset.filter(semester=semester)
 
