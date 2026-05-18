@@ -10,7 +10,11 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 @student_required
 def student_dashboard(request):
-    profile = StudentProfile.objects.get(user=request.user)
+    try:
+        profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        messages.error(request, "Your student profile has not been set up. Please contact the admin.")
+        return redirect('accounts:student_login')
     
     # Check if profile is complete
     if not profile.is_profile_complete:
