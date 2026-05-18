@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
     User, Faculty, Department, StudentProfile, StaffProfile,
-    Course, CourseRegistration, AcademicRecord, PaymentTransaction
+    Course, CourseOffering, CourseRegistration, AcademicRecord, PaymentTransaction
 )
 
 
@@ -57,16 +57,25 @@ class StaffProfileSerializer(serializers.ModelSerializer):
         ]
 
 
-class CourseSerializer(serializers.ModelSerializer):
+class CourseOfferingSerializer(serializers.ModelSerializer):
     department = DepartmentSerializer(read_only=True)
+    level = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = CourseOffering
+        fields = ['department', 'level']
+
+
+class CourseSerializer(serializers.ModelSerializer):
+    offerings = CourseOfferingSerializer(many=True, read_only=True)
     created_by = UserSerializer(read_only=True)
     academic_session = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Course
         fields = [
-            'id', 'code', 'title', 'description', 'credits', 'department',
-            'semester', 'level', 'academic_session', 'created_by', 'created_at', 'updated_at', 'is_active'
+            'id', 'code', 'title', 'description', 'credits', 'offerings',
+            'semester', 'academic_session', 'created_by', 'created_at', 'updated_at', 'is_active'
         ]
 
 
