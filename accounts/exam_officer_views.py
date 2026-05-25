@@ -551,6 +551,7 @@ def department_results_sheet(request):
     session_id = request.GET.get('session')
     dept_id = request.GET.get('department')
     level_id = request.GET.get('level')
+    filter_semester = request.GET.get('semester', 'both')
 
     selected_session = AcademicSession.objects.filter(is_active=True).first()
     if session_id:
@@ -572,13 +573,16 @@ def department_results_sheet(request):
             ).select_related('user').order_by('user__last_name', 'user__first_name')
 
             for student in students:
-                results = Result.objects.filter(
+                result_qs = Result.objects.filter(
                     student=student,
                     academic_session=selected_session,
                 ).select_related('course')
 
-                passed = [r.course.code for r in results if r.grade != 'F']
-                failed = [r.course.code for r in results if r.grade == 'F']
+                if filter_semester in ('first', 'second'):
+                    result_qs = result_qs.filter(semester=filter_semester)
+
+                passed = [r.course.code for r in result_qs if r.grade != 'F']
+                failed = [r.course.code for r in result_qs if r.grade == 'F']
 
                 student_results.append({
                     'student': student,
@@ -595,6 +599,7 @@ def department_results_sheet(request):
         'selected_level': selected_level,
         'filter_department': dept_id or '',
         'filter_level': level_id or '',
+        'filter_semester': filter_semester,
         'student_results': student_results,
         'total_students': len(student_results),
     })
