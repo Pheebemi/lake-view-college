@@ -581,8 +581,8 @@ def department_results_sheet(request):
                 if filter_semester in ('first', 'second'):
                     result_qs = result_qs.filter(semester=filter_semester)
 
-                passed = [r.course.code for r in result_qs if r.grade != 'F']
-                failed = [r.course.code for r in result_qs if r.grade == 'F']
+                passed = [f"{r.course.code}({r.grade})" for r in result_qs if r.grade != 'F']
+                failed = [f"{r.course.code}({r.grade})" for r in result_qs if r.grade == 'F']
 
                 student_results.append({
                     'student': student,
