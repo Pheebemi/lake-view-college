@@ -66,9 +66,16 @@ class CourseOfferingSerializer(serializers.ModelSerializer):
         fields = ['department', 'level']
 
 
+class CourseCreatorSerializer(serializers.ModelSerializer):
+    """Minimal staff info exposed on courses — no PII."""
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name']
+
+
 class CourseSerializer(serializers.ModelSerializer):
     offerings = CourseOfferingSerializer(many=True, read_only=True)
-    created_by = UserSerializer(read_only=True)
+    created_by = CourseCreatorSerializer(read_only=True)
     academic_session = serializers.StringRelatedField(read_only=True)
 
     class Meta:

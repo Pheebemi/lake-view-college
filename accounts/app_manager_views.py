@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
+from django_ratelimit.decorators import ratelimit
 from django.db.models import Q, Count, Avg, Sum
 from django.core.paginator import Paginator
 from core.models import Applicant, ScreeningForm, ScreeningPayment
@@ -265,12 +266,17 @@ def applicant_detail(request, applicant_id):
     return render(request, 'app_manager/applicant_detail.html', context)
 
 
+@ratelimit(key='ip', rate='5/m', method='POST', block=False)
 def app_manager_login(request):
     """Login view for application managers"""
     if request.user.is_authenticated and request.user.user_type == 'application_manager':
         return redirect('accounts:app_manager_dashboard')
 
     if request.method == 'POST':
+        if getattr(request, 'limited', False):
+            messages.error(request, "Too many login attempts. Please wait a minute and try again.")
+            return render(request, 'app_manager/login.html', status=429)
+
         from django.contrib.auth import authenticate, login
 
         username = request.POST.get('username')

@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django_ratelimit.decorators import ratelimit
 from .models import (
     User, ExamOfficerProfile, Result, SemesterGPA,
     Course, CourseOffering, CourseRegistration, StudentProfile,
@@ -16,10 +17,15 @@ def is_exam_officer(user):
     return user.is_authenticated and user.user_type == 'exam_officer'
 
 
+@ratelimit(key='ip', rate='5/m', method='POST', block=False)
 @csrf_exempt
 def exam_officer_login(request):
     """Login page for exam officers"""
     if request.method == 'POST':
+        if getattr(request, 'limited', False):
+            messages.error(request, "Too many login attempts. Please wait a minute and try again.")
+            return render(request, 'accounts/exam_officer/login.html', status=429)
+
         username = request.POST.get('username')
         password = request.POST.get('password')
 

@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(python manage.py:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\pheedev\\\\Desktop\\\\lake-view-college-pro\" -Recurse -Name)",
+      "Bash(Select-Object -First 30)"
     ]
   }
 }

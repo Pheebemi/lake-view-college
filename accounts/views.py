@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
 from .state import NIGERIA_STATES_AND_LGAS
+from django_ratelimit.decorators import ratelimit
 import json
 import requests
 from django.conf import settings
@@ -22,12 +23,17 @@ from .models import Attendance, CourseRegistration, StudentProfile
 #Login student or if staff to dashboard
 
 
+@ratelimit(key='ip', rate='5/m', method='POST', block=False)
 @csrf_exempt
 def student_login(request):
     """
     Handles login for students only.
     """
     if request.method == 'POST':
+        if getattr(request, 'limited', False):
+            messages.error(request, "Too many login attempts. Please wait a minute and try again.")
+            return render(request, 'accounts/student_login.html', status=429)
+
         # Check if this is a JSON request from API
         if request.content_type == 'application/x-www-form-urlencoded':
             # Get credentials from form data (API request)
@@ -73,9 +79,14 @@ def student_login(request):
     return render(request, 'accounts/student_login.html')
 
 
+@ratelimit(key='ip', rate='5/m', method='POST', block=False)
 @csrf_exempt
 def staff_login(request):
     if request.method == 'POST':
+        if getattr(request, 'limited', False):
+            messages.error(request, "Too many login attempts. Please wait a minute and try again.")
+            return render(request, 'accounts/staff_login.html', status=429)
+
         # Check if this is a JSON request from API
         if request.content_type == 'application/x-www-form-urlencoded':
             # Get credentials from form data (API request)
@@ -614,6 +625,7 @@ def initiate_payment(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
+@login_required
 @csrf_exempt
 def verify_payment(request, reference):
     """Verify payment with Paystack"""
@@ -625,9 +637,9 @@ def verify_payment(request, reference):
         }
         response = requests.get(url, headers=headers)
         response_data = response.json()
-        
-        # Get payment transaction
-        transaction = PaymentTransaction.objects.get(reference=reference)
+
+        # Get payment transaction — scoped to the requesting student to prevent IDOR
+        transaction = PaymentTransaction.objects.get(reference=reference, student__user=request.user)
         
         if response_data['status'] and response_data['data']['status'] == 'success':
             # Update transaction

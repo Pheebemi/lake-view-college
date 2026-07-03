@@ -1,7 +1,8 @@
 from rest_framework import generics, status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -16,9 +17,14 @@ from .serializers import (
 )
 
 
+class LoginRateThrottle(AnonRateThrottle):
+    rate = '5/min'
+
+
 # Authentication Views
 @api_view(['POST'])
 @csrf_exempt
+@throttle_classes([LoginRateThrottle])
 def login_view(request):
     """API login endpoint"""
     username = request.data.get('username')

@@ -740,7 +740,11 @@ def get_student_course_data(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+@login_required
 def generate_pdf(request, user_id):
+    if request.user.id != user_id and request.user.user_type not in ('staff', 'exam_officer', 'application_manager'):
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("Access denied.")
     user = get_object_or_404(User, id=user_id)
     profile = get_object_or_404(StudentProfile, user=user)  # Fetch the StudentProfile associated with the user
     html_string = render_to_string('accounts/student_profile_pdf.html', {'user': user, 'profile': profile})
