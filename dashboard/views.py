@@ -14,7 +14,7 @@ def student_dashboard(request):
         profile = StudentProfile.objects.get(user=request.user)
     except StudentProfile.DoesNotExist:
         messages.error(request, "Your student profile has not been set up. Please contact the admin.")
-        return redirect('accounts:student_login')
+        return redirect('student_login')
     
     # Check if profile is complete
     if not profile.is_profile_complete:

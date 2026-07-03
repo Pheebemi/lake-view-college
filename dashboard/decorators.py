@@ -14,13 +14,13 @@ def student_required(view_func):
                     return view_func(request, *args, **kwargs)
                 else:
                     messages.error(request, "Your account is not verified. Contact the admin.")
-                    return redirect('accounts:student_login')  # Replace 'login' with your login URL name
+                    return redirect('student_login')  # Replace 'login' with your login URL name
             else:
                 messages.error(request, "Access denied. Students only.")
-                return redirect('accounts:student_login')  # Replace 'login' with your login URL name
+                return redirect('student_login')  # Replace 'login' with your login URL name
         else:
             messages.error(request, "You must be logged in to access this page.")
-            return redirect('accounts:student_login')  # Replace 'login' with your login URL name
+            return redirect('student_login')  # Replace 'login' with your login URL name
     return _wrapped_view
 
 
@@ -36,11 +36,11 @@ def staff_required(view_func):
                     return view_func(request, *args, **kwargs)
                 else:
                     messages.error(request, "Your account is not verified. Contact the admin.")
-                    return redirect('login')  # Replace 'login' with your login URL name
+                    return redirect('staff_login')
             else:
                 messages.error(request, "Access denied. Staff members only.")
-                return redirect('accounts:staff_login')  # Replace 'login' with your login URL name
+                return redirect('staff_login')  # Replace 'login' with your login URL name
         else:
             messages.error(request, "You must be logged in to access this page.")
-            return redirect('accounts:staff_login')  # Replace 'login' with your login URL name
+            return redirect('staff_login')  # Replace 'login' with your login URL name
     return _wrapped_view

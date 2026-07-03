@@ -5,8 +5,6 @@ from . import views, course_views, app_manager_views, exam_officer_views
 app_name = 'accounts'
 
 urlpatterns = [
-    path('student-login/', views.student_login, name='student_login'),
-    path('staff-login/', views.staff_login, name='staff_login'),
     path('logout/', views.logout_user, name='logout'),
     path('student-profile/', views.student_profile, name='student_profile'),
     path('staff-profile/', views.staff_profile, name='staff_profile'),
@@ -30,7 +28,6 @@ urlpatterns = [
     # path('login/', views, name='login'),
 
     # Application Manager URLs
-    path('app-manager/login/', app_manager_views.app_manager_login, name='app_manager_login'),
     path('app-manager/dashboard/', app_manager_views.app_manager_dashboard, name='app_manager_dashboard'),
     path('app-manager/applicants/', app_manager_views.applicants_list, name='app_manager_applicants_list'),
     path('app-manager/applicants/<int:applicant_id>/', app_manager_views.applicant_detail, name='app_manager_applicant_detail'),
@@ -39,7 +36,6 @@ urlpatterns = [
     path('app-manager/communicate/', app_manager_views.app_manager_communicate, name='app_manager_communicate'),
 
     # Exam Officer URLs
-    path('exam-officer/login/', exam_officer_views.exam_officer_login, name='exam_officer_login'),
     path('exam-officer/dashboard/', exam_officer_views.exam_officer_dashboard, name='exam_officer_dashboard'),
     path('exam-officer/select-course/', exam_officer_views.select_course, name='exam_officer_select_course'),
     path('exam-officer/upload-results/<int:course_id>/', exam_officer_views.upload_results, name='exam_officer_upload_results'),

@@ -23,7 +23,7 @@ def is_application_manager(user):
 
 
 @login_required
-@user_passes_test(is_application_manager, login_url='/applicant/login/')
+@user_passes_test(is_application_manager, login_url='/applicant/')
 def app_manager_dashboard(request):
     """Application Manager Dashboard with statistics"""
 
@@ -84,7 +84,7 @@ def app_manager_dashboard(request):
 
 
 @login_required
-@user_passes_test(is_application_manager, login_url='/applicant/login/')
+@user_passes_test(is_application_manager, login_url='/applicant/')
 def applicants_list(request):
     """List all applicants with filters and search"""
 
@@ -149,7 +149,7 @@ def applicants_list(request):
 
 
 @login_required
-@user_passes_test(is_application_manager, login_url='/applicant/login/')
+@user_passes_test(is_application_manager, login_url='/applicant/')
 def applicant_detail(request, applicant_id):
     """Detailed view of a single applicant"""
 
@@ -294,7 +294,7 @@ def app_manager_login(request):
 
 
 @login_required
-@user_passes_test(is_application_manager, login_url='/accounts/app-manager/login/')
+@user_passes_test(is_application_manager, login_url='/manager/')
 def app_manager_documents(request):
     """Document Verification Center"""
 
@@ -379,7 +379,7 @@ def app_manager_documents(request):
 
 
 @login_required
-@user_passes_test(is_application_manager, login_url='/accounts/app-manager/login/')
+@user_passes_test(is_application_manager, login_url='/manager/')
 def app_manager_merit_list(request):
     """Merit List Generator"""
     from core.models import Program
@@ -464,7 +464,7 @@ def app_manager_merit_list(request):
 
 
 @login_required
-@user_passes_test(is_application_manager, login_url='/accounts/app-manager/login/')
+@user_passes_test(is_application_manager, login_url='/manager/')
 def app_manager_communicate(request):
     """Communication Center - Send notifications to applicants"""
 

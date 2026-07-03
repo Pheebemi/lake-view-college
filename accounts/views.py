@@ -116,19 +116,19 @@ def staff_login(request):
                         return JsonResponse({'error': 'Only staff members are allowed to log in here.'}, status=400)
                     else:
                         messages.error(request, "Only staffs are allowed to log in here.")
-                        return redirect('accounts:staff_login')
+                        return redirect('staff_login')
             else:
                 if request.content_type == 'application/x-www-form-urlencoded':
                     return JsonResponse({'error': 'Your account is not verified. Contact the admin.'}, status=400)
                 else:
                     messages.warning(request, 'Your account is not verified. Contact the admin.')
-                    return redirect('accounts:staff_login')
+                    return redirect('staff_login')
         else:
             if request.content_type == 'application/x-www-form-urlencoded':
                 return JsonResponse({'error': 'Invalid username or password.'}, status=400)
             else:
                 messages.warning(request, 'Something went wrong')
-                return redirect('accounts:staff_login')
+                return redirect('staff_login')
     else:
         return render(request, 'accounts/staff_login.html')
 
@@ -139,15 +139,15 @@ def logout_user(request):
     logout(request)
     messages.info(request, 'You have been logged out successfully.')
     if user_type == 'staff':
-        return redirect('accounts:staff_login')
+        return redirect('staff_login')
     elif user_type == 'applicant':
         return redirect('core:applicant_login')
     elif user_type == 'application_manager':
-        return redirect('accounts:app_manager_login')
+        return redirect('app_manager_login')
     elif user_type == 'exam_officer':
-        return redirect('accounts:exam_officer_login')
+        return redirect('exam_officer_login')
     else:
-        return redirect('accounts:student_login')
+        return redirect('student_login')
 
 @login_required
 def student_profile(request):
