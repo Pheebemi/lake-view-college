@@ -58,12 +58,14 @@ class Command(BaseCommand):
                 {"code": "BED 117", "title": "Introduction to Entrepreneurship", "units": 2, "semester": "first"},
                 {"code": "GSE 011", "title": "Media and Information Literacy", "units": 1, "semester": "first"},
                 {"code": "GSE 113", "title": "Basic General Mathematics I", "units": 1, "semester": "first"},
+                # Existing shared NCE courses - link an offering only, leave the
+                # course record untouched so we don't clobber the other departments.
+                {"code": "EDU 111", "link_only": True},
+                {"code": "EDU 112", "link_only": True},
+                {"code": "EDU 113", "link_only": True},
                 # TODO - awaiting credit units / titles, do not enable until confirmed:
                 # {"code": "BED 112", "title": "Business Mathematics", "units": ?, "semester": "first"},
-                # {"code": "EDU 101", "title": "?", "units": ?, "semester": "first"},
-                # {"code": "EDU 111", "title": "?", "units": ?, "semester": "first"},
-                # {"code": "EDU 112", "title": "?", "units": ?, "semester": "first"},
-                # {"code": "EDU 113", "title": "?", "units": ?, "semester": "first"},
+                # {"code": "EDU 101", ...} - degree-stream course, needs a decision first
             ],
             "NCE2": [],
         }
@@ -101,31 +103,49 @@ class Command(BaseCommand):
 
             for c in courses:
                 original_code = c["code"]
-                safe_code = get_safe_code(original_code, faculty.programme_type)
 
-                if dry_run:
-                    exists = Course.objects.filter(code=safe_code).first()
-                    state = "reuse existing course" if exists else "create new course"
-                    renamed = f" (renamed from {original_code})" if safe_code != original_code else ""
-                    self.stdout.write(
-                        f"[DRY-RUN] {safe_code}: {c['title']} ({c['units']} Units) -> {state}{renamed}"
+                # Link-only: the course already exists and is owned by other
+                # departments. Attach an offering without editing the course.
+                if c.get("link_only"):
+                    course = Course.objects.filter(code=original_code).first()
+                    if not course:
+                        self.stdout.write(self.style.ERROR(
+                            f"{original_code} marked link_only but does not exist - skipped"
+                        ))
+                        continue
+                    if dry_run:
+                        self.stdout.write(
+                            f"[DRY-RUN] {course.code}: {course.title} "
+                            f"({course.credits} Units) -> link existing course, no edit"
+                        )
+                        continue
+                    self.stdout.write(f"Reusing Course: {course.code} - {course.title}")
+                else:
+                    safe_code = get_safe_code(original_code, faculty.programme_type)
+
+                    if dry_run:
+                        exists = Course.objects.filter(code=safe_code).first()
+                        state = "reuse existing course" if exists else "create new course"
+                        renamed = f" (renamed from {original_code})" if safe_code != original_code else ""
+                        self.stdout.write(
+                            f"[DRY-RUN] {safe_code}: {c['title']} ({c['units']} Units) -> {state}{renamed}"
+                        )
+                        continue
+
+                    # I. Course Record
+                    course, created = Course.objects.update_or_create(
+                        code=safe_code,
+                        defaults={
+                            "title": c["title"],
+                            "credits": c["units"],
+                            "semester": c["semester"],
+                            "academic_session": session,
+                            "created_by": admin_user,
+                            "is_active": True
+                        }
                     )
-                    continue
-
-                # I. Course Record
-                course, created = Course.objects.update_or_create(
-                    code=safe_code,
-                    defaults={
-                        "title": c["title"],
-                        "credits": c["units"],
-                        "semester": c["semester"],
-                        "academic_session": session,
-                        "created_by": admin_user,
-                        "is_active": True
-                    }
-                )
-                action = "Created" if created else "Updated"
-                self.stdout.write(f"{action} Course: {course.code}")
+                    action = "Created" if created else "Updated"
+                    self.stdout.write(f"{action} Course: {course.code}")
 
                 # II. Course Offering (The Link)
                 offering, o_created = CourseOffering.objects.get_or_create(
