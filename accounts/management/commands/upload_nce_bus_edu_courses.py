@@ -63,9 +63,10 @@ class Command(BaseCommand):
                 {"code": "EDU 111", "link_only": True},
                 {"code": "EDU 112", "link_only": True},
                 {"code": "EDU 113", "link_only": True},
-                # TODO - awaiting credit units / titles, do not enable until confirmed:
+                # EDU 101 is deliberately excluded - it is a degree-stream course
+                # (Biology/Health/Maths Education); NCE students take the EDU 111-113 set.
+                # TODO - awaiting credit units, do not enable until confirmed:
                 # {"code": "BED 112", "title": "Business Mathematics", "units": ?, "semester": "first"},
-                # {"code": "EDU 101", ...} - degree-stream course, needs a decision first
             ],
             "NCE2": [],
         }
