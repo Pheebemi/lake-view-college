@@ -20,10 +20,10 @@ class Command(BaseCommand):
 
         # 1. Faculty & Department (NCE stream)
         faculty = Faculty.objects.filter(
-            name="School of NCE Education", programme_type="nce"
+            name="NCE Education", programme_type="nce"
         ).first()
         if not faculty:
-            self.stdout.write(self.style.ERROR("School of NCE Education (NCE) not found!"))
+            self.stdout.write(self.style.ERROR("NCE Education (NCE) not found!"))
             return
 
         dept = Department.objects.filter(name="NCE Business Education", faculty=faculty).first()
