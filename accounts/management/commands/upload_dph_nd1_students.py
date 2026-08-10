@@ -21,7 +21,7 @@ STUDENTS = [
     {"first_name": "Josline",  "last_name": "Zachariah Sunkani", "id_number": "LCE/DIP/PH/25/0002", "gender": "M"},
     {"first_name": "Auta",     "last_name": "Doseng",           "id_number": "LCE/DIP/PH/25/0003", "gender": "M"},
     {"first_name": "Liatu",    "last_name": "Josephh",          "id_number": "LCE/DIP/PH/25/0004", "gender": "M"},
-    {"first_name": "Naja;atu", "last_name": "Suleiaman",        "id_number": "LCE/DIP/PH/25/0005", "gender": "F"},
+    {"first_name": "Naja'atu", "last_name": "Suleiaman",        "id_number": "LCE/DIP/PH/25/0005", "gender": "F"},
     {"first_name": "Aisha",    "last_name": "Suleiman",         "id_number": "LCE/DIP/PH/25/0006", "gender": "F"},
     {"first_name": "Eli",      "last_name": "Johnson",          "id_number": "LCE/DIP/PH/25/0007", "gender": "M"},
     {"first_name": "Yussi",    "last_name": "William",          "id_number": "LCE/DIP/PH/25/0008", "gender": "M"},
