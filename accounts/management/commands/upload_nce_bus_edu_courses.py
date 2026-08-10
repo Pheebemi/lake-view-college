@@ -52,6 +52,7 @@ class Command(BaseCommand):
             "NCE1": [
                 # First Semester
                 {"code": "BED 110", "title": "Introduction to Vocational Education", "units": 2, "semester": "first"},
+                {"code": "BED 112", "title": "Business Mathematics", "units": 2, "semester": "first"},
                 {"code": "BED 114", "title": "Introduction to Economics", "units": 2, "semester": "first"},
                 {"code": "BED 115", "title": "Office Practice I", "units": 2, "semester": "first"},
                 {"code": "BED 116", "title": "Computer Keyboarding", "units": 2, "semester": "first"},
@@ -65,8 +66,6 @@ class Command(BaseCommand):
                 {"code": "EDU 113", "link_only": True},
                 # EDU 101 is deliberately excluded - it is a degree-stream course
                 # (Biology/Health/Maths Education); NCE students take the EDU 111-113 set.
-                # TODO - awaiting credit units, do not enable until confirmed:
-                # {"code": "BED 112", "title": "Business Mathematics", "units": ?, "semester": "first"},
             ],
             "NCE2": [],
         }
