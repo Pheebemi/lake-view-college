@@ -2,44 +2,36 @@
 {% load static %}
 
 {% block layout %}
-
-
-<!-- Programs Page Content -->
-<section class="py-20 bg-gray-100 mt-16"> <!-- Added mt-16 for margin-top -->
-    <div class="container mx-auto px-4">
-        <div class="max-w-7xl mx-auto text-center md:mb-6 lg:mb-12" data-aos="fade-up">
-            <h2 class="text-xl md:text-4xl font-bold text-gray-900 mb-4">Single Program {{program.name}}</h2>
-            <p class="text-lg text-gray-600">
+<section class="pt-32 pb-20 md:pb-24 bg-white">
+    <div class="max-w-4xl mx-auto px-6">
+        <div class="text-center mb-12">
+            <p class="text-sm font-medium text-blue-600 mb-3">Academics</p>
+            <h1 class="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900 mb-4">{{ program.name }}</h1>
+            <p class="text-gray-500 leading-relaxed">
                 Explore the diverse range of programs we offer at LakeView College.
             </p>
         </div>
 
-            <!-- Program 1 -->
-            <div class="bg-white p-4 rounded-lg" data-aos="fade-up" data-aos-delay="100">
-            <div class="w-full h-[40vh] md:h-[60vh] overflow-hidden">
-            <img src="{{ program.faculty_img }}" class="object-cover rounded-lg" alt="{{ program.name }}">
-            </div>
-                <h3 class="text-3xl font-bold text-gray-900 my-4">{{program.name}}</h3>
-                <p class="text-lg text-gray-600 mb-4">
-                    {{program.description }}.
-                </p>
-                
-                <div>
-                <h2 class="font-medium py-2 text-xl">Departments Under this Faculty</h2>
-                    <ul class="mt-2">
-                        {% if departments %}
-                        {% for department in departments %}
-                        <li><a href="">{{ department.name }} ({{department.short_name}})</a></li>
-                        {% endfor %}
-                        {% else %}
-                        <h2>No department under this course</h2>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
+        <div class="rounded-2xl overflow-hidden border border-gray-200 mb-8">
+            <img src="{{ program.faculty_img }}" class="object-cover w-full h-64 md:h-96" alt="{{ program.name }}">
+        </div>
 
+        <p class="text-gray-600 leading-relaxed mb-10">{{ program.description }}.</p>
+
+        <div class="border-t border-gray-200 pt-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Departments Under this Faculty</h2>
+            {% if departments %}
+            <div class="grid sm:grid-cols-2 gap-3">
+                {% for department in departments %}
+                <div class="border border-gray-200 rounded-lg px-4 py-3 text-gray-700">
+                    {{ department.name }} <span class="text-gray-400">({{ department.short_name }})</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500">No department under this course.</p>
+            {% endif %}
         </div>
     </div>
 </section>
-
 {% endblock %}
